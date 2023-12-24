@@ -42,7 +42,8 @@ if ($_conf['iphone'] && isset($_REQUEST['iq'])) {
 
 $query_params = array();
 if (isset($_GET['Q']) && is_string($_GET['Q']) && strlen($_GET['Q']) > 0) {
-     $query_params['q'] = mb_convert_kana($_GET['Q'], 's');
+    mb_convert_variables('CP932', 'UTF-8,CP932', $_GET['Q']);
+    $query_params['q'] = mb_convert_kana($_GET['Q'], 's');
     $query_params['n'] = $limit = ($_conf['ktai'] || $_conf['iphone']) ? '25' : '100';
     if (isset($_GET['AndOr'])) { $query_params['AndOr'] = $_GET['AndOr'];}
     if (isset($_GET['maxResult'])) {

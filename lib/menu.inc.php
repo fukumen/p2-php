@@ -24,6 +24,7 @@ if (isset($_GET['word'])) {
 } elseif (isset($_POST['word'])) {
     $word = $_POST['word'];
 }
+mb_convert_variables('CP932', 'UTF-8,CP932', $word);
 $hd = array('word' => '');
 $GLOBALS['ita_mikke'] = array('num' => 0);
 $msg_ht = '';

@@ -37,7 +37,7 @@ header('Content-Type: text/plain; charset=UTF-8');
 $post_param_keys    = array('bbs', 'key', 'time', 'FROM', 'mail', 'MESSAGE', 'subject', 'submit');
 $post_internal_keys = array('host', 'sub', 'popup', 'rescount', 'ttitle_en');
 foreach ($post_param_keys as $pk) {
-    ${$pk} = (isset($_POST[$pk])) ? mb_convert_encoding($_POST[$pk], 'CP932', 'UTF-8') : '';
+    ${$pk} = (isset($_POST[$pk])) ? mb_convert_encoding($_POST[$pk], 'CP932', 'UTF-8,CP932') : '';
 }
 foreach ($post_internal_keys as $pk) {
     ${$pk} = (isset($_POST[$pk])) ? $_POST[$pk] : '';

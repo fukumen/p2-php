@@ -166,6 +166,7 @@ class ResFilter
     static public function configure(array $params)
     {
         $word    = $params['word'] ?? null;
+        mb_convert_variables('CP932', 'UTF-8,CP932', $word);
         $field   = $params['field'] ?? null;
         $method  = $params['method'] ?? null;
         $match   = $params['method'] ?? null;

@@ -120,7 +120,7 @@ if (P2HostMgr::isHostMachiBbs($host) or P2HostMgr::isHostJbbsShitaraba($host)) {
 $submit = 'èëÇ´çûÇﬁ';
 
 $post = array_combine($post_send_keys, compact($post_param_keys));
-$post_cache = $post;
+$post_cache = mb_convert_encoding($post, 'CP932', 'UTF-8,CP932');
 unset($post_cache['submit']);
 
 if (!empty($_POST['newthread'])) {
@@ -357,7 +357,7 @@ if ($_conf['res_write_rec']) {
     P2Util::transResHistLogPhpToDat();
 
     $date_and_id = date('y/m/d H:i');
-    $message = htmlspecialchars($MESSAGE, ENT_NOQUOTES, 'Shift_JIS');
+    $message = htmlspecialchars(mb_convert_encoding($MESSAGE, 'CP932', 'UTF-8,CP932'), ENT_NOQUOTES, 'CP932');
     $message = preg_replace('/\\r\\n|\\r|\\n/', '<br>', $message);
 
     FileCtl::make_datafile($_conf['res_hist_dat']); // Ç»ÇØÇÍÇŒê∂ê¨
@@ -460,10 +460,10 @@ function postIt($host, $bbs, $key, $post)
 
             // ÇµÇΩÇÁÇŒ or be.2ch.netÇ»ÇÁÅAEUCÇ…ïœä∑
             if (P2HostMgr::isHostJbbsShitaraba($host) || P2HostMgr::isHostBe2chs($host)) {
-                $value = mb_convert_encoding($value, 'CP51932', 'CP932');
+                $value = mb_convert_encoding($value, 'CP51932', 'UTF-8,CP932');
             } elseif (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
                 // 2chÇÕUnicodeÇÃï∂éöóÒÇpostÇ∑ÇÈ
-                $value = html_entity_decode(mb_convert_encoding($value, 'UTF-8', 'CP932'),ENT_QUOTES,'UTF-8');
+                $value = html_entity_decode(mb_convert_encoding($value, 'UTF-8', 'UTF-8,CP932'),ENT_QUOTES,'UTF-8');
             }
             $req->addPostParameter($name, $value);
         }
@@ -745,7 +745,7 @@ function showCookieConfirmation($host, $response)
                 if ($key != $name) {
                     $elem->setAttribute('name', $name);
                 }
-                $elem->setAttribute('value', mb_convert_encoding($_POST[$name], 'UTF-8', 'CP932'));
+                $elem->setAttribute('value', mb_convert_encoding($_POST[$name], 'UTF-8', 'UTF-8,CP932'));
             }
         }
     }
@@ -767,7 +767,7 @@ function showCookieConfirmation($host, $response)
         if (array_key_exists($name, $_POST)) {
             $elem = $hidden->cloneNode();
             $elem->setAttribute('name', $name);
-            $elem->setAttribute('value', mb_convert_encoding($_POST[$name], 'UTF-8', 'CP932'));
+            $elem->setAttribute('value', mb_convert_encoding($_POST[$name], 'UTF-8', 'UTF-8,CP932'));
             $form->appendChild($elem);
         }
     }

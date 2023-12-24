@@ -150,6 +150,7 @@ if (empty($_REQUEST['submit_refresh']) or !empty($_REQUEST['submit_kensaku'])) {
     } elseif (isset($_POST['word'])) {
         $GLOBALS['word'] = $_POST['word'];
     }
+    mb_convert_variables('CP932', 'UTF-8,CP932', $GLOBALS['word']);
 
 
     if (isset($_GET['method'])) {
