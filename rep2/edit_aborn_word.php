@@ -51,6 +51,9 @@ if (!empty($_POST['submit_save'])) {
 
     $newdata = '';
     foreach ($_POST['nga'] as $na_info) {
+        mb_convert_variables('CP932', 'UTF-8,CP932', $na_info['word']);
+        mb_convert_variables('CP932', 'UTF-8,CP932', $na_info['bbs']);
+        mb_convert_variables('CP932', 'UTF-8,CP932', $na_info['tt']);
         $a_word = strtr(trim($na_info['word'], "\t\r\n"), "\t\r\n", "   ");
         $a_bbs = strtr(trim($na_info['bbs'], "\t\r\n"), "\t\r\n", "   ");
         $a_tt = strtr(trim($na_info['tt'], "\t\r\n"), "\t\r\n", "   ");

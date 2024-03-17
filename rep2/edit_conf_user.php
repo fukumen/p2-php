@@ -49,6 +49,7 @@ if (!empty($_POST['submit_save'])) {
     $conf_save = array('.' => $_conf['p2version']);
     foreach ($conf_user_def as $k => $v) {
         if (array_key_exists($k, $_POST['conf_edit'])) {
+            mb_convert_variables('CP932', 'UTF-8,CP932', $_POST['conf_edit'][$k]);
             $conf_save[$k] = $_POST['conf_edit'][$k];
         } elseif (array_key_exists($k, $_conf)) {
             $conf_save[$k] = $_conf[$k];
