@@ -409,7 +409,7 @@ class ThreadRead extends Thread {
             $from_bytes = $from_bytes - 1;
         }
 
-        $url = "http://{$this->host}/{$this->bbs}/dat/{$this->key}.dat";
+        $url = "https://{$this->host}/{$this->bbs}/dat/{$this->key}.dat";
         // $url="http://news2.2ch.net/test/read.cgi?bbs=newsplus&key=1038486598";
 
         $purl = parse_url ($url); // URL•ª‰ğ
