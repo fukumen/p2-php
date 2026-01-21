@@ -339,6 +339,8 @@ if ($_conf['iframe_popup_type'] == 1) {
     $fade = empty($_GET['fade']) ? 'false' : 'true';
     $onload_script .= "gFade = {$fade};";
     $bodyadd = ' onclick="hideHtmlPopUp(event);"';
+} else {
+    $bodyadd = '';
 }
 
 if ($_conf['backlink_coloring_track']) {

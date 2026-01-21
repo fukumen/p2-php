@@ -173,7 +173,7 @@ if ($aThread->isKitoku()) {
     //「新着レスの表示」の時は特別にちょっと前のレスから表示
     if (!empty($_GET['nt'])) {
         if (substr($aThread->ls, -1) == '-') {
-            $n = $aThread->ls - $before_respointer;
+            $n = (int)$aThread->ls - $before_respointer;
             if ($n < 1) { $n = 1; }
             $aThread->ls = $n . '-';
         }

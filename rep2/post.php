@@ -411,6 +411,7 @@ function postIt($host, $bbs, $key, $post)
         $bbs_cgi_url = 'http://' . $host . $bbs_cgi;
     }
 
+    $post_seikou = false;
     try {
         $req = P2Commun::createHTTPRequest ($bbs_cgi_url,HTTP_Request2::METHOD_POST);
 
