@@ -5,9 +5,9 @@
 
 $js = array();
 
-$fake_time = -10; // time ‚ð10•ª‘O‚É‹U‘•
-$time = time() - 9*60*60;
-$time = $time + $fake_time * 60;
+$fake_time = -30; // time ‚ð30•b‘O‚É‹U‘•
+$time = time();
+$time = $time + $fake_time;
 
 $csrfid = P2Util::getCsrfId('post' . $host . $bbs . $key);
 

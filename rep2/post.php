@@ -111,6 +111,14 @@ if (P2HostMgr::isHostMachiBbs($host) or P2HostMgr::isHostJbbsShitaraba($host)) {
     } else {
         $bbs_cgi = '/test/bbs.cgi';
     }
+    if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
+        if (!empty($_POST['p2_post_confirm_cookie'])) {
+            $bbs_cgi = $bbs_cgi . "?guid=ON";
+        }
+
+        // 最近の5chのread.cgiでの並びに合わせる
+        $post_param_keys    = array('subject', 'FROM', 'mail', 'MESSAGE', 'bbs', 'key', 'time', 'submit');
+    }
     $post_send_keys = $post_param_keys;
     $key_k     = 'key';
     $subject_k = 'subject';
@@ -181,7 +189,14 @@ if (!empty($_POST['maru']) and P2HostMgr::isHost2chs($host)) {
 // }}}
 
 if (!empty($_POST['p2_post_confirm_cookie'])) {
-    $post_ignore_keys = array_merge($post_param_keys, $post_internal_keys, $post_optional_keys, $post_p2_flag_keys);
+    if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
+        // 5chでは確認画面のフィールド順や値を忠実に再現する
+        unset($post);
+        $post = [];
+        $post_ignore_keys = array_merge($post_internal_keys, $post_optional_keys, $post_p2_flag_keys, ["_hint"]);
+    } else {
+        $post_ignore_keys = array_merge($post_param_keys, $post_internal_keys, $post_optional_keys, $post_p2_flag_keys);
+    }
     foreach ($_POST as $k => $v) {
         if (!array_key_exists($k, $post) && !in_array($k, $post_ignore_keys)) {
             $post[$k] = $v;
@@ -416,7 +431,8 @@ function postIt($host, $bbs, $key, $post)
         $req = P2Commun::createHTTPRequest ($bbs_cgi_url,HTTP_Request2::METHOD_POST);
 
         // ヘッダ
-        $bypass_headers = ['Cache-Control', 'Sec-Ch-Ua', 'Sec-Ch-Ua-Mobile', 'Upgrade-Insecure-Requests', 'User-Agent', 'Accept', 'Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-User', 'Sec-Fetch-Dest', 'Accept-Encoding', 'Accept-Language'];
+        // $bypass_headers = ['Cache-Control', 'Sec-Ch-Ua', 'Sec-Ch-Ua-Mobile', 'Upgrade-Insecure-Requests', 'User-Agent', 'Accept', 'Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-User', 'Sec-Fetch-Dest', 'Accept-Encoding', 'Accept-Language'];
+        $bypass_headers = [];
 
         foreach (getallheaders() as $name => $value) {
             if (!in_array($name, $bypass_headers, true)) {
@@ -425,12 +441,28 @@ function postIt($host, $bbs, $key, $post)
             $req->setHeader($name, $value);
         }
 
-        if (P2HostMgr::isHost2chs($host) && !P2HostMgr::isHostBbsPink($host) && $_conf['2ch_ssl.post']) {
-            $req->setHeader('Referer', "https://{$host}/{$bbs}/{$key}/");
-            $req->setHeader("Origin", "https://{$host}/{$bbs}/{$key}/");
+        if (P2HostMgr::isHost2chs($host) && !P2HostMgr::isHostBbsPink($host)){
+            if (empty($_POST['p2_post_confirm_cookie'])) {
+                if ($_conf['2ch_ssl.post']) {
+                    $req->setHeader('Referer', "https://{$host}/test/read.cgi/{$bbs}/{$key}/");
+                } else {
+                    $req->setHeader('Referer', "http://{$host}/test/read.cgi/{$bbs}/{$key}/");
+                }
+            } else {
+                if ($_conf['2ch_ssl.post']) {
+                    $req->setHeader('Referer', "https://{$host}/test/bbs.cgi");
+                } else {
+                    $req->setHeader('Referer', "http://{$host}/test/bbs.cgi");
+                }
+            }
         } else {
-            $req->setHeader('Referer', "http://{$host}/{$bbs}/{$key}/");
-            $req->setHeader("Origin", "http://{$host}/{$bbs}/{$key}/");
+            if ($_conf['2ch_ssl.post']) {
+                $req->setHeader('Referer', "https://{$host}/{$bbs}/{$key}/");
+                $req->setHeader("Origin", "https://{$host}/{$bbs}/{$key}/");
+            } else {
+                $req->setHeader('Referer', "http://{$host}/{$bbs}/{$key}/");
+                $req->setHeader("Origin", "http://{$host}/{$bbs}/{$key}/");
+            }
         }
 
         // クッキー
@@ -463,8 +495,8 @@ function postIt($host, $bbs, $key, $post)
             if (P2HostMgr::isHostJbbsShitaraba($host) || P2HostMgr::isHostBe2chs($host)) {
                 $value = mb_convert_encoding($value, 'CP51932', 'UTF-8,CP932');
             } elseif (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
-                // 2chはUnicodeの文字列をpostする
-                $value = html_entity_decode(mb_convert_encoding($value, 'UTF-8', 'UTF-8,CP932'),ENT_QUOTES,'UTF-8');
+                // 5chのread.cgiに合わせてフォームのaccept-charsetをShift_JISにしているので特に変換しない
+                // Shift_JIS範囲外の文字が入力されていると最近のブラウザであればNumeric Character Reference(NCR)に変換してくれる
             }
             $req->addPostParameter($name, $value);
         }
@@ -735,18 +767,22 @@ function showCookieConfirmation($host, $response)
     foreach ($rmattrs as $name) {
         $form->removeAttribute($name);
     }
-    $form->setAttribute('accept-charset', $_conf['accept_charset']);
+    if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
+        $form->setAttribute('accept-charset', 'Shift_JIS');
+    } else {
+        $form->setAttribute('accept-charset', $_conf['accept_charset']);
 
-    // POSTする値を再設定
-    foreach (array_combine($post_send_keys, $post_param_keys) as $key => $name) {
-        if (array_key_exists($name, $_POST)) {
-            $nodes = $xpath->query("./input[@type = 'hidden' and @name = '{$key}']");
-            if ($nodes->length) {
-                $elem = $nodes->item(0);
-                if ($key != $name) {
-                    $elem->setAttribute('name', $name);
+        // POSTする値を再設定
+        foreach (array_combine($post_send_keys, $post_param_keys) as $key => $name) {
+            if (array_key_exists($name, $_POST)) {
+                $nodes = $xpath->query("./input[@type = 'hidden' and @name = '{$key}']", $form);
+                if ($nodes->length) {
+                    $elem = $nodes->item(0);
+                    if ($key != $name) {
+                        $elem->setAttribute('name', $name);
+                    }
+                    $elem->setAttribute('value', mb_convert_encoding($_POST[$name], 'UTF-8', 'UTF-8,CP932'));
                 }
-                $elem->setAttribute('value', mb_convert_encoding($_POST[$name], 'UTF-8', 'UTF-8,CP932'));
             }
         }
     }
