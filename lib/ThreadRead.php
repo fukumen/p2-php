@@ -540,6 +540,9 @@ class ThreadRead extends Thread {
                 $this->onbytes = 0;
                 $this->modified = null;
                 return $this->_downloadDat2ch (0); // あぼーん検出。全部取り直し。
+            } elseif ($code == '404' && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)) {
+                $uri = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
+                return $this->_downloadDat2chKako ($uri, ".dat");
             } else {
                 return $this->_downloadDat2chNotFound ($code);
             }
@@ -604,6 +607,8 @@ class ThreadRead extends Thread {
                 return true;
             } elseif ($code == '304') {
                 return '304 Not Modified';
+            } elseif (strpos($uri, '/oyster/') !== false) {
+                return $this->_downloadDat2chNotFound($code);
             } else {
                 return $this->_downloadDat2chKakoNotFound ($uri, $ext);
             }
