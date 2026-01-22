@@ -409,7 +409,7 @@ class ThreadRead extends Thread {
             $from_bytes = $from_bytes - 1;
         }
 
-        $url = "https://{$this->host}/{$this->bbs}/dat/{$this->key}.dat";
+        $url = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/{$this->bbs}/dat/{$this->key}.dat";
         // $url="http://news2.2ch.net/test/read.cgi?bbs=newsplus&key=1038486598";
 
         $purl = parse_url ($url); // URL分解
@@ -419,7 +419,7 @@ class ThreadRead extends Thread {
         try {
             $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);
             // ヘッダ
-            $req->setHeader ('Referer', "http://{$purl['host']}/{$this->bbs}/");
+            $req->setHeader ('Referer', ($_conf['2ch_ssl.subject']?"https":"http")."://{$purl['host']}/{$this->bbs}/");
 
             if (! empty ($_GET['one'])) {
                 // >>1プレビューの時はサーバーに最初の部分だけ請求
@@ -671,7 +671,7 @@ class ThreadRead extends Thread {
             }
         }
 
-        $read_url = "http://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
+        $read_url = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
 
         // {{{ read.cgi からHTMLを取得
 
