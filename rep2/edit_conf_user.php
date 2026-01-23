@@ -163,20 +163,9 @@ echo <<<EOP
 EOP;
 
 if (!$_conf['ktai']) {
-    $js_msgs = array(
-        'save_btn' => '変更を保存する',
-        'reset_btn' => '変更を取り消す',
-        'reset_msg' => "変更を取り消してもよろしいですか？\n（全てのタブの変更がリセットされます）",
-        'default_btn' => 'デフォルトに戻す',
-        'default_msg' => "ユーザ設定をデフォルトに戻してもよろしいですか？\n（やり直しはできません）",
-    );
-    mb_convert_variables('UTF-8', 'CP932', $js_msgs);
-    $js_msgs_json = json_encode($js_msgs);
-
     echo <<<EOP
     <script type="text/javascript" src="js/basic.js?{$_conf['p2_version_id']}"></script>
     <script type="text/javascript" src="js/tabber/tabber.js?{$_conf['p2_version_id']}"></script>
-    <script type="text/javascript">var _EDIT_CONF_USER_MSGS = {$js_msgs_json};</script>
     <script type="text/javascript" src="js/edit_conf_user.js?{$_conf['p2_version_id']}"></script>
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=edit_conf_user&amp;skin={$skin_en}">

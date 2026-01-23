@@ -45,7 +45,7 @@ var _edit_conf_user_js_onload = function() {
 
 		// 「変更を保存する」タブ
 		var saveTab = getTab();
-		var saveBtn = getBtn('submit', 'submit_save', _EDIT_CONF_USER_MSGS.save_btn);
+		var saveBtn = getBtn('submit', 'submit_save', '変更を保存する');
 		/*saveBtn.onclick = function() {
 			var msg = '変更を保存してもよろしいですか？';
 			return window.confirm(msg);
@@ -54,18 +54,20 @@ var _edit_conf_user_js_onload = function() {
 
 		// 「変更を取り消す」タブ
 		var resetTab = getTab();
-		var resetBtn = getBtn('reset', 'reset_change', _EDIT_CONF_USER_MSGS.reset_btn);
+		var resetBtn = getBtn('reset', 'reset_change', '変更を取り消す');
 		resetBtn.onclick = function() {
-			var msg = _EDIT_CONF_USER_MSGS.reset_msg;
+			var msg = '変更を取り消してもよろしいですか？' + '\n';
+				msg += '（全てのタブの変更がリセットされます）';
 			return window.confirm(msg);
 		}
 		resetTab.appendChild(resetBtn);
 
 		// 「デフォルトに戻す」タブ
 		var defaultTab = getTab();
-		var defaultBtn = getBtn('submit', 'submit_default', _EDIT_CONF_USER_MSGS.default_btn);
+		var defaultBtn = getBtn('submit', 'submit_default', 'デフォルトに戻す');
 		defaultBtn.onclick = function() {
-			var msg = _EDIT_CONF_USER_MSGS.default_msg;
+			var msg = 'ユーザ設定をデフォルトに戻してもよろしいですか？' + '\n';
+				msg += '（やり直しはできません）';
 			return window.confirm(msg);
 		}
 		defaultTab.appendChild(defaultBtn);
@@ -150,3 +152,4 @@ var _edit_conf_user_js_onload = function() {
  * End:
  */
 /* vim: set syn=javascript fenc=cp932 ai noet ts=4 sw=4 sts=4 fdm=marker: */
+
