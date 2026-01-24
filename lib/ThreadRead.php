@@ -543,6 +543,9 @@ class ThreadRead extends Thread {
             } elseif ($code == '404' && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)) {
                 $uri = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
                 return $this->_downloadDat2chKako ($uri, ".dat");
+            } elseif ($code == '301' && ($location = $response->getHeader('Location')) && strpos($location, 'kako.5ch.net') !== false) {
+                $this->host = 'kako.5ch.net';
+                return $this->_downloadDat2chNotFound ($code);
             } else {
                 return $this->_downloadDat2chNotFound ($code);
             }
