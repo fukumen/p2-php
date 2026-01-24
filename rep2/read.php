@@ -486,6 +486,9 @@ function detectThread()
     global $_conf, $host, $bbs, $key, $ls;
 
     list($nama_url, $host, $bbs, $key, $ls) = P2Util::detectThread();
+    if (($_conf['2ch_to_5ch'])) {
+        $host = preg_replace('/\.2ch\.net$/', '.5ch.net', $host);
+    }
 
     if (!($host && $bbs && $key)) {
         if ($nama_url) {

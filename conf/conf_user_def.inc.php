@@ -613,6 +613,10 @@ $conf_user_sel['disp_ronin_expiration'] = array(
     '3' => 'しない'
 );
 
+// read.phpで2ch.netへのアクセスを5ch.netへ置き換える
+$conf_user_def['2ch_to_5ch'] = 1;  // (1)
+$conf_user_rad['2ch_to_5ch'] = array('1' => 'する', '0' => 'しない');
+
 // }}}
 // {{{ 拡張パックとiPhone
 

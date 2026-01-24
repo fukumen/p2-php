@@ -541,11 +541,19 @@ class ThreadRead extends Thread {
                 $this->modified = null;
                 return $this->_downloadDat2ch (0); // あぼーん検出。全部取り直し。
             } elseif ($code == '404' && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)) {
-                $uri = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
-                return $this->_downloadDat2chKako ($uri, ".dat");
+                if ($this->host == 'kako.5ch.net') {
+                    return $this->_downloadDat5chKako ();
+                } else {
+                    $uri = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
+                    return $this->_downloadDat2chKako ($uri, ".dat");
+                }
             } elseif ($code == '301' && ($location = $response->getHeader('Location')) && strpos($location, 'kako.5ch.net') !== false) {
-                $this->host = 'kako.5ch.net';
-                return $this->_downloadDat2chNotFound ($code);
+                return $this->_downloadDat5chKako ();
+            } elseif ($code == '522') {
+                $serverName = $response->getHeader('Server');
+                $msg = ($serverName ? "<br>".$serverName."からみて".$this->host."が応答しません" : "");
+                $this->getdat_error_msg_ht .= "<p>コネクションタイムアウト".$msg."</p>";
+                $this->diedat = true;
             } else {
                 return $this->_downloadDat2chNotFound ($code);
             }
@@ -614,6 +622,58 @@ class ThreadRead extends Thread {
                 return $this->_downloadDat2chNotFound($code);
             } else {
                 return $this->_downloadDat2chKakoNotFound ($uri, $ext);
+            }
+        } catch (Exception $e) {
+            $this->getdat_error_msg_ht .= "<p>サーバ接続エラー: " . $e->getMessage ();
+            $this->getdat_error_msg_ht .= "<br>rep2 error: 板サーバへの接続に失敗しました。</p>";
+            $this->diedat = true;
+            return false;
+        }
+    }
+
+    // }}}
+    // {{{ _downloadDat5chKako()
+
+    /**
+     * 5chの過去ログ倉庫からhtmlを取得しdatに変換する
+     */
+    protected function _downloadDat5chKako() {
+        global $_conf;
+
+        $this->host = 'kako.5ch.net';
+        $url = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
+
+        try {
+            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);
+            // ヘッダ
+            // $req->setHeader ('User-Agent', P2Commun::getP2UA(false,P2HostMgr::isHost2chs($this->host))); // ここは、"Monazilla/" をつけるとNG
+            // read.cgiにrep2のUAでアクセスすると弾かれるサイトがあるので対処
+            $req->setHeader ('User-Agent', $_SERVER['HTTP_USER_AGENT']);
+
+            // Requestの送信
+            $response = P2Commun::getHTTPResponse($req);
+
+            $code = $response->getStatus ();
+
+            if ($code == '200' || $code == '206') { // Partial Content
+                $body = $response->getBody ();
+
+                $this->modified = $response->getHeader ('Last-Modified');
+
+                include P2_LIB_DIR . '/html2dat_kako5ch.inc.php';
+                if (($this->onbytes = html2dat_kako5ch($body, $this->keydat)) == 0) {
+                    p2die ('cannot write file. _downloadDat5chKako()');
+                }
+                
+
+                // 過去ログ扱いフラグを立てる (idxline[12]に保存される)
+                $this->datochiok = true;
+
+                return true;
+            } elseif ($code == '304') {
+                return '304 Not Modified';
+            } else {
+                return $this->_downloadDat2chNotFound ($code);
             }
         } catch (Exception $e) {
             $this->getdat_error_msg_ht .= "<p>サーバ接続エラー: " . $e->getMessage ();
