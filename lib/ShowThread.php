@@ -1119,7 +1119,7 @@ abstract class ShowThread
      */
     public function transLinkDo(array $s)
     {
-        if (array_key_exists('url', $_GET) && $s['url']) {
+        if (array_key_exists('url', $_GET) && !empty($s['url'])) {
             // sha1で囲んだ方が多少速くなるが低確率で衝突する
             $key = sha1(serialize($s));
             // キャッシュしてない場合
