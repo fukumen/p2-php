@@ -24,41 +24,6 @@
       "url": "https://github.com/pear/Benchmark.git"
     },
     {
-      "type": "package",
-      "package": {
-        "name": "pear/net_url",
-        "version": "1.0.5",
-        "type": "library",
-        "source": {
-          "type": "git",
-          "url": "https://github.com/pear/Net_URL.git",
-          "reference": "tags/RELEASE_1_0_5"
-        },
-        "target-dir": "Net",
-        "autoload": {
-          "classmap": ["Net/"]
-        },
-        "include-path": ["/"]
-      }
-    },
-    {
-      "type": "package",
-      "package": {
-        "name": "pear/net_useragent_mobile",
-        "version": "1.0.0",
-        "type": "library",
-        "source": {
-          "type": "git",
-          "url": "https://github.com/pear/Net_UserAgent_Mobile.git",
-          "reference": "tags/RELEASE_1_0_0"
-        },
-        "autoload": {
-          "classmap": ["Net/"]
-        },
-        "include-path": ["/"]
-      }
-    },
-    {
       "type": "git",
       "url": "https://github.com/pear/Var_Dump.git"
     },
@@ -87,9 +52,8 @@
     "pear/cache_lite": "1.*",
     "pear/http_request2": "^2.7",
     "pear/net_socket": "1.2.*",
-    "pear/net_url": "1.0.*",
     "pear/net_url2": "2.2.*",
-    "pear/net_useragent_mobile": "1.0.*",
+    "nanasess/net_useragent_mobile": "1.0.*",
     "pear/pager": "2.5.*",
     "pear/validate": "0.8.*",
     "pear/var_dump": "dev-trunk",
