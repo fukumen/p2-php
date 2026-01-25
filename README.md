@@ -1,10 +1,11 @@
-﻿# rep2 expack 全部入り for PHP 8.x by （´・ω・） ｽ
+﻿# rep2 expack 全部入り for fukumen
 
 * rep2-expack https://github.com/rsky/p2-php
 * rep2-expack +live https://github.com/pluslive/p2-php
 * rep2-expack test https://github.com/orzisun/p2-php
 * rep2-expack https://github.com/open774/p2-php
 * rep2-expack https://github.com/junk2ool/p2-php
+* rep2-expack https://github.com/mikoim/p2-php
 
 上記やスレに上げられた修正を取り込んで全部入りを目指す闇鍋バージョンです。
 
@@ -19,19 +20,12 @@
 
 各機能の説明はdocディレクトリのREADMEファイルを見てください。
 
-* cronとかで最近読んだスレなどのdatをDL出来るスクリプト追加
-```shell
-php scripts/fetch-dat.php --mode モードを一つ指定(fav recent res_hist)
-```
-* 名無しが節穴になる板に名無しで書き込むときに警告を出す機能を追加
-* NGあぼーんの対象になったレスのIDを自動的にNGあぼーんする機能を追加
-* 「設定管理」からキャッシュ・履歴の消去できる機能を追加
-* 本家からbeのログイン部分を移植してBE2.0に対応
-* rep2に登録された外部板のリンクををrep2で開けるようにした（Janeと同じ動作）
-* 0ちゃんねるスクリプトを使用した外部板の過去ログDATを取り込み対応
-* SOCKS5プロクシ経由の接続に対応(人柱)
-* tor内の掲示板(.onionドメイン)をtor経由で閲覧する機能を追加(人柱)
-* curl を用いた並列ダウンロード機能を追加(人柱機能)
+* PHP8系で起きていた文字化け対策(スレの情報を元にいい加減なパッチ当て)
+* proxy無しで5chへアクセス出来るよう対応(不足有り)
+* 5chの/板名/oyster/スレッドキー上位4桁の数字/スレッドキー.datの形式の過去ログに対応
+* 5chの過去ログ倉庫(kako.5ch.net)のスクレイピングに対応
+
+なお、5ch以外やpinkでは全くテストしていません。
 
 ## セットアップ
 
@@ -40,16 +34,14 @@ php scripts/fetch-dat.php --mode モードを一つ指定(fav recent res_hist)
 1. 本体をclone
 
 ```shell
-git clone git://github.com/open774/p2-php.git
+git clone https://github.com/fukumen/p2-php.git
 cd p2-php
 ```
 
 2. 依存ライブラリをダウンロード
 
-⚠️ **PEARサポートが廃止されたComposer 2.xでは動作しません** ⚠️
-
 ```shell
-curl -O https://getcomposer.org/download/1.10.25/composer.phar
+curl -O https://getcomposer.org/composer.phar
 chmod +x composer.phar
 ./composer.phar install
 ```
@@ -64,9 +56,7 @@ chmod 0777 data/* rep2/ic
 
 ## 動作環境
 
-Linux(openSUSE Leap)のPHP7+Apacheで動作確認しています。
-PHP5.6以降で動くはずですが、PHP7.*推奨です。
-PHP7での不具合修正を優先するため突然PHP5.xのサポートが終わる可能性があります。
+PHP8.2が必要です。PHP8.2未満で動かす場合は[この]((https://github.com/fukumen/p2-php/commit/a84eeeba56d6c7374ebccb7e139d2f5e9eef330f))変更を戻してください。
 
 以下のコマンドを実行して、全ての項目で `OK` が出たなら大丈夫です。
 
