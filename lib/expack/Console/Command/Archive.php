@@ -34,7 +34,7 @@ class Archive extends Command
      * (non-PHPdoc)
      * @see Symfony\Component\Console\Command\Command::execute()
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $verbose = (bool)$input->getOption('verbose');
 

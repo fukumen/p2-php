@@ -33,7 +33,7 @@
     }
   ],
   "require": {
-    "php": ">7",
+    "php": ">8.2",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-json": "*",
@@ -62,8 +62,7 @@
     "pear/file": "dev-master",
     "pear/html_template_flexy": "dev-master",
     "roojs/pdo_dataobject": "dev-master",
-    "symfony/console": "5.1.*",
-    "symfony/yaml": "5.1.*"
+    "symfony/console": "7.4.*"
   },
   "suggest": {
     "ext-exif": "Needed to show Exif in IC2",
@@ -74,5 +73,8 @@
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"
+  },
+  "autoload": {
+    "exclude-from-classmap": ["vendor/pear/var_dump/docs/"]
   }
 }

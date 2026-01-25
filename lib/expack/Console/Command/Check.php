@@ -22,7 +22,7 @@ class Check extends Command
      * (non-PHPdoc)
      * @see Symfony\Component\Console\Command\Command::execute()
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         include \P2_CONFIG_DIR . '/setup_info.php';
 

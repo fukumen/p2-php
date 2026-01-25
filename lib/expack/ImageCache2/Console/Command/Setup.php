@@ -84,7 +84,7 @@ class Setup extends sfConsoleCommand
      * (non-PHPdoc)
      * @see Symfony\Component\Console\Command\Command::execute()
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->config = ic2_loadconfig();
         $this->dryRun = (bool)$input->getOption('check-only');
