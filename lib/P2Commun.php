@@ -49,13 +49,6 @@ class P2Commun
         // 外部との通信は全てcURLを使う（socketはopenSSL絡みで地雷踏むので絶対使用禁止！）
         $req->setAdapter('curl');
 
-        // HTTP_Request2のcURLアダプタがTransfer-Encoding: chunkedを付与したときにHTTP_Request2自身もContent-Lengthを付与してしまい、
-        // Transfer-Encoding: chunkedとContent-Lengthの両方が生成されてしまうと5chのnginxが400 Bad Requestを返してくる
-        // Digest認証を設定することで、HTTP_Request2はボディをメモリに読み込み、CURLOPT_POSTFIELDSを使用するようになる
-        if ($method === HTTP_Request2::METHOD_POST) {
-            $req->setAuth('dummy', 'dummy', HTTP_Request2::AUTH_DIGEST);
-        }
-
         // SSLの設定
         if($purl['scheme'] == 'https') {
             if($_conf['ssl_capath'])
