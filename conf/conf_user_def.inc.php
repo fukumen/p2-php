@@ -617,6 +617,13 @@ $conf_user_sel['disp_ronin_expiration'] = array(
 $conf_user_def['2ch_to_5ch'] = 1;  // (1)
 $conf_user_rad['2ch_to_5ch'] = array('1' => 'する', '0' => 'しない');
 
+// BBSへHTTP接続する際のPOSTメソッド
+$conf_user_def['http_post_method'] = 1;  // (1)
+$conf_user_rad['http_post_method'] = array(
+    '0' => 'HTTP_Request2',
+    '1' => 'HTTP_Request2コンパチ'
+);
+
 // }}}
 // {{{ 拡張パックとiPhone
 
