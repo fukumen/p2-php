@@ -231,14 +231,29 @@ class Session
      */
     private function _checkIP()
     {
-        $check_level = 1; // 0～4 docomoを考慮すると、1まで
+        //$check_level = 1; // 0～4 docomoを考慮すると、1まで
+        $check_level = 4; // 今となってはグローバルIPで運用するのは想定外ため、4に変更
 
-        $ses_ips = explode('.', $_SESSION[$this->sess_array]['ip']);
-        $now_ips = explode('.', $_SERVER['REMOTE_ADDR']);
+        $ses_ip = $_SESSION[$this->sess_array]['ip'];
+        $now_ip = $_SERVER['REMOTE_ADDR'];
 
-        for ($i = 0; $i++; $i < $check_level) {
-            if ($ses_ips[$i] != $now_ips[$i]) {
-                return false;
+        $is_v6_ses = (strpos($ses_ip, ':') !== false);
+        $is_v6_now = (strpos($now_ip, ':') !== false);
+
+        if ($is_v6_ses !== $is_v6_now) {
+            return false;
+        }
+
+        if ($is_v6_now) {
+            return $ses_ip === $now_ip;
+        } else {
+            $ses_ips = explode('.', $ses_ip);
+            $now_ips = explode('.', $now_ip);
+
+            for ($i = 0; $i < $check_level; $i++) {
+                if ($ses_ips[$i] != $now_ips[$i]) {
+                    return false;
+                }
             }
         }
         return true;
