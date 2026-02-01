@@ -131,7 +131,7 @@ function DPSetName()
 		}
 	} else {
 		var tp = formval.indexOf('#');
-		if (tp != -1) {
+		if (tp != -1 && tp != formval.length - 1) {
 			newname = formval.substr(0, tp);
 			DPSetTrip(formval.substr(tp + 1));
 		} else {
