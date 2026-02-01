@@ -32,7 +32,6 @@ class P2Commun
         }
 
         if ($method === HTTP_Request2::METHOD_POST && $_conf['http_post_method'] == 1) {
-            require_once P2_LIB_DIR . '/P2CurlRequest.php';
             $req = new P2CurlRequest($url, $method);
         } else {
             $req = new HTTP_Request2($url, $method);
