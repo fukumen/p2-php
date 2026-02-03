@@ -15,6 +15,8 @@ class Login
     public $user;   // ユーザ名（内部的なもの）
     public $user_u; // ユーザ名（ユーザと直接触れる部分）
     public $pass_x; // 暗号化されたパスワード
+    private $hash;
+    private $encryptor;
 
     // }}}
     // {{{ constructor
@@ -24,6 +26,8 @@ class Login
      */
     public function __construct()
     {
+        $this->hash = P2Hash::getInstance();
+        $this->encryptor = P2Encryptor::getInstance();
         $login_user = $this->setdownLoginUser();
 
         // ユーザ名が指定されていなければ
@@ -155,7 +159,7 @@ class Login
 
             // ユーザ名とパスXを更新
             $_SESSION['login_user']   = $this->user_u;
-            $_SESSION['login_pass_x'] = $this->pass_x;
+            $_SESSION['login_pass_x'] = P2Hash::hash($this->pass_x);
             if (!array_key_exists('login_microtime', $_SESSION)) {
                 $_SESSION['login_microtime'] = microtime();
             }
@@ -290,7 +294,7 @@ class Login
             }
 
             if ($this->user_u == $_SESSION['login_user']) {
-                if ($_SESSION['login_pass_x'] != $this->pass_x) {
+                if ($_SESSION['login_pass_x'] != P2Hash::hash($this->pass_x)) {
                     Session::unSession();
                     return false;
 
@@ -309,7 +313,7 @@ class Login
         if (!empty($_POST['submit_member'])) {
 
             // フォームログイン成功なら
-            if ($_POST['form_login_id'] == $this->user_u and sha1($_POST['form_login_pass']) == $this->pass_x) {
+            if ($_POST['form_login_id'] == $this->user_u and $this->_passwordVerify($_POST['form_login_pass'])) {
 
                 // 古いクッキーをクリアしておく
                 $this->clearCookieAuth();
@@ -339,7 +343,36 @@ class Login
     }
 
     // }}}
-    // {{{ logLoginSuccess()
+    // {{{ _passwordVerify()
+    
+    /**
+     * パスワード確認
+     *
+     * @return bool
+     */
+    private function _passwordVerify($pass)
+    {
+        // password_verify移行済み
+        if (str_starts_with($this->pass_x, '$')) {
+            if ($this->hash->password_verify($pass, $this->pass_x)) {
+                if ($this->hash->password_needs_rehash($this->pass_x)) {
+                    // パスワードのハッシュを再作成
+                    $this->updateAuthUser($this->user_u, $pass);
+                }
+                return true;
+            }
+        // まだsha1
+        } else {
+            if (sha1($pass) == $this->pass_x) {
+                // パスワードのハッシュを再作成
+                $this->updateAuthUser($this->user_u, $pass);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // }}}// {{{ logLoginSuccess()
 
     /**
      * ログインログを記録する
@@ -414,17 +447,21 @@ EOP;
     }
 
     // }}}
-    // {{{ makeUser()
+    // {{{ updateAuthUser()
 
     /**
-     * 新規ユーザを作成する
+     * ユーザ情報を更新する
+     *
+     * @param string $user_u ユーザ名
+     * @param string $pass   平文パスワード
+     * @return bool
      */
-    public function makeUser($user_u, $pass)
+    public function updateAuthUser($user_u, $pass)
     {
         global $_conf;
 
         $login_user = strval($user_u);
-        $hashed_login_pass = sha1($pass);
+        $hashed_login_pass = $this->hash->password_hash($pass);
         $login_user_repr = var_export($login_user, true);
         $login_pass_repr = var_export($hashed_login_pass, true);
         $auth_user_cont = <<<EOP
@@ -432,8 +469,42 @@ EOP;
 \$rec_login_user_u = {$login_user_repr};
 \$rec_login_pass_x = {$login_pass_repr};\n
 EOP;
-        if (FileCtl::file_write_contents($_conf['auth_user_file'], $auth_user_cont) === false) {
-            p2die("{$_conf['auth_user_file']} を保存できませんでした。認証{$p_str['user']}登録失敗。");
+
+        $temp_file = $_conf['auth_user_file'] . '.tmp';
+        if (FileCtl::file_write_contents($temp_file, $auth_user_cont) === false) {
+            return false;
+        }
+        @chmod($temp_file, 0600);
+
+        if (!rename($temp_file, $_conf['auth_user_file'])) {
+            @unlink($temp_file);
+            return false;
+        }
+
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($_conf['auth_user_file'], true);
+        }
+        $this->user_u = $user_u;
+        $this->pass_x = $hashed_login_pass;
+        return true;
+    }
+
+    // }}}
+    // {{{ makeUser()
+
+    /**
+     * 新規ユーザを作成する
+     *
+     * @param string $user_u ユーザ名
+     * @param string $pass   平文パスワード
+     * @return bool
+     */
+    public function makeUser($user_u, $pass)
+    {
+        global $_conf;
+
+        if (!$this->updateAuthUser($user_u, $pass)) {
+            p2die("{$_conf['auth_user_file']} を保存できませんでした。認証ユーザ登録失敗。");
         }
 
         return true;
@@ -515,12 +586,12 @@ EOP;
         }
 
         $user_time  = $user_u . ':' . time() . ':';
-        $md5_utpx = md5($user_time . $pass_x);
-        $cid_src  = $user_time . $md5_utpx;
+        $hash_utpx = P2Hash::hash($user_time . $pass_x);
+        $cid_src  = $user_time . $hash_utpx;
         if (isset($_SESSION['device_pixel_ratio'])) {
             $cid_src .= ':' . $_SESSION['device_pixel_ratio'];
         }
-        return MD5Crypt::encrypt($cid_src, self::getMd5CryptPassForCid());
+        return $this->encryptor->encrypt($cid_src);
     }
 
     // }}}
@@ -535,7 +606,10 @@ EOP;
     {
         global $_conf;
 
-        $dec = MD5Crypt::decrypt($cid, self::getMd5CryptPassForCid());
+        $dec = $this->encryptor->decrypt($cid);
+        if (!$dec) {
+            return false;
+        }
 
         $cid_info = explode(':', $dec);
         switch (count($cid_info)) {
@@ -553,8 +627,8 @@ EOP;
                 return false;
         }
 
-        list($user, $time, $md5_utpx) = $cid_info;
-        if (!strlen($user) || !$time || !$md5_utpx) {
+        list($user, $time, $hash_utpx) = $cid_info;
+        if (!strlen($user) || !$time || !$hash_utpx) {
             return false;
         }
 
@@ -607,36 +681,11 @@ EOP;
         $pw_enc = $ar[2];
 
         // PWを照合
-        if ($pw_enc == md5($this->user_u . ':' . $time . ':' . $this->pass_x)) {
+        if ($pw_enc == P2Hash::hash($this->user_u . ':' . $time . ':' . $this->pass_x)) {
             return true;
         } else {
             return false;
         }
-    }
-
-    // }}}
-    // {{{ getMd5CryptPassForCid()
-
-    /**
-     * MD5Crypt::encrypt, MD5Crypt::decrypt のための password(salt) を得る
-     * （クッキーのcidの生成に利用している）
-     *
-     * @param   void
-     * @access  private
-     * @return  string
-     */
-    static private function getMd5CryptPassForCid()
-    {
-        static $pass = null;
-
-        if ($pass !== null) {
-            return $pass;
-        }
-
-        $seed = $_SERVER['SERVER_SOFTWARE'];
-        $pass = md5($seed, true);
-
-        return $pass;
     }
 
     // }}}

@@ -164,14 +164,11 @@ EOP;
             $body_ht .= "<p class=\"info-msg\">○ 認証{$p_str['user']}「{$hd['form_login_id']}」を登録しました</p>";
             $body_ht .= "<p><a href=\"{$myname}?form_login_id={$hd['form_login_id']}{$_conf['k_at_a']}\">rep2 start</a></p>";
 
-            $_login->setUser($_POST['form_login_id']);
-            $_login->pass_x = sha1($_POST['form_login_pass']);
-
             // セッションが利用されているなら、セッションを更新
             if (isset($_p2session)) {
                 // ユーザ名とパスXを更新
                 $_SESSION['login_user'] = $_login->user_u;
-                $_SESSION['login_pass_x'] = $_login->pass_x;
+                $_SESSION['login_pass_x'] = P2Hash::hash($_login->pass_x);
             }
 
             // 要求があれば、補助認証を登録

@@ -56,23 +56,9 @@ if (isset($_POST['form_new_login_pass'])) {
 
     // パスワード変更登録処理を行う
     } else {
-        $login_user = strval($_login->user_u);
-        $hashed_login_pass = sha1($new_login_pass);
-        $login_user_repr = var_export($login_user, true);
-        $login_pass_repr = var_export($hashed_login_pass, true);
-        $auth_user_cont = <<<EOP
-<?php
-\$rec_login_user_u = {$login_user_repr};
-\$rec_login_pass_x = {$login_pass_repr};\n
-EOP;
-        $fp = @fopen($_conf['auth_user_file'], 'wb');
-        if (!$fp) {
+        if (!$_login->updateAuthUser($_login->user_u, $new_login_pass)) {
             p2die("{$_conf['auth_user_file']} を保存できませんでした。認証ユーザ登録失敗。");
         }
-        flock($fp, LOCK_EX);
-        fputs($fp, $auth_user_cont);
-        flock($fp, LOCK_UN);
-        fclose($fp);
 
         P2Util::pushInfoHtml('<p>○認証パスワードを変更登録しました</p>');
     }

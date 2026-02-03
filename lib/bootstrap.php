@@ -30,8 +30,15 @@ p2_rewrite_vars_for_proxy();
 
 // ユーザー設定があれば読み込む
 if (file_exists($_conf['conf_user_file'])) {
+    $is_encrypted = false;
     if ($cont = file_get_contents($_conf['conf_user_file'])) {
-        $conf_user = unserialize($cont);
+        $decrypted = P2Encryptor::getInstance()->decrypt($cont);
+        if ($decrypted !== null) {
+            $conf_user = unserialize($decrypted);
+            $is_encrypted = true;
+        } else {
+            $conf_user = @unserialize($cont);
+        }
     } else {
         $conf_user = null;
     }
@@ -58,7 +65,7 @@ if (file_exists($_conf['conf_user_file'])) {
         $config_version = '000000.0000';
     }
 
-    if ($config_version !== $_conf['p2version'] && !defined('P2_CLI_RUN')) {
+    if (($config_version !== $_conf['p2version'] || !$is_encrypted) && !defined('P2_CLI_RUN')) {
         // デフォルト設定を読み込み、ユーザー設定とともにマージ
         include P2_CONFIG_DIR . '/conf_user_def.inc.php';
         $_conf = array_merge($_conf, $conf_user_def, $conf_user);
@@ -97,6 +104,10 @@ if ($save_conf_user) {
     }
 
     $cont = serialize($conf_save);
+    $encrypted = P2Encryptor::getInstance()->encrypt($cont);
+    if ($encrypted !== null) {
+        $cont = $encrypted;
+    }
     if (FileCtl::file_write_contents($_conf['conf_user_file'], $cont) === false) {
         $dispname = '$_conf[\'pref_dir\']/' . basename($_conf['conf_user_file']);
         p2die("ユーザー設定ファイル {$dispname} に書き込めませんでした。");

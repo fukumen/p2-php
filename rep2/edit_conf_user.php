@@ -60,7 +60,12 @@ if (!empty($_POST['submit_save'])) {
 
     // シリアライズして保存
     FileCtl::make_datafile($_conf['conf_user_file']);
-    if (FileCtl::file_write_contents($_conf['conf_user_file'], serialize($conf_save)) === false) {
+    $cont = serialize($conf_save);
+    $encrypted = P2Encryptor::getInstance()->encrypt($cont);
+    if ($encrypted !== null) {
+        $cont = $encrypted;
+    }
+    if (FileCtl::file_write_contents($_conf['conf_user_file'], $cont) === false) {
         P2Util::pushInfoHtml('<p>×設定を更新保存できませんでした</p>');
     } else {
         P2Util::pushInfoHtml('<p>○設定を更新保存しました</p>');
@@ -439,14 +444,14 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('proxy_host', 'プロキシホスト ex)&quot;127.0.0.1&quot;, &quot;p2proxy.example&quot;'),
         array('proxy_port', 'プロキシポート ex)&quot;8080&quot;'),
         array('proxy_user', 'プロキシユーザー名 (使用する場合のみ)'),
-        array('proxy_password', 'プロキシパスワード (使用する場合のみ)'),
+        array('proxy_password', 'プロキシパスワード (使用する場合のみ)', P2_EDIT_CONF_USER_PASSWORD),
         array('proxy_mode', 'プロキシの種類(人柱)'),
         'Tor 掲示板(人柱)',
         array('tor_use', 'Tor 掲示板(.onion ドメイン)のアクセスに Tor を使用'),
         array('tor_proxy_host', 'Tor プロキシホスト ex)&quot;127.0.0.1&quot;, &quot;p2proxy.example&quot;'),
         array('tor_proxy_port', 'Tor プロキシポート ex)&quot;8080&quot;'),
         array('tor_proxy_user', 'Tor プロキシユーザー名 (使用する場合のみ)'),
-        array('tor_proxy_password', 'Tor プロキシパスワード (使用する場合のみ)'),
+        array('tor_proxy_password', 'Tor プロキシパスワード (使用する場合のみ)', P2_EDIT_CONF_USER_PASSWORD),
         array('tor_proxy_mode', 'Tor プロキシの種類'),
         'SSL通信設定',
         array('ssl_capath', 'SSL通信で接続先を検証するための証明書があるディレクトリ ex)&quot;/etc/ssl/certs&quot;<br>設定なして動く場合は設定不要'),
@@ -1723,9 +1728,17 @@ function getEditConfHtml($name, $description_ht, $flags)
         } else {
             $input_size_at = '';
         }
-        $input_type = ($flags & P2_EDIT_CONF_USER_PASSWORD) ? 'password' : 'text';
+
+        if ($flags & P2_EDIT_CONF_USER_PASSWORD) {
+            $input_type = 'text';
+            $style_attr = ' style="-webkit-text-security: disc;"';
+        } else {
+            $input_type = 'text';
+            $style_attr = '';
+        }
+
         $form_ht = <<<EOP
-<input type="{$input_type}" name="conf_edit[{$name}]" value="{$name_view}"{$input_size_at}>
+<input type="{$input_type}" name="conf_edit[{$name}]" value="{$name_view}"{$input_size_at}{$style_attr}>
 EOP;
         if (is_string($conf_user_def[$name])) {
             $def_views[$name] = p2h($conf_user_def[$name]);

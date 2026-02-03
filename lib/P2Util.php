@@ -1073,7 +1073,7 @@ EOP;
             $key .= $_SESSION['login_microtime'];
         }
 
-        return UrlSafeBase64::encode(sha1($key, true));
+        return UrlSafeBase64::encode(P2Hash::hash($key, true));
     }
 
     // }}}
