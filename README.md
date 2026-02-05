@@ -1,4 +1,4 @@
-﻿# rep2 expack 全部入り for fukumen
+﻿# rep2 expack 全部入り for PHP 8.x by fukumen
 
 * rep2-expack https://github.com/rsky/p2-php
 * rep2-expack +live https://github.com/pluslive/p2-php
