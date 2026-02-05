@@ -103,6 +103,13 @@ if (isset($_POST['sync'])) {
         case 'cookie':
             // cookie
             $delflag = CookieDataStore::clear() === false ? false : true;
+            if ($_conf['donguri_use']) {
+                require_once P2_LIB_DIR . '/donguri.inc.php';
+                Donguri::check_base();
+                if (!$_conf['iphone'] && !$_conf['ktai']) {
+                    P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>');
+                }
+            }
             break;
         case 'matome':
             // êVíÖÇ‹Ç∆Çﬂì«Ç›

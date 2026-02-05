@@ -62,6 +62,14 @@ if (isset($_POST['word'])) {
     <script type="text/javascript" src="js/iphone.js?<?php echo $_conf['p2_version_id']; ?>"></script>
     <script type="text/javascript" src="js/menu_i.js?<?php echo $_conf['p2_version_id']; ?>"></script>
 <?php
+    if ($_conf['donguri_use']) {
+    echo <<<EOP
+    <script type="text/javascript" src="js/basic.js?{$_conf['p2_version_id']}"></script>
+    <script type="text/javascript" src="js/donguri.js?{$_conf['p2_version_id']}"></script>\n
+EOP;
+    }
+?>
+<?php
 // {{{ 指定サブメニューへ自動で移動
 // $hashesの取得が未実装なので封印。
 /*
@@ -320,6 +328,17 @@ EOP;
 }
 ?></pre>
 <?php } ?>
+<?php
+if ($_conf['donguri_use']) {
+    require_once P2_LIB_DIR . '/donguri.inc.php';
+    $donguri = Donguri::get_status_text();
+    echo <<<EOP
+<h2>どんぐり</h2>
+    <p><span id="donguri_content">{$donguri}</span></p>
+EOP;
+    Donguri::check_status();
+}
+?>
 </div>
 
 <?php

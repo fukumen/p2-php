@@ -262,7 +262,8 @@ function p2_init()
         'auth_user_file'    => 'p2_auth_user.php',      // 認証ユーザ設定ファイル(データPHP)
         'login_log_file'    => 'p2_login.log.php',      // ログイン履歴 (データPHP)
         'login_failed_log_file' => 'p2_login_failed.dat.php',   // ログイン失敗履歴 (データPHP)
-        'sid2chapi_php'        => 'p2_sid2chapi.php',         // 2ch APIセッションID記録ファイル (データPHP)
+        'sid2chapi_php'     => 'p2_sid2chapi.php',      // 2ch APIセッションID記録ファイル (データPHP)
+        'donguri_cache'     => 'p2_donguri.cache',      // どんぐり基地の情報キャッシュ(シリアライズドデータ)
     );
     foreach ($preferences as $k => $v) {
         $_conf[$k] = $_conf['pref_dir'] . '/' . $v;

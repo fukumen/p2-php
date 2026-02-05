@@ -267,6 +267,24 @@ if ($_conf['proxy_host']) {
 // cookie ï€ë∂
 if ($p2cookies) {
     CookieDataStore::set($cookie_key, $p2cookies);
+
+    if ($_conf['donguri_use']) {
+        require_once P2_LIB_DIR . '/donguri.inc.php';
+        Donguri::check_base();
+        if (!$_conf['iphone'] && !$_conf['ktai']) {
+        echo <<<EOJS
+<script type="text/javascript">
+//<![CDATA[
+if (opener && opener.top && opener.top.menu) {
+    opener.top.menu.location.reload();
+} else if (window.top && window.top.menu) {
+    window.top.menu.location.reload();
+}
+//]]>
+</script>
+EOJS;
+        }
+    }
 }
 
 // ìäçeé∏îsãLò^ÇçÌèú

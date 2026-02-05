@@ -400,6 +400,26 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 }
 
 // }}}
+// {{{ どんぐり
+
+$groupname = 'donguri';
+$groups[] = $groupname;
+$flags = getGroupShowFlags($groupname);
+if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
+    $keep_old = true;
+} else {
+    $conflist = array(
+        'どんぐりシステムへログインしない場合、自動ログインのどんぐりがないと「どんぐり無し」あると「警備員○」になります',
+        'どんぐりシステムへ登録したGmailのメールアドレスでログインした場合、「警備員●」になります',
+        'UPLIFTのどんぐりアカウントは未対応です',
+        array('donguri_use', 'どんぐりを表示する'),
+        array('donguri_user', 'どんぐりシステムのメールアドレス(Gmail)'),
+        array('donguri_password', 'どんぐりシステムのパスワード ', P2_EDIT_CONF_USER_PASSWORD),
+    );
+    printEditConfGroupHtml($groupname, $conflist, $flags);
+}
+
+// }}}
 // {{{ ETC
 
 $groupname = 'ETC';

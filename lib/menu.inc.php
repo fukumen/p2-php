@@ -127,6 +127,11 @@ EOP;
     <script type="text/javascript" src="js/ic2_switch.js?{$_conf['p2_version_id']}"></script>\n
 EOP;
 }
+    if ($_conf['donguri_use']) {
+    echo <<<EOP
+    <script type="text/javascript" src="js/donguri.js?{$_conf['p2_version_id']}"></script>\n
+EOP;
+}
 echo <<<EOP
 </head>
 <body>\n
@@ -400,6 +405,22 @@ if ($_conf['expack.ic2.enabled']) {
     </div>
 </div>
 EOP;
+}
+
+//==============================================================
+// Å°Ç«ÇÒÇÆÇË
+//==============================================================
+if ($_conf['donguri_use']) {
+    require_once P2_LIB_DIR . '/donguri.inc.php';
+    $donguri = Donguri::get_status_text();
+    echo <<<EOP
+<div class="menu_cate"><b class="menu_cate" onclick="showHide('c_donguri');">Ç«ÇÒÇÆÇË</b>
+    <div class="itas" id="c_donguri">
+    Å@<span id="donguri_content">{$donguri}</span>
+    </div>
+</div>
+EOP;
+    Donguri::check_status();
 }
 
 //==============================================================

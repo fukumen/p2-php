@@ -439,6 +439,19 @@ $conf_user_def['2chapi_post'] = 0; // (0)
 $conf_user_rad['2chapi_post'] = array('1' => 'する', '0' => 'しない');
 
 // }}}
+// {{{ どんぐり
+
+// どんぐりを表示する
+$conf_user_def['donguri_use'] = 0;  // (0)
+$conf_user_rad['donguri_use'] = array('1' => 'する', '0' => 'しない');
+
+// どんぐりシステムのメールアドレス(Gmail)
+$conf_user_def['donguri_user'] = ""; // ("")
+
+// どんぐりシステムのパスワード 
+$conf_user_def['donguri_password'] = ""; // ("")
+
+// }}}
 // {{{ ETC
 
 // レス書き込み時のデフォルトの名前
