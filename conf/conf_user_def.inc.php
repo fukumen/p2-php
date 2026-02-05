@@ -416,7 +416,7 @@ $conf_user_sel['2chapi_ua.auth'] = array(
 );
 
 //DATŽæ“¾‚ÅŽg—p‚·‚éUser-Agent
-$conf_user_def['2chapi_ua.read'] = "Mozilla/3.0 (compatible; %s)"; // ("Monazilla/1.3")
+$conf_user_def['2chapi_ua.read'] = "Mozilla/5.0 (compatible; %s)"; // Mozilla/5.0 (compatible; %s)
 $conf_user_sel['2chapi_ua.read'] = array(
     'Monazilla/1.00 (%s)'    => '1 Monazilla/1.00 (AppName)',
     'Mozilla/5.0 (compatible; %s)'   => '2 Mozilla/5.0 (compatible; AppName)',
