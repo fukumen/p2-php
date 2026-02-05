@@ -1,0 +1,20 @@
+{
+	"rep2 Method": {
+		"scope": "php",
+		"prefix": "r2func",
+		"body": [
+			"// {{{ ${1:methodName}()",
+			"",
+			"/**",
+			" * ${2:description}",
+			" */",
+			"function ${1:methodName}()",
+			"{",
+			"\t$0",
+			"}",
+			"",
+			"// }}}"
+		],
+		"description": "rep2 style method definition"
+	}
+}
