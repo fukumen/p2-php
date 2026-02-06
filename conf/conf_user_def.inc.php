@@ -610,11 +610,11 @@ $conf_user_rad['pane_mode'] = array('0' => '•W€i‚ÉŒ`j', '1' => '‰¡ˆê—ñiìŒ`
 $conf_user_def['ssl_capath'] = ""; // ()
 
 // 2ch.net‚Ìsubjec.txt‚ÆSETTING.TXT‚ÌŽæ“¾‚ÉSSL‚ðŽg—p‚·‚é
-$conf_user_def['2ch_ssl.subject'] = 0;  // (0)
+$conf_user_def['2ch_ssl.subject'] = 1;  // (1)
 $conf_user_rad['2ch_ssl.subject'] = array('1' => '‚·‚é', '0' => '‚µ‚È‚¢');
 
 // 2ch.net‚Ì‘‚«ž‚Ý‚ÉSSL‚ðŽg—p‚·‚é
-$conf_user_def['2ch_ssl.post'] = 0;  // (0)
+$conf_user_def['2ch_ssl.post'] = 1;  // (1)
 $conf_user_rad['2ch_ssl.post'] = array('1' => '‚·‚é', '0' => '‚µ‚È‚¢');
 
 // ˜Ql‚Ì—LŒøŠúŒÀ•\Ž¦
