@@ -75,7 +75,7 @@ php scripts/p2cmd.php check
 更新後、初回接続時はセッションとクッキー認証が失敗扱いになりログイン画面が表示されます。ログイン画面からログインした時点で暗号化が強化された状態に更新されます。
 
 また、環境変数SECRET_KEYの設定が必要です。ホストで openssl rand -hex 32 を実行した結果を設定してください。
-どうやるの？という場合は[こちら](doc/README-SECRET_KEY.md.md)を見てください。
+どうやるの？という場合は[こちら](doc/README-SECRET_KEY.md)を見てください。
 
 ## Built-in web serverで使ってみる (PHP 5.4+)
 
