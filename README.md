@@ -77,6 +77,16 @@ php scripts/p2cmd.php check
 また、環境変数SECRET_KEYの設定が必要です。ホストで openssl rand -hex 32 を実行した結果を設定してください。
 どうやるの？という場合は[こちら](doc/README-SECRET_KEY.md)を見てください。
 
+### :warning:proxyについて
+
+rep2側で過去ログ倉庫のスクレイピングも実装済みのため、現時点ではproxyは不要になっているはず。proxy無しの場合の推奨設定は[fukumen/docker-rep2](https://github.com/fukumen/docker-rep2)のREADME.mdを参照してください。
+
+2chproxy.plを使いたい場合、[fukumen/2chproxy.pl](https://github.com/fukumen/2chproxy.pl)を使ってENABLE_ALWAYS_HTTPS_FOR_2CH: 1, KEEP_COOKIE : 0とする必要があります。
+
+proxyを使い場合は、2chproxy.plよりも開発が続いているproxy2chの方が良さそう。
+
+[どんぐり](doc/README-donguri.md)の説明にも少し書きましたが、proxyがクッキーを保持する機能が有効な場合、expireの対応がされていないとどんぐりを複数持ったりおかしなことになりそうなのでproxy側でのクッキー保持はオフが推奨です。
+
 ## Built-in web serverで使ってみる (PHP 5.4+)
 
 PHP 5.4の新機能、[ビルトインウェブサーバー](http://docs.php.net/manual/ja/features.commandline.webserver.php) で簡単に試せます。
