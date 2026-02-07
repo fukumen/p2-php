@@ -224,7 +224,7 @@ if ($ini['Viewer']['cache']) {
 // ページ遷移用フォームを設定
 // ページ遷移はGETで行うが、画像情報の更新はPOSTで行うのでどちらでも受け入れるようにする
 // （レンダリング前に $qf->updateAttributes(array('method' => 'get')); とする）
-$_attribures = array('accept-charset' => 'UTF-8,Shift_JIS');
+$_attribures = array('accept-charset' => 'Shift_JIS');
 $_method = ($_SERVER['REQUEST_METHOD'] == 'GET') ? 'get' : 'post';
 $qf = new HTML_QuickForm('go', $_method, $_SERVER['SCRIPT_NAME'], '_self', $_attribures);
 $qf->registerRule('numberInRange',  null, 'ImageCache2_QuickForm_Rule_NumberInRange');
@@ -829,7 +829,8 @@ if ($all === 0) {
         } else {
             $status['rank_i'] = '';
         }
-        $status['memo'] = $img['memo'];
+        // 数値文字参照(NCR)の&amp;を&に戻す
+        $status['memo'] = preg_replace('/&amp;(#\d+;|#x[0-9a-fA-F]+;)/', '&$1', p2h($img['memo']));
         unset($img['rank'], $img['memo']);
 
         // 表示用変数を設定

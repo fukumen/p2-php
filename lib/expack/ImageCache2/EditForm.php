@@ -20,7 +20,7 @@ class ImageCache2_EditForm
             'id' => 'edit',
             'action' => $_SERVER['SCRIPT_NAME'],
             'method' => 'post',
-            'accept-charset' => $_conf['accept_charset'],
+            'accept-charset' => 'Shift_JIS',
         ));
         if ($mode == 2) {
             $mf_head->setAttributes('onsubmit="return prePost();"');
@@ -324,12 +324,18 @@ class ImageCache2_EditForm
         // メモ内容を変更するテキストエリア
         $mf_memo = new HTML_Template_Flexy_Element('textarea', $mfa_textarea);
         $mf_memo->setValue($status['memo']);
-        $mng['f_memo'] = $mf_memo->toHtml();
+        $html = $mf_memo->toHtml();
+        // 数値文字参照(NCR)の&amp;を&に戻す
+        $replaced = preg_replace('/&amp;(#\d+;|#x[0-9a-fA-F]+;)/', '&$1', $html);
+        $mng['f_memo'] = ($replaced !== null) ? $replaced : $html;
 
         // メモ内容の初期状態を保存する隠し要素
         $mf_hidden_msg = new HTML_Template_Flexy_Element('input', $mfa_hidden_msg);
         $mf_hidden_msg->setValue($status['memo']);
-        $mng['f_hidden_msg'] = $mf_hidden_msg->toHtml();
+        $html = $mf_hidden_msg->toHtml();
+        // 数値文字参照(NCR)の&amp;を&に戻す
+        $replaced = preg_replace('/&amp;(#\d+;|#x[0-9a-fA-F]+;)/', '&$1', $html);
+        $mng['f_hidden_msg'] = ($replaced !== null) ? $replaced : $html;
 
         // 画像を削除するチェックボックス
         $mf_remove = new HTML_Template_Flexy_Element('input', $mfa_remove);

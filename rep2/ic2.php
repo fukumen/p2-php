@@ -188,10 +188,6 @@ $fileurl = null;
 $mtime = -1;
 $retry = false;
 
-if ($memo !== null) {
-    $memo = $search->uniform($memo, 'CP932');
-}
-
 if ($doDL) {
     $result = $search->get($uri);
 } else {
