@@ -113,7 +113,10 @@ class Thumbnailer_Imagick extends Thumbnailer
             $im->setImageColorSpace(Imagick::COLORSPACE_SRGB);
         }
 
-        if ($im->getImageMatte()) {
+        // getImageAlphaChannel‚ÍImagick 3.6.0–¢–‚Í–ß‚è’l‚ªint‚Å3.6.0‚©‚çbool‚É‚È‚Á‚Ä‚¨‚èA‚Ç‚¿‚ç‚à“®ì‚·‚é‚æ‚¤‚ÉsetImageAlphaChannel‚µ‚Ä‚µ‚Ü‚¤‚æ‚¤‚É‚·‚é
+        if (method_exists($im, 'setImageAlphaChannel') && defined('Imagick::ALPHACHANNEL_DEACTIVATE')) {
+            $im->setImageAlphaChannel(Imagick::ALPHACHANNEL_DEACTIVATE);
+        } elseif (method_exists($im, 'getImageMatte') && $im->getImageMatte() && method_exists($im, 'setImageMatte')) {
             $im->setImageMatte(false);
         }
 
