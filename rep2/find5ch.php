@@ -28,7 +28,7 @@ function find5ch_search($query)
     mb_convert_variables('SHIFT-JIS', 'UTF-8', $body);
 
     // FIXME ëΩè≠ÇÃç\ë¢ïœâªÇ…ëœÇ¶ÇÁÇÍÇÈÇÊÇ§Ç»ê≥ãKï\åªÇ÷èCê≥
-    $re = '~<div class="list_line">\n?<a class="list_line_link" href="(?P<thread_url>.+)">\n?<div class="list_line_link_title">(?P<thread_name>.+) \((?<thread_res_count>\d+)\)</div>\n?</a>\n?<div class="list_line_info">\n?<div class="list_line_info_container list_line_info_container-board"><a href="(?P<board_url>.+)">(?<board_name>.+)</a></div>\n?<div class="list_line_info_container">(?<created_at>.+)</div>\n?<div class="list_line_info_container list_line_info_container-danger">(?P<thread_dayres>.+)/ì˙</div>\n?</div>~m';
+    $re = '~<div class="list_line">\n?[^<]*<a class="list_line_link" href="(?P<thread_url>.+)">\n?[^<]*<div class="list_line_link_title">(?P<thread_name>.+) \((?<thread_res_count>\d+)\)</div>\n?[^<]*</a>\n?[^<]*<div class="list_line_info">\n?[^<]*<div class="list_line_info_container list_line_info_container-board"><a href="(?P<board_url>.+)">(?<board_name>.+)</a></div>\n?[^<]*<div class="list_line_info_container">(?<created_at>.+)</div>\n?[^<]*<div class="list_line_info_container list_line_info_container-danger">(?P<thread_dayres>.+)/ì˙</div>\n?[^.]*</div>~m';
     preg_match_all($re, $body, $threads, PREG_SET_ORDER);
 
     mb_convert_variables('UTF-8', 'SHIFT-JIS', $threads);

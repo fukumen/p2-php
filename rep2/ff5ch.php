@@ -26,7 +26,7 @@ function ff5ch_search($query)
     }
 
     // FIXME ëΩè≠ÇÃç\ë¢ïœâªÇ…ëœÇ¶ÇÁÇÍÇÈÇÊÇ§Ç»ê≥ãKï\åªÇ÷èCê≥
-    $re = '/<li.*><a class="thread" href="(?P<thread_url>.+)">(?P<thread_name>.+)<\/a><span\s+?class="count"> \((?<thread_res_count>\d+)\)<\/span><br\/>\s*<a class="board" href="(?P<board_url>.+)">(?<board_name>.+)<\/a>\s*<span class="time">(?<created_at>.+)<\/span>\s*<\/li>/m';
+    $re = '/<a .*class="thread" href="(?P<thread_url>.+)">(?P<thread_name>.+)<\/a><span\s+?class="fnt-small col-sec"> \((?<thread_res_count>\d+)\)<\/span>\r?\n.*\r?\n.*\r?\n\s*<a .*class="col-brd" href="(?P<board_url>.+)">(?<board_name>.+)<\/a>\r?\n\s*<span>(?<created_at>.+)<\/span>/m';
 
     preg_match_all($re, $body, $threads, PREG_SET_ORDER);
 

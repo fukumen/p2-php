@@ -74,7 +74,7 @@ if (isset($_GET['Q']) && is_string($_GET['Q']) && strlen($_GET['Q']) > 0) {
     ini_set('arg_separator.output', '&amp;');
     $cache_options = array(
         'cacheDir' => $_conf['cache_dir'] . DIRECTORY_SEPARATOR . 'tgrep' . DIRECTORY_SEPARATOR,
-        'lifeTime' => 3600,
+        'lifeTime' => 10,
         'fileNameProtection' => false,
         'automaticSerialization' => true,
     );
