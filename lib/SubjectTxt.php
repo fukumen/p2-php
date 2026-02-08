@@ -126,6 +126,12 @@ class SubjectTxt
                 if ($this->storage === 'file') {
                     touch($this->subject_file);
                 }
+            } elseif ($code == 301) {
+                $location = $response->getHeader("location");
+                if ($location && P2Util::isHttpToHttpsUpgrade($this->subject_url, $location)) {
+                    $this->subject_url = $location;
+                    return $this->downloadSubject();
+                }
             } else {
                 $error_msg = $code;
             }

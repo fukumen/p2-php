@@ -135,6 +135,12 @@ class SettingTxt
                 // 同時にキャッシュもtouchしないと、_setting_txtと_setting_srdで更新時間がずれ、
                 // 毎回ここまで処理が来る（サーバへのヘッダリクエストが飛ぶ）場合がある。
                 touch($this->_setting_srd);
+            } elseif ($code == 301) {
+                $location = $response->getHeader("location");
+                if ($location && P2Util::isHttpToHttpsUpgrade($this->_url, $location)) {
+                    $this->_url = $location;
+                    return $this->downloadSettingTxt();
+                }
             } else {
                 $error_msg = $code;
             }

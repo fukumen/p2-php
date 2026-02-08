@@ -1571,6 +1571,13 @@ ERR;
                 $key = $matches[4];
                 $ls = (isset($matches[5]) && strlen($matches[5])) ? $matches[5] : '';
 
+                // open2ch - http://open.open2ch.net/test/read.cgi/onjgame/1770135005/
+            } elseif (preg_match('<^https?://((\\w+)\\.open2ch\\.net)/(?:test|i)/(?:read\\.(?:cgi|html|so)|mread\\.cgi|read)/(\\w+)/(\\d+)(?:/([^/]*))?>x', $nama_url, $matches)) {
+                $host = $matches[1];
+                $bbs = $matches[3];
+                $key = $matches[4];
+                $ls = (isset($matches[5]) && strlen($matches[5])) ? $matches[5] : '';
+
                 // itest - https://itest.5ch.net/hayabusa9/test/read.cgi/mnewsplus/1510531889
             } elseif (preg_match('<^https?://(itest\\.(?:[25]ch\\.net|bbspink\\.com))/(\\w+)/test/read\\.cgi/(\\w+)/(\\d+)(?:/(.+$))?>x', $nama_url, $matches)) {
                 $host = str_replace("itest", $matches[2], $matches[1]);
@@ -2002,6 +2009,37 @@ ERR;
                 return $matches[0];
 		    },
 		    $str);
+    }
+
+    // }}}
+    // {{{ isHttpToHttpsUpgrade()
+
+    /**
+     * httpからhttpsへリダイレクトされたかを確認する
+     *
+     * @access  public
+     * @param   string $url1
+     * @param   string $url2
+     * @return  bool
+     */
+    static public function isHttpToHttpsUpgrade($url1, $url2)
+    {
+        $parts1 = parse_url($url1);
+        $parts2 = parse_url($url2);
+
+        if (!$parts1 || !$parts2) return false;
+
+        $scheme1 = $parts1['scheme'] ?? null;
+        $scheme2 = $parts2['scheme'] ?? null;
+
+        if ($scheme1 !== 'http' || $scheme2 !== 'https') {
+            return false;
+        }
+
+        unset($parts1['scheme']);
+        unset($parts2['scheme']);
+
+        return $parts1 === $parts2;
     }
 
     // }}}

@@ -120,6 +120,12 @@ class LastmodifyTxt
                 if ($this->storage === 'file') {
                     touch($this->lastmodify_file);
                 }
+            } elseif ($code == 301) {
+                $location = $response->getHeader("location");
+                if ($location && P2Util::isHttpToHttpsUpgrade($this->lastmodify_url, $location)) {
+                    $this->lastmodify_url = $location;
+                    return $this->downloadLastmodify();
+                }
             } else {
                 $error_msg = $code;
             }
