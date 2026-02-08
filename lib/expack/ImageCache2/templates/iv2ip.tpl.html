@@ -32,7 +32,7 @@ td.iv2-image-thumb {
 		<tr class="iv2-image" flexy:foreach="items,i,item">
 			<td class="iv2-image-thumb"><a class="limelight" href="{item[src]}" target="_blank"><img src="{item[thumb]}" width="{item[t_width]:h}" height="{item[t_height]:h}"></a></td>
 			<td class="iv2-image-info">
-				<div class="iv2-image-title" onclick="void(0)">{if:item[memo]}{item[memo]}{else:}{item[name]}{end:}</div>
+				<div class="iv2-image-title" onclick="void(0)">{if:item[memo]}{item[memo]:h}{else:}{item[name]}{end:}</div>
 				<input type="button" class="ic2-show-info" value="i" onclick="ic2info.show({item[id]}, event)" />
 				{item[f_change]:h}<span class="iv2-image-size" onclick="iutil.checkPrev(this);">{item[width]:h}&times;{item[height]:h}</span>{item[rank_i]:h}
 			</td>
