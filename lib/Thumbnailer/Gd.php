@@ -129,7 +129,7 @@ class Thumbnailer_Gd extends Thumbnailer
         $bgcolor = $this->getBgColor();
         if (!imageistruecolor($src)) {
             $t_index = imagecolortransparent($src);
-            if ($t_index > -1) {
+            if ($t_index > -1 && $t_index < imagecolorstotal($src)) {
                 $t_colors = @imagecolorsforindex($src, $t_index);
                 if ($t_colors) {
                     $bgcolor[0] = $t_colors['red'];
