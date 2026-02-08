@@ -194,14 +194,12 @@ if (UA::isIPhoneGroup($userAgent)) {
     $_conf['ktai'] = true;
     $_conf['iphone'] = true;
     $_conf['input_type_search'] = true;
-    $_conf['accept_charset'] = 'UTF-8';
 
 // PC“™
 } elseif ($mobile->isNonMobile()) {
     // Safari
     if (UA::isSafariGroup($userAgent)) {
         $_conf['input_type_search'] = true;
-        $_conf['accept_charset'] = 'UTF-8';
 
     // Windows Mobile
     } elseif (UA::isClientOSWindowsCE()) {

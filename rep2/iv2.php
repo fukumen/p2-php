@@ -224,7 +224,7 @@ if ($ini['Viewer']['cache']) {
 // ページ遷移用フォームを設定
 // ページ遷移はGETで行うが、画像情報の更新はPOSTで行うのでどちらでも受け入れるようにする
 // （レンダリング前に $qf->updateAttributes(array('method' => 'get')); とする）
-$_attribures = array('accept-charset' => 'Shift_JIS');
+$_attribures = array('accept-charset' => $_conf['accept_charset']);
 $_method = ($_SERVER['REQUEST_METHOD'] == 'GET') ? 'get' : 'post';
 $qf = new HTML_QuickForm('go', $_method, $_SERVER['SCRIPT_NAME'], '_self', $_attribures);
 $qf->registerRule('numberInRange',  null, 'ImageCache2_QuickForm_Rule_NumberInRange');

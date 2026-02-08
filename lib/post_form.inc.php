@@ -102,17 +102,11 @@ EOP;
 EOP;
 }
 
-if (P2HostMgr::isHost2chs($host) && !P2HostMgr::isHostBbsPink($host)) {
-    $accept_charset = 'Shift_JIS';
-} else {
-    $accept_charset = $_conf['accept_charset'];
-}
-
 // 文字コード判定用文字列を先頭に仕込むことでmb_convert_variables()の自動判定を助ける
 $htm['post_form'] = <<<EOP
 {$htm['disable_js']}
 {$htm['resform_ttitle']}
-<form id="resform" method="POST" action="./post.php" accept-charset="{$accept_charset}"{$onsubmit_at}>
+<form id="resform" method="POST" action="./post.php" accept-charset="{$_conf['accept_charset']}"{$onsubmit_at}>
 {$htm['subject']}
 {$htm['maru_post']}
 {$htm['name_label']}<input id="FROM" name="FROM" type="text" value="{$hd['FROM']}"{$name_size_at}{$htm['name_extra_at']}>{$htm['k_br']}

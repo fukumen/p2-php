@@ -20,7 +20,7 @@ class ImageCache2_EditForm
             'id' => 'edit',
             'action' => $_SERVER['SCRIPT_NAME'],
             'method' => 'post',
-            'accept-charset' => 'Shift_JIS',
+            'accept-charset' => $_conf['accept_charset'],
         ));
         if ($mode == 2) {
             $mf_head->setAttributes('onsubmit="return prePost();"');

@@ -786,7 +786,7 @@ function showCookieConfirmation($host, $response)
         $form->removeAttribute($name);
     }
     if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
-        $form->setAttribute('accept-charset', 'Shift_JIS');
+        $form->setAttribute('accept-charset', $_conf['accept_charset']);
     } else {
         $form->setAttribute('accept-charset', $_conf['accept_charset']);
 

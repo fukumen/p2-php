@@ -94,7 +94,7 @@ $_attr_close  = array('onclick' => 'window.close()');
 
 
 // 画像ダウンロード用フォームを設定
-$_attribures = array('accept-charset' => 'UTF-8,Shift_JIS');
+$_attribures = array('accept-charset' => $_conf['accept_charset']);
 $_target = $isPopUp ? '_self' : 'read';
 
 $qf = new HTML_QuickForm('get', 'get', $_SERVER['SCRIPT_NAME'], $_target, $_attribures);
