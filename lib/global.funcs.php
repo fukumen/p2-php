@@ -429,7 +429,7 @@ function p2_mb_basename($path, $encoding = 'SJIS-win')
         return $path;
     }
     $len = mb_strlen($path, $encoding);
-    $pos = mb_strrpos($path, '/', $encoding);
+    $pos = mb_strrpos($path, '/', 0, $encoding);
     return mb_substr($path, $pos + 1, $len - $pos, $encoding);
 }
 
