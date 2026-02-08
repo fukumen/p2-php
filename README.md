@@ -58,7 +58,11 @@ chmod 0777 data/* rep2/ic
 
 ## 動作環境
 
-PHP8.2が必要です。PHP8.2未満で動かす場合は[この]((https://github.com/fukumen/p2-php/commit/a84eeeba56d6c7374ebccb7e139d2f5e9eef330f))変更を戻してください。
+PHP8.2が必要です。PHP8.0以上PHP8.2未満で動かす場合は[この]((https://github.com/fukumen/p2-php/commit/a84eeeba56d6c7374ebccb7e139d2f5e9eef330f))変更を戻してください。
+
+> [!CAUTION]
+> 上記の変更を戻してもPHP7.x以下では使えません。
+> なお、現在はPHP8.5で動作確認しています。
 
 以下のコマンドを実行して、全ての項目で `OK` が出たなら大丈夫です。
 
