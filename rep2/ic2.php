@@ -654,7 +654,13 @@ function ic2_display($url, $params)
 
     if (strncmp($url, '/', 1) === 0) {
         $s = empty($_SERVER['HTTPS']) ? '' : 's';
-        $to = 'http' . $s . '://' . $_SERVER['HTTP_HOST'] . $url;
+        if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== '') {
+            $host = $_SERVER['HTTP_HOST'];
+        } else {
+            $port = ($_SERVER['SERVER_PORT'] == ($s ? 443 : 80)) ? '' : ':' . $_SERVER['SERVER_PORT'];
+            $host = $_SERVER['SERVER_NAME'] . $port;
+        }
+        $to = 'http' . $s . '://' . $host . $url;
     } else {
         $dir = dirname(P2Util::getMyUrl());
         if (strncasecmp($url, './', 2) == 0) {
