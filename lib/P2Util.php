@@ -1881,7 +1881,7 @@ ERR;
      *
      * @return  boolean  òQêl ID Ç™Ç†ÇÍÇŒ true
      */
-    function checkRoninExpiration()
+    static public function checkRoninExpiration()
     {
         global $_conf;
 
@@ -1900,7 +1900,7 @@ ERR;
             $x_2ch_ua = $_conf['2chapi_appname'];
         } else {
             $agent = 'DOLIB/1.00';
-            $x_2ch_ua = self::getP2UA(false,false);
+            $x_2ch_ua = P2Commun::getP2UA(false,false);
         }
 
         // 2chòQêl<Åú>ID, PWê›íËÇì«Ç›çûÇﬁ
