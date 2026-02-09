@@ -4,13 +4,15 @@ on:
   push:
     branches:
       - php8-merge-mbstring
+    paths-ignore:
+      - '**.md'
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: fukumen/docker-rep2
