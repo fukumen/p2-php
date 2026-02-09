@@ -1,0 +1,17 @@
+name: Trigger Docker Build
+
+on:
+  push:
+    branches:
+      - php8-merge-mbstring
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          repository: fukumen/docker-rep2
+          event-type: p2-php-update
