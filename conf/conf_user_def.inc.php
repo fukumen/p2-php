@@ -451,6 +451,10 @@ $conf_user_def['donguri_user'] = ""; // ("")
 // どんぐりシステムのパスワード 
 $conf_user_def['donguri_password'] = ""; // ("")
 
+// UPLIFTへログインする
+$conf_user_def['donguri_uplift'] = 0;  // (0)
+$conf_user_rad['donguri_uplift'] = array('1' => 'する', '0' => 'しない');
+
 // }}}
 // {{{ ETC
 

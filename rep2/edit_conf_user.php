@@ -415,6 +415,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('donguri_use', 'どんぐりを表示する'),
         array('donguri_user', 'どんぐりシステムのメールアドレス(Gmail)'),
         array('donguri_password', 'どんぐりシステムのパスワード ', P2_EDIT_CONF_USER_PASSWORD),
+        array('donguri_uplift', 'UPLIFTへログインする(donguri_userとdonguri_passwordをUPLIFTのIDにしてください)(実験中)'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }

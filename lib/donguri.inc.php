@@ -7,9 +7,11 @@ class Donguri {
 
     private const COOKIE_HOST = 'www.5ch.net';
     private const COOKIE_NAME = 'acorn';
+    private const SID_NAME = 'sid';
     private const BASE_MATCH = '/>(\S+)<\/div><div>(\S+)\[\s*ID:\s*([^\]]+)/';
     private static $instance = null;
     private $base_url = null;
+    private $uplift_url = null;
     private $cookie_key = null;
     private $cookies = null;
     private $cookie_sts = null;     // 0:クッキーなし、1:どんぐり無し、2:どんぐり有り
@@ -21,6 +23,7 @@ class Donguri {
         global $_conf, $_login;
 
         $this->base_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'donguri.5ch.net/';
+        $this->uplift_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'uplift.5ch.net/';
         $this->cookie_key = $_login->user_u . '/' . self::COOKIE_HOST;
         $this->_read_cookie();
     }
@@ -85,6 +88,67 @@ class Donguri {
         return;
     }
 
+    // }}}
+    // {{{ _login_uplift()
+    
+    /**
+     * UPLIFTログイン
+     */
+    private function _login_uplift()
+    {
+        global $_conf;
+
+        if ($_conf['donguri_uplift']) {
+            $req = P2Commun::createHTTPRequest ($this->uplift_url . 'log', HTTP_Request2::METHOD_POST);
+            $req->setHeader('Referer', $this->uplift_url . 'login');
+            $req->setHeader('Origin', rtrim($this->uplift_url, '/'));
+            $req->addPostParameter('usr', $_conf['donguri_user']);
+            $req->addPostParameter('pwd', $_conf['donguri_password']);
+            $response = P2Commun::getHTTPResponse($req);
+
+            // Cookieを取得
+            $response_cookies = $response->getCookies();
+            if ($response_cookies) {
+                foreach ($response_cookies as $c) {
+                    if (!$this->cookies) {
+                        $this->cookies = array();
+                    }
+                    if (isset($c['expires']) && time() > strtotime($c['expires'])) {
+                        unset($this->cookies[$c['name']]);
+                    } else {
+                        $this->cookies[ $c['name'] ] = $c['value'];
+                    }
+                }
+                // cookie 保存
+                CookieDataStore::set($this->cookie_key, $this->cookies);
+            }
+
+            $code = $response->getStatus();
+            if ($code == 302) {
+                if ($this->cookies == null) {
+                    return [true, '302: クッキー無し'];
+                } elseif (!array_key_exists(self::SID_NAME, $this->cookies)) {
+                    // ログイン成功
+                    return [true, null];
+                } else {
+                    return [true, '302: クッキーにsid無し'];
+                }
+            } elseif ($code == 200) {
+                // ログイン失敗と思われる
+                return [true, '200: UPLIFTログイン失敗'];
+            } else {
+                if ($this->cookies == null) {
+                    return [true, '302: クッキー無し'];
+                } elseif (!array_key_exists(self::SID_NAME, $this->cookies)) {
+                    return [true, "{$code}: 想定外のコードsid有り"];
+                } else {
+                    return [true, "{$code}: 想定外のコードsid無し"];
+                }
+            }
+        }
+        return [false, null];
+    }
+    
     // }}}
     // {{{ _check_base()
 
@@ -205,25 +269,31 @@ class Donguri {
         $donguri = self::_get_instance();
         try {
             $detail = null;
-            $req = P2Commun::createHTTPRequest ($donguri->base_url . 'login', HTTP_Request2::METHOD_POST);
-            foreach ($donguri->cookies as $cname => $cvalue) {
-                if ($cname != 'expires') {
-                    $req->addCookie($cname,$cvalue);
+            [$uplift, $msg] = $donguri->_login_uplift();
+            if (!$msg) {
+                $req = P2Commun::createHTTPRequest ($donguri->base_url . 'login', HTTP_Request2::METHOD_POST);
+                foreach ($donguri->cookies as $cname => $cvalue) {
+                    if ($cname != 'expires') {
+                        $req->addCookie($cname,$cvalue);
+                    }
                 }
-            }
-            $req->setHeader('Referer', $donguri->base_url);
-            $req->setHeader('Origin', rtrim($donguri->base_url, '/'));
-            $req->addPostParameter('email', $_conf['donguri_user']);
-            $req->addPostParameter('pass', $_conf['donguri_password']);
-            $response = P2Commun::getHTTPResponse($req);
+                $req->setHeader('Referer', $donguri->base_url);
+                $req->setHeader('Origin', rtrim($donguri->base_url, '/'));
+                $req->addPostParameter('email', $_conf['donguri_user']);
+                $req->addPostParameter('pass', $_conf['donguri_password']);
+                $response = P2Commun::getHTTPResponse($req);
 
-            [$detail, $msg] = $donguri->_finish_base($response);
+                [$detail, $msg] = $donguri->_finish_base($response);
+            }
             $donguri->_update_status($detail);
         } catch (Exception $e) {
         }
+
+        $delimiter = $_conf['iphone'] ? '&nbsp' : '<br>　';
         if ($msg) {
-            $delimiter = $_conf['iphone'] ? '&nbsp' : '<br>　';
             return $delimiter . $msg;
+        } elseif ($uplift) {
+            return $delimiter . "UPLIFTログイン成功";
         } else {
             return '';
         }
@@ -291,7 +361,7 @@ class Donguri {
     /**
      * ステータス更新
      */
-    private function _update_status($detail = null)
+    private function _update_status($detail)
     {
         global $_conf;
 
