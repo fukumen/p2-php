@@ -4,6 +4,10 @@
  * conf/conf.inc.php の p2_init() から読み込まれる。
  */
 
+if (version_compare(PHP_VERSION, '8.2.0', '<')) {
+    die('PHP 8.2.0 or later is required.');
+}
+
 /**
  * PHP 8で廃止された関数を呼び出す輩のためのパッチ
  * HTTP_Request2

@@ -30,11 +30,7 @@ class Check extends Command
 
         $php_version = phpversion();
 
-        if (version_compare($php_version, '7.0.0-dev', '>=')) {
-            $required_version = $p2_required_version_7_x;
-        } else {
-            $required_version = $p2_required_version_5_x;
-        }
+        $required_version = '8.2.0';
 
         // PHP‚Ìƒo[ƒWƒ‡ƒ“
         $output->writeln('PHP Version:');
