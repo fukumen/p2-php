@@ -102,12 +102,14 @@ class Donguri {
             $req = P2Commun::createHTTPRequest ($this->uplift_url . 'log', HTTP_Request2::METHOD_POST);
             $req->setHeader('Referer', $this->uplift_url . 'login');
             $req->setHeader('Origin', rtrim($this->uplift_url, '/'));
+            $req->setHeader('User-Agent', P2Commun::getP2UA(true, true));
             $req->addPostParameter('usr', $_conf['donguri_user']);
             $req->addPostParameter('pwd', $_conf['donguri_password']);
             $response = P2Commun::getHTTPResponse($req);
 
             // Cookieを取得
             $response_cookies = $response->getCookies();
+            $cookies_names = '';
             if ($response_cookies) {
                 foreach ($response_cookies as $c) {
                     if (!$this->cookies) {
@@ -117,6 +119,7 @@ class Donguri {
                         unset($this->cookies[$c['name']]);
                     } else {
                         $this->cookies[ $c['name'] ] = $c['value'];
+                        $cookies_names .= $c['name'] . ',';
                     }
                 }
                 // cookie 保存
@@ -131,7 +134,7 @@ class Donguri {
                     // ログイン成功
                     return [true, null];
                 } else {
-                    return [true, '302: クッキーにsid無し'];
+                    return [true, '302: クッキーにsid無し/' . $cookies_names];
                 }
             } elseif ($code == 200) {
                 // ログイン失敗と思われる
@@ -142,7 +145,7 @@ class Donguri {
                 } elseif (!array_key_exists(self::SID_NAME, $this->cookies)) {
                     return [true, "{$code}: 想定外のコードsid有り"];
                 } else {
-                    return [true, "{$code}: 想定外のコードsid無し"];
+                    return [true, "{$code}: 想定外のコードsid無し/" . $cookies_names];
                 }
             }
         }
