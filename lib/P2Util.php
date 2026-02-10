@@ -1816,7 +1816,7 @@ ERR;
         $url = http_build_url(array(
             "scheme" => $_conf['2ch_ssl.post'] ? "https" : "http",
             "host" => P2HostMgr::isHost5ch($host) ? "be.5ch.net" : "be.2ch.net",
-            "path" => "index.php"));
+            "path" => P2HostMgr::isHost5ch($host) ? "log" : "index.php"));
 
         try {
             $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST);
@@ -1825,7 +1825,7 @@ ERR;
 
             $req->addPostParameter('mail', $mail);
             $req->addPostParameter('pass', $pass);
-            $req->addPostParameter('login', 'ログインする');
+            $req->addPostParameter('login', P2HostMgr::isHost5ch($host) ? 'ログイン' : 'ログインする');
 
             $response = P2Commun::getHTTPResponse($req);
 
