@@ -62,6 +62,39 @@ if (!empty($_conf['updatan_haahaa'])) {
     $newversion_found = checkUpdatan();
 }
 
+//=========================================================
+// github actionの情報表示
+//=========================================================
+$ver_str = array();
+foreach (array('VER_REPO_HASH', 'VER_REPO_LOG', 'VER_REP2_HASH', 'VER_REP2_LOG', 'VER_RUN_ID', 'VER_RUN_NUMBER') as $key) {
+    if (($val = getenv($key)) !== false) {
+        $ver_str[$key] = $val;
+    }
+}
+
+if (count($ver_str) == 6) {
+    $newversion_found2 = '';
+    if (!empty($_conf['updatan_haahaa'])) {
+        $newversion_found2 = checkUpdatan2($ver_str['VER_RUN_ID']);
+    }
+
+    $ver_str['VER_REP2_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REP2_LOG']), 'CP932', 'UTF-8');
+    $ver_str['VER_REPO_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REPO_LOG']), 'CP932', 'UTF-8');
+    $htm['ver_str'] = <<<EOT
+<table border="0" cellspacing="0" cellpadding="1">
+    <caption>ビルド情報</caption>
+    <tbody>
+        <tr><th>p2-php:</th><td>{$ver_str['VER_REP2_LOG']}&nbsp;{$ver_str['VER_REP2_HASH']}</td></tr>
+        <tr><th>docker-rep2:</th><td>{$ver_str['VER_REPO_LOG']}&nbsp;{$ver_str['VER_REPO_HASH']}</td></tr>
+        <tr><th>github action:</th><td>run_id:{$ver_str['VER_RUN_ID']}&nbsp;run_number:{$ver_str['VER_RUN_NUMBER']}</td></tr>
+    </tbody>
+</table>
+    {$newversion_found2}
+EOT;
+} else {
+    $htm['ver_str'] = '';
+}
+
 // ログインユーザ情報
 $htm['auth_user'] = "<p>ログインユーザ: {$_login->user_u} - " . date("Y/m/d (D) G:i") . "</p>\n";
 
@@ -187,6 +220,7 @@ echo <<<EOP
         <li><a href="{$expack_hist_url_r}"{$_conf['ext_win_target_at']}>拡張パック 更新記録</a></li>
         <!-- <li><a href="viewtxt.php?file=doc/ChangeLog.txt">ChangeLog（rep2 更新記録）</a></li> -->
     </ul>
+    {$htm['ver_str']}
 
     </td></tr></table>
     {$htm['auth_user']}
@@ -234,6 +268,75 @@ function checkUpdatan()
 EOP;
     }
     return $newversion_found_html;
+}
+
+// }}}
+// {{{ checkUpdatan2()
+
+/**
+ * github actionの最新版をチェックする
+ *
+ * @return string HTML
+ */
+function checkUpdatan2($run_id)
+{
+    global $_conf;
+
+    try {
+        $req = P2Commun::createHTTPRequest ('https://api.github.com/repos/fukumen/docker-rep2/actions/workflows/publish-php8.yml/runs?status=success&per_page=1', HTTP_Request2::METHOD_GET);
+        $response = P2Commun::getHTTPResponse($req);
+        $code = $response->getStatus();
+        if ($code == 200) {
+            $json = json_decode($response->getBody(), true);
+            if (isset($json['workflow_runs'][0]['id'])) {
+                $latest_run_id = $json['workflow_runs'][0]['id'];
+                if ($latest_run_id > $run_id) {
+                    $docker_msg = isset($json['workflow_runs'][0]['head_commit']['message']) ? $json['workflow_runs'][0]['head_commit']['message'] : '';
+                    $docker_msg = p2h(mb_convert_encoding($docker_msg, 'Shift_JIS', 'UTF-8'));
+                    $docker_hash = isset($json['workflow_runs'][0]['head_sha']) ? substr($json['workflow_runs'][0]['head_sha'], 0, 7) : '';
+                    $docker_date = isset($json['workflow_runs'][0]['head_commit']['timestamp']) ? $json['workflow_runs'][0]['head_commit']['timestamp'] : '';
+                    if ($docker_date) {
+                        $dt = new DateTime($docker_date);
+                        $dt->setTimezone(new DateTimeZone('Asia/Tokyo'));
+                        $docker_date = $dt->format('Y-m-d H:i');
+                    }
+
+                    $req2 = P2Commun::createHTTPRequest ('https://api.github.com/repos/fukumen/p2-php/actions/workflows/trigger-docker.yml/runs?status=success&per_page=1', HTTP_Request2::METHOD_GET);
+                    $response2 = P2Commun::getHTTPResponse($req2);
+                    $rep2_msg = '';
+                    $rep2_date = '';
+                    $rep2_hash = '';
+                    if ($response2->getStatus() == 200) {
+                        $json2 = json_decode($response2->getBody(), true);
+                        $rep2_msg = isset($json2['workflow_runs'][0]['head_commit']['message']) ? $json2['workflow_runs'][0]['head_commit']['message'] : '';
+                        $rep2_msg = p2h(mb_convert_encoding($rep2_msg, 'Shift_JIS', 'UTF-8'));
+                        $rep2_hash = isset($json2['workflow_runs'][0]['head_sha']) ? substr($json2['workflow_runs'][0]['head_sha'], 0, 7) : '';
+                        $rep2_date = isset($json2['workflow_runs'][0]['head_commit']['timestamp']) ? $json2['workflow_runs'][0]['head_commit']['timestamp'] : '';
+                        if ($rep2_date) {
+                            $dt = new DateTime($rep2_date);
+                            $dt->setTimezone(new DateTimeZone('Asia/Tokyo'));
+                            $rep2_date = $dt->format('Y-m-d H:i');
+                        }
+                    }
+                    return <<<EOP
+<br>
+<div class="kakomi">
+    <table border="0" cellspacing="0" cellpadding="1">
+        <caption>新しいビルドがあります。</caption>
+        <tbody>
+            <tr><th>p2-php:</th><td>{$rep2_date}&nbsp;{$rep2_msg}&nbsp;{$rep2_hash}</td></tr>
+            <tr><th>docker-rep2:</th><td>{$docker_date}&nbsp;{$docker_msg}&nbsp;{$docker_hash}</td></tr>
+            <tr><th>github action:</th><td>run_id:<a href="https://github.com/fukumen/docker-rep2/actions/runs/{$latest_run_id}">{$latest_run_id}</td></tr>
+        </tbody>
+    </table>
+</div>
+EOP;
+                }
+            }
+        }
+    } catch (Exception $e) {
+    }
+    return '';
 }
 
 // }}}
