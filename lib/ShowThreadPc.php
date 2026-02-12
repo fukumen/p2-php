@@ -1575,7 +1575,7 @@ EOJS;
         $colors = array();
         $backlink_colors = join(',',
             array_map(function ($x) {
-                return "\'{$x}\'";
+                return "'{$x}'";
             },
                 explode(',', $_conf['backlink_coloring_track_colors']))
         );
@@ -1651,7 +1651,7 @@ EOJS;
         $hissiCount = $_conf['coloredid.rate.hissi.times'];
         $mark_colors = join(',',
             array_map(function ($x) {
-                return "\'{$x}\'";
+                return "'{$x}'";
             },
                 explode(',', $_conf['coloredid.marking.colors'])
             )
