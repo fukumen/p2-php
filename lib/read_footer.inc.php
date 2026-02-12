@@ -191,7 +191,9 @@ if (array_key_exists('live', $_GET) && $_GET['live']) {
 		window.location.replace("./live_read.php?host={$aThread->host}&bbs={$aThread->bbs}&key={$aThread->key}&live=1");
 	}
 
+	if (parent.livecontrol) {
 	parent.livecontrol.liveoff();
+	}
 	//-->
 	</script>\n
 LIVE;

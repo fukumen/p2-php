@@ -201,6 +201,10 @@ if(empty($_GET['live'])) {
  <a href="live_frame.php?{$host_bbs_key_q}{$ttitle_en_q}">é¿ãµ</a>
 EOTOOLBAR;
     }
+} else {
+        $toolbar_right_ht .= <<<EOTOOLBAR
+ <a href="read.php?{$host_bbs_key_q}" target="read">í èÌ</a>
+EOTOOLBAR;
 }
 //=====================================
 echo $_conf['doctype'];
