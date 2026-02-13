@@ -133,6 +133,12 @@ class ShowThreadPc extends ShowThread
             list($name, $mail, $date_id, $msg) = $this->thread->explodeDatLine($ares);
         }
 
+        // どんぐり大砲用の日付を抽出
+        $raw_date = null;
+        if ($_conf['donguri_use'] && preg_match('/^\d{4}\/\d{2}\/\d{2}\(.+?\) \d{2}:\d{2}:\d{2}(\.\d+)?/', $date_id, $m)) {
+            $raw_date = StrCtl::toJavaScript($m[0]);
+        }
+
         if (($id = $this->thread->ids[$i]) !== null) {
             $idstr = 'ID:' . $id;
             $date_id = str_replace($this->thread->idp[$i] . $id, $idstr, $date_id);
@@ -271,7 +277,8 @@ EOP;
 
         // SPM
         if ($_conf['expack.spm.enabled']) {
-            $spmeh = " onmouseover=\"{$this->spmObjName}.show({$i},'{$msg_id}',event)\"";
+            $js_date = $raw_date ? "'$raw_date'" : 'null';
+            $spmeh = " onmouseover=\"{$this->spmObjName}.show({$i},'{$msg_id}',event,{$js_date})\"";
             $spmeh .= " onmouseout=\"{$this->spmObjName}.hide(event)\"";
         } else {
             $spmeh = '';
@@ -361,6 +368,12 @@ EOJS;
             list($name, $mail, $date_id, $msg) = $this->thread->explodeDatLine($ares);
         }
 
+        // どんぐり大砲用の日付を抽出
+        $raw_date = null;
+        if ($_conf['donguri_use'] && preg_match('/^\d{4}\/\d{2}\/\d{2}\(.+?\) \d{2}:\d{2}:\d{2}(\.\d+)?/', $date_id, $m)) {
+            $raw_date = p2h($m[0]);
+        }
+
         if (($id = $this->thread->ids[$i]) !== null) {
             $idstr = 'ID:' . $id;
             $date_id = str_replace($this->thread->idp[$i] . $id, $idstr, $date_id);
@@ -410,7 +423,8 @@ EOJS;
 
         // SPM
         if ($_conf['expack.spm.enabled']) {
-            $spmeh = " onmouseover=\"{$this->spmObjName}.show({$i},'{$qmsg_id}',event)\"";
+            $js_date = $raw_date ? "'$raw_date'" : 'null';
+            $spmeh = " onmouseover=\"{$this->spmObjName}.show({$i},'{$qmsg_id}',event,{$js_date})\"";
             $spmeh .= " onmouseout=\"{$this->spmObjName}.hide(event)\"";
         } else {
             $spmeh = '';
@@ -1117,6 +1131,7 @@ EOJS;
             (($_conf['expack.spm.filter']) ? '1' : '0'),
             (($this->am_on_spm) ? '1' : '0'),
             (($_conf['expack.aas.enabled']) ? '1' : '0'),
+            (($_conf['donguri_use']) ? '1' : '0'),
         );
         $spmOptions = implode(',', $_spmOptions);
 

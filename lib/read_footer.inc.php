@@ -192,7 +192,7 @@ if (array_key_exists('live', $_GET) && $_GET['live']) {
 	}
 
 	if (parent.livecontrol) {
-	parent.livecontrol.liveoff();
+		parent.livecontrol.liveoff();
 	}
 	//-->
 	</script>\n

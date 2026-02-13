@@ -36,7 +36,7 @@
         }
 
         if ($array = P2Util::readIdPw2ch()) {
-            list($login2chID, $login2chPW, $autoLogin2ch) = $array;
+            list($login2chID, $login2chPW, $autoLogin2ch, $methodLogin2ch) = $array;
         }
 
         // 浪人の有効性確認(要 ID / PW)

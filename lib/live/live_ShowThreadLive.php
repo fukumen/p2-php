@@ -44,6 +44,12 @@ class ShowThreadLive extends ShowThreadPc
             list($name, $mail, $date_id, $msg) = $this->thread->explodeDatLine($ares);
         }
 
+        // ‚Ç‚ñ‚®‚è‘å–C—p‚Ì“ú•t‚ð’Šo
+        $raw_date = null;
+        if ($_conf['donguri_use'] && preg_match('/^\d{4}\/\d{2}\/\d{2}\(.+?\) \d{2}:\d{2}:\d{2}(\.\d+)?/', $date_id, $m)) {
+            $raw_date = p2h($m[0]);
+        }
+
         if (($id = $this->thread->ids[$i]) !== null) {
             $idstr = 'ID:' . $id;
             $date_id = str_replace($this->thread->idp[$i] . $id, $idstr, $date_id);
@@ -146,7 +152,8 @@ EOP;
 
         // SPM
         if ($_conf['expack.spm.enabled']) {
-            $spmeh = " onmouseover=\"{$this->spmObjName}.show({$i},'{$msg_id}',event)\"";
+            $js_date = $raw_date ? "'$raw_date'" : 'null';
+            $spmeh = " onmouseover=\"{$this->spmObjName}.show({$i},'{$msg_id}',event,{$js_date})\"";
             $spmeh .= " onmouseout=\"{$this->spmObjName}.hide(event)\"";
         } else {
             $spmeh = '';

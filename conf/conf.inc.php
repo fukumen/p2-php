@@ -7,7 +7,7 @@
 // バージョン情報
 $_conf = array(
     'p2name'    => 'rep2-expack_allinone',   // rep2の名前
-    'p2version' => '200101.0000',   // rep2のバージョン
+    'p2version' => '260101.0000',   // rep2のバージョン
 );
 
 $_conf['p2ua'] = "{$_conf['p2name']}/{$_conf['p2version']}";
@@ -257,8 +257,9 @@ function p2_init()
         'res_hist_idx'      => 'p2_res_hist.idx',       // 書き込みログ (idx)
         'res_hist_dat'      => 'p2_res_hist.dat',       // 書き込みログファイル (dat)
         'res_hist_dat_php'  => 'p2_res_hist.dat.php',   // 書き込みログファイル (データPHP)
-        'idpw2ch_php'       => 'p2_idpw2ch.php',        // 2ch ID認証設定ファイル (データPHP)
+        'idpw2ch_php'       => 'p2_idpw2ch.php',        // 2ch ID認証設定ファイル (シリアライズドデータ)
         'sid2ch_php'        => 'p2_sid2ch.php',         // 2ch ID認証セッションID記録ファイル (データPHP)
+        'siduplift_file'    => 'p2_siduplift.srd',      // UPLIFT ID認証セッションID記録ファイル (シリアライズドデータ)
         'auth_user_file'    => 'p2_auth_user.php',      // 認証ユーザ設定ファイル(データPHP)
         'login_log_file'    => 'p2_login.log.php',      // ログイン履歴 (データPHP)
         'login_failed_log_file' => 'p2_login_failed.dat.php',   // ログイン失敗履歴 (データPHP)

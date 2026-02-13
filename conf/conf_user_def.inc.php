@@ -451,9 +451,9 @@ $conf_user_def['donguri_user'] = ""; // ("")
 // どんぐりシステムのパスワード 
 $conf_user_def['donguri_password'] = ""; // ("")
 
-// UPLIFTへログインする
-$conf_user_def['donguri_uplift'] = 0;  // (0)
-$conf_user_rad['donguri_uplift'] = array('1' => 'する', '0' => 'しない');
+// どんぐりシステムへログインするアカウントの種類
+$conf_user_def['donguri_method'] = 0;  // (0)
+$conf_user_rad['donguri_method'] = array('0' => 'Gmail', '1' => 'UPLIFT');
 
 // }}}
 // {{{ ETC
@@ -622,7 +622,7 @@ $conf_user_def['2ch_ssl.post'] = 1;  // (1)
 $conf_user_rad['2ch_ssl.post'] = array('1' => 'する', '0' => 'しない');
 
 // 浪人の有効期限表示
-$conf_user_def['disp_ronin_expiration'] = 0;  // (0)
+$conf_user_def['disp_ronin_expiration'] = 3;  // (3)
 $conf_user_sel['disp_ronin_expiration'] = array(
     '0' => 'する',
     '1' => 'エラー･期限切れの場合のみ表示',

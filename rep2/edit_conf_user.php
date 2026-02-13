@@ -409,13 +409,13 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
     $keep_old = true;
 } else {
     $conflist = array(
-        'どんぐりシステムへログインしない場合、自動ログインのどんぐりがないと「どんぐり無し」あると「警備員○」になります',
-        'どんぐりシステムへ登録したGmailのメールアドレスでログインした場合、「警備員●」になります',
-        'UPLIFTのどんぐりアカウントは未対応です',
+        'どんぐりシステムへログインしていない場合、自動ログインのどんぐりが無いと「どんぐり無し」、有りなら「警備員○」になります',
+        'donguri_method:0のとき、どんぐりシステムへのログインに「donguri_user/donguri_password」を使用し「警備員●」になります',
+        'donguri_method:1のとき、どんぐりシステムへのログインに「ログイン管理 > 2chログイン管理」を使用し「ハンター」になります',
         array('donguri_use', 'どんぐりを表示する'),
         array('donguri_user', 'どんぐりシステムのメールアドレス(Gmail)'),
         array('donguri_password', 'どんぐりシステムのパスワード ', P2_EDIT_CONF_USER_PASSWORD),
-        array('donguri_uplift', 'UPLIFTへログインする(donguri_userとdonguri_passwordをUPLIFTのIDにしてください)(実験中)'),
+        array('donguri_method', 'どんぐりシステムへログインするアカウントの種類'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }

@@ -506,6 +506,18 @@ function postIt($host, $bbs, $key, $post)
             }
         }
 
+        // uplift‚Ìsid
+        if (P2HostMgr::isHost2chs($host) && file_exists($_conf['siduplift_file'])) {
+            require_once P2_LIB_DIR . '/login2ch.inc.php';
+            $data = get_uplift_sid();
+            if (isset($data['sid'])) {
+                $sid = $data['sid'];
+                if (isset($sid['name']) && isset($sid['value'])) {
+                    $req->addCookie($sid['name'], $sid['value']);
+                }
+            }
+        }
+
         // POST‚·‚é“à—e
         foreach ($post as $name => $value) {
 

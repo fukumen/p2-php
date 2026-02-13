@@ -46,7 +46,7 @@ if (!in_array($_conf['pref_dir'], $checked_dirs)) {
 //=========================================================
 // ●ID 2ch オートログイン
 if ($array = P2Util::readIdPw2ch()) {
-    list($login2chID, $login2chPW, $autoLogin2ch) = $array;
+    list($login2chID, $login2chPW, $autoLogin2ch, $methodLogin2ch) = $array;
     if ($autoLogin2ch) {
         require_once P2_LIB_DIR . '/login2ch.inc.php';
         login2ch();

@@ -72,6 +72,7 @@ if (isset($_GET['mode']) && $_GET['mode'] === 'check') {
 </html>
 <?php
     exit;
+} elseif (isset($_GET['mode']) && $_GET['mode'] === 'confirm') {
 }
 
 // }}}

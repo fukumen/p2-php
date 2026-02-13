@@ -978,28 +978,28 @@ class P2Util
     /**
      * 2ch●ログインのIDとPASSと自動ログイン設定を保存する
      */
-    static public function saveIdPw2ch($login2chID, $login2chPW, $autoLogin2ch = false)
+    static public function saveIdPw2ch($login2chID, $login2chPW, $autoLogin2ch = false, $methodLogin2ch = 0)
     {
         global $_conf;
 
-        $md5_crypt_key = self::getAngoKey();
-        $login2chID_repr = var_export($login2chID, true);
-        $login2chPW_repr = var_export(MD5Crypt::encrypt($login2chPW, $md5_crypt_key, 32), true);
-        $autoLogin2ch_repr = $autoLogin2ch ? 'true' : 'false';
-        $idpw2ch_cont = <<<EOP
-<?php
-\$rec_login2chID = {$login2chID_repr};
-\$rec_login2chPW = {$login2chPW_repr};
-\$rec_autoLogin2ch = {$autoLogin2ch_repr};\n
-EOP;
-        $fp = @fopen($_conf['idpw2ch_php'], 'wb');
-        if (!$fp) {
+        $data = serialize(array(
+            'id' => $login2chID,
+            'pw' => $login2chPW,
+            'auto' => $autoLogin2ch,
+            'method' => $methodLogin2ch,
+        ));
+        $encrypted = P2Encryptor::getInstance()->encrypt($data);
+
+        $temp_file = $_conf['idpw2ch_php'] . '.tmp';
+        if (FileCtl::file_write_contents($temp_file, $encrypted) === false) {
             p2die("{$_conf['idpw2ch_php']} を更新できませんでした");
         }
-        flock($fp, LOCK_EX);
-        fputs($fp, $idpw2ch_cont);
-        flock($fp, LOCK_UN);
-        fclose($fp);
+        @chmod($temp_file, 0600);
+
+        if (!rename($temp_file, $_conf['idpw2ch_php'])) {
+            @unlink($temp_file);
+            p2die("{$_conf['idpw2ch_php']} を更新できませんでした");
+        }
 
         return true;
     }
@@ -1014,48 +1014,30 @@ EOP;
     {
         global $_conf;
 
-        $login2chID = null;
-        $login2chPW = null;
-        $autoLogin2ch = false;
-
-        if (file_exists($_conf['idpw2ch_php'])) {
-            $rec_login2chID = null;
-            $rec_login2chPW = null;
-            $rec_autoLogin2ch = false;
-
-            include $_conf['idpw2ch_php'];
-
-            if (is_string($rec_login2chID)) {
-                $login2chID = $rec_login2chID;
-            }
-
-            // パスワードを復号化
-            if (is_string($login2chID) && is_string($rec_login2chPW)) {
-                $md5_crypt_key = self::getAngoKey();
-                $login2chPW = MD5Crypt::decrypt($rec_login2chPW, $md5_crypt_key, 32);
-            } else {
-                $login2chPW = null;
-            }
-
-            $autoLogin2ch = (bool)$rec_autoLogin2ch;
-
-            return array($login2chID, $login2chPW, $autoLogin2ch);
+        if (!file_exists($_conf['idpw2ch_php'])) {
+            return false;
         }
 
+        $content = file_get_contents($_conf['idpw2ch_php']);
+        if ($content) {
+            $decrypted = P2Encryptor::getInstance()->decrypt($content);
+            if ($decrypted !== null) {
+                $data = @unserialize($decrypted);
+                if (is_array($data)) {
+                    return array(
+                        isset($data['id']) ? $data['id'] : null,
+                        isset($data['pw']) ? $data['pw'] : null,
+                        isset($data['auto']) ? (bool)$data['auto'] : false,
+                        isset($data['method']) ? $data['method'] : false
+                    );
+                }
+            }
+        }
+
+        unlink($_conf['idpw2ch_php']);
+        file_exists($_conf['sid2ch_php']) and unlink($_conf['sid2ch_php']);
+        file_exists($_conf['siduplift_file']) and unlink($_conf['siduplift_file']);
         return false;
-    }
-
-    // }}}
-    // {{{ getAngoKey()
-
-    /**
-     * getAngoKey
-     */
-    static public function getAngoKey()
-    {
-        global $_login;
-
-        return $_login->user_u . $_SERVER['SERVER_NAME'] . $_SERVER['SERVER_SOFTWARE'];
     }
 
     // }}}
@@ -1905,7 +1887,7 @@ ERR;
 
         // 2ch浪人<●>ID, PW設定を読み込む
         if ($array = self::readIdPw2ch()) {
-            list($login2chID, $login2chPW, $autoLogin2ch) = $array;
+            list($login2chID, $login2chPW, $autoLogin2ch, $methodLogin2ch) = $array;
 
         } else {
             return false;

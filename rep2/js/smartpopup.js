@@ -6,6 +6,7 @@ var SPM = {};
 var spmResNum     = -1; // ポップアップで参照するレス番号
 var spmBlockID    = ''; // フォント変更で参照するID
 var spmSelected   = ''; // 選択文字列を一時的に保存
+var spmResDate    = null; // レス日付
 var spmFlexTarget = ''; // フィルタリング結果を開くウインドウ
 
 /**
@@ -94,6 +95,16 @@ SPM.init = function (aThread) {
 		spm.appendItem('AAS', [aThread, 'aas.php']);
 	}
 
+	// どんぐり大砲
+	if (opt[6] == 1) {
+		spm.appendItem('どんぐり大砲', function () {
+			if (window.confirm('どんぐり大砲を撃て！\nURL: ' + aThread.url + '\nDate: ' + spmResDate)) {
+				var url = 'https://donguri.5ch.net/confirm?url=' + encodeURIComponent(aThread.url) + '&date=' + encodeURIComponent(spmResDate);
+				window.open(url, '_blank');
+			}
+		});
+	}
+
 	// PRE
 	/*spm.appendItem('PRE', (function () {
 		var msg = document.getElementById(SPM.getBlockID());
@@ -134,8 +145,8 @@ SPM.init = function (aThread) {
 	}
 
 	// 表示・非表示メソッドを設定
-	aThread.show = (function(resnum, resid, event){
-		SPM.show(aThread, resnum, resid, event);
+	aThread.show = (function(resnum, resid, event, resdate){
+		SPM.show(aThread, resnum, resid, event, resdate);
 	});
 	aThread.hide = (function(event){
 		SPM.hide(aThread, event);
@@ -147,13 +158,14 @@ SPM.init = function (aThread) {
 /**
  * スマートポップアップメニューをポップアップ表示する
  */
-SPM.show = function (aThread, resnum, resid, event) {
+SPM.show = function (aThread, resnum, resid, event, resdate) {
 	event = event || window.event;
 	if (spmResNum != resnum || spmBlockID != resid) {
 		SPM.hideImmediately(aThread, event);
 	}
 	spmResNum  = resnum;
 	spmBlockID = resid;
+	spmResDate = resdate;
 	if (window.getSelection) {
 		spmSelected = window.getSelection();
 	} else if (document.selection) {

@@ -6,7 +6,8 @@
 
 var SPM = {
 	'activeThread': null,
-	'activeNumber': null
+	'activeNumber': null,
+	'activeDate': null
 };
 
 // }}}
@@ -19,9 +20,10 @@ var SPM = {
  * @param Number no
  * @param String id
  * @param MouseEvent evt
+ * @param String date
  * @return void
  */
-SPM.show = (function(thread, no, id, evt)
+SPM.show = (function(thread, no, id, evt, date)
 {
 	// skOuterClickÇ™î≠ê∂ÇµÇ»Ç¢ÇÊÇ§Ç…Ç∑ÇÈ
 	evt.stopPropagation();
@@ -33,6 +35,7 @@ SPM.show = (function(thread, no, id, evt)
 
 	SPM.activeThread = thread;
 	SPM.activeNumber = no;
+	SPM.activeDate = date;
 
 	var num = document.getElementById('spm-num');
 	if (num) {
@@ -151,6 +154,22 @@ SPM.open = (function(action)
 {
 	var uri = 'spm_k.php?ktool_name=' + action + '&ktool_value=' + SPM.activeNumber + SPM.activeThread.query;
 	window.open(uri);
+});
+
+// }}}
+// {{{ SPM.show()
+
+/*
+ * Ç«ÇÒÇÆÇËëÂñC
+ *
+ * @return void
+ */
+SPM.donguri = (function()
+{
+	if (window.confirm('Ç«ÇÒÇÆÇËëÂñCÇåÇÇƒÅI\nURL: ' + SPM.activeThread.url + '\nDate: ' + SPM.activeDate)) {
+		var url = 'https://donguri.5ch.net/confirm?url=' + encodeURIComponent(SPM.activeThread.url) + '&date=' + encodeURIComponent(SPM.activeDate);
+		window.open(url, '_blank');
+	}
 });
 
 // }}}

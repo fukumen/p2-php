@@ -158,6 +158,12 @@ class ShowThreadI extends ShowThread
             $msg = $replaceWordCtl->replace('msg', $this->thread, $ares, $i);
         }
 
+        // ‚Ç‚ñ‚®‚è‘å–C—p‚Ì“ú•t‚ð’Šo
+        $raw_date = null;
+        if ($_conf['donguri_use'] && preg_match('/^\d{4}\/\d{2}\/\d{2}\(.+?\) \d{2}:\d{2}:\d{2}(\.\d+)?/', $date_id, $m)) {
+            $raw_date = p2h($m[0]);
+        }
+
         $tores = '';
         if ($this->_matome) {
             $res_id = "t{$this->_matome}r{$i}";
@@ -341,7 +347,8 @@ EOP;
 
         // SPM
         if ($_conf['expack.spm.enabled']) {
-            $no_onclick = " onclick=\"{$this->spmObjName}.show({$i},'{$res_id}',event)\"";
+            $js_date = $raw_date ? "'$raw_date'" : 'null';
+            $no_onclick = " onclick=\"{$this->spmObjName}.show({$i},'{$res_id}',event,{$js_date})\"";
         }
 
         // ”Ô†
@@ -559,7 +566,7 @@ var {$this->spmObjName} = {
     'ls':'{$_spm_ls}',
     'client':['{$_conf['b']}','{$_conf['client_type']}']
 };
-{$this->spmObjName}.show = (function(no,id,evt){SPM.show({$this->spmObjName},no,id,evt);});
+{$this->spmObjName}.show = (function(no,id,evt,date){SPM.show({$this->spmObjName},no,id,evt,date);});
 {$this->spmObjName}.hide = SPM.hide; // (function(evt){SPM.hide(evt);});
 //]]>
 </script>\n
@@ -591,6 +598,11 @@ EOP;
             $spm .= <<<EOP
     <span id="spm-aas" onclick="SPM.open('aas')">AAS</span>
     <span id="spm-aas-rotate" onclick="SPM.open('aas_rotate')">AAS(‰ñ“])</span>
+EOP;
+        }
+        if ($_conf['donguri_use']) {
+            $spm .= <<<EOP
+    <span id="spm-donguri" onclick="SPM.donguri()">‚Ç‚ñ‚®‚è‘å–C</span>
 EOP;
         }
         $spm .= <<<EOP
