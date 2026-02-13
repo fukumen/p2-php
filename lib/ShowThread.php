@@ -657,7 +657,7 @@ abstract class ShowThread
     {
         //sssp://img.2ch.net/ico/miyabi.gif
         //sssp://img.2ch.net/emoji/2ch-cry.gif
-        return preg_replace("{sssp(://[-_.!~*()0-9A-Za-z;/:@&=+\$,%]+?\.(?:gif|png|jpe|jpe?g|ico|bmp|tif|mng|j2k)(?:[?#][-_.!~*()0-9A-Za-z;/?:@&=+\$,%#]*|))}", "<a href=\"http$1\"><img src=\"http$1\" /></a>", $msg);
+        return preg_replace("{sssp(://[-_.!~*()0-9A-Za-z;/:@&=+\$,%]+?\.(?:gif|png|jpe|jpe?g|ico|bmp|tif|mng|j2k)(?:[?#][-_.!~*()0-9A-Za-z;/?:@&=+\$,%#]*|))}", "<a href=\"https$1\"><img src=\"https$1\" /></a>", $msg);
     }
 
     // }}}
