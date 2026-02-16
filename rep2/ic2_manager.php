@@ -184,6 +184,30 @@ if (isset($_POST['action'])) {
             }
             break;
 
+        // NULLデータを復旧する
+        case 'fixNull':
+            try {
+                $table = $icdc->quoteIdentifier($ini['General']['table']);
+                $columns = array('memo', 'host', 'name', 'mime');
+                $total_count = 0;
+                foreach ($columns as $col) {
+                    $col_ident = $icdc->quoteIdentifier($col);
+                    $sql = sprintf('UPDATE %s SET %s = \'\' WHERE %s IS NULL',
+                        $table, $col_ident, $col_ident);
+                    $count = $db->exec($sql);
+                    if ($count > 0) {
+                        P2Util::pushInfoHtml("<p>{$col} がNULLのレコードを {$count} 件復旧しました。</p>");
+                        $total_count += $count;
+                    }
+                }
+                if ($total_count == 0) {
+                    P2Util::pushInfoHtml("<p>NULLのレコードは見つかりませんでした。</p>");
+                }
+            } catch (PDOException $e) {
+                P2Util::pushInfoHtml($e->getMessage());
+            }
+            break;
+
         // 未定義のリクエスト
         default:
             P2Util::pushInfoHtml('<p>未定義のリクエストです。</p>');
@@ -210,6 +234,11 @@ if ($icdc->db_class === 'sqlite' || $viewer_cache_exists) {
     $flexy->setData('enable_optimize_db', true);
 } else {
     $flexy->setData('enable_optimize_db', false);
+}
+if ($icdc->db_class === 'sqlite') {
+    $flexy->setData('enable_fix_null', true);
+} else {
+    $flexy->setData('enable_fix_null', false);
 }
 
 P2Util::header_nocache();

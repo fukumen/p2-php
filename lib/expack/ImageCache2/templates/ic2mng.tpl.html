@@ -88,6 +88,11 @@
 		<label for="action_optimizeDB">データベースを最適化する</label>
 	</div>
 
+	<div flexy:if="enable_fix_null">
+		<input type="radio" name="action" id="action_fixNull" value="fixNull" onclick="dropZeroOptions(false)" />
+		<label for="action_fixNull">NULLデータの復旧</label>
+	</div>
+
 	<hr />
 
 	<div>

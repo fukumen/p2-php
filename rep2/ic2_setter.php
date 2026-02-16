@@ -339,9 +339,7 @@ function ic2_register_uploaded_file($file)
         $record->mime   = $file['mime'];
         $record->time   = $f_time;
         $record->rank   = $f_rank;
-        if (strlen($f_memo) > 0) {
-            $record->memo = $f_memo;
-        }
+        $record->memo   = $f_memo;
 
         // “o˜^Ï‚Ý‚Ì‰æ‘œ‚ÅAURL‚ªˆÙ‚È‚é‚Æ‚«
         if ($search2->find(true) && file_exists($file['img_src'])) {

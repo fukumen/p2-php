@@ -502,6 +502,9 @@ if ($retry && $size == $_size && $md5 == $_md5 && $mime == $_mime) {
     if ($ini['General']['automemo'] && !is_null($memo)) {
         $record->memo = $memo;
     }
+    if (!isset($record->memo)) {
+        $record->memo = '';
+    }
     $record->insert();
 }
 
@@ -538,6 +541,9 @@ function ic2_aborn($params, $infected = false)
     $aborn->rank = $infected ? -4 : -1;
     if ($ini['General']['automemo'] && !is_null($memo)) {
         $aborn->memo = $memo;
+    }
+    if (!isset($record->memo)) {
+        $record->memo = '';
     }
     return $aborn->insert();
 }
