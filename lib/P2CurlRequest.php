@@ -12,6 +12,7 @@ class P2CurlRequest
     private $headers = array();
     private $config = array();
     private $postParams = array();
+    private $uploads = array();
     private $body = null;
     private $cookies = array();
     private $debugfile = null;
@@ -29,10 +30,18 @@ class P2CurlRequest
     {
         if (is_array($name)) {
             foreach ($name as $k => $v) {
-                $this->headers[strtolower($k)] = $v;
+                if ($v === null) {
+                    unset($this->headers[strtolower($k)]);
+                } else {
+                    $this->headers[strtolower($k)] = $v;
+                }
             }
         } else {
-            $this->headers[strtolower($name)] = $value;
+            if ($value === null) {
+                unset($this->headers[strtolower($name)]);
+            } else {
+                $this->headers[strtolower($name)] = $value;
+            }
         }
     }
 
@@ -72,6 +81,16 @@ class P2CurlRequest
         } else {
             $this->postParams[$name] = $value;
         }
+    }
+
+    public function addUpload($fieldName, $filename, $sendFilename = null, $contentType = null)
+    {
+        $this->uploads[] = array(
+            'fieldName' => $fieldName,
+            'filename' => $filename,
+            'sendFilename' => $sendFilename,
+            'contentType' => $contentType
+        );
     }
 
     public function setBody($body)
@@ -137,7 +156,27 @@ class P2CurlRequest
 
         if ($this->method == 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
-            if (!empty($this->postParams)) {
+            if (!empty($this->uploads)) {
+                $postFields = $this->postParams;
+                foreach ($this->uploads as $upload) {
+                    $f = $upload['filename'];
+                    $mime = $upload['contentType'];
+                    $postname = $upload['sendFilename'];
+
+                    $cfile = new CURLFile($f);
+                    if ($mime) {
+                        $cfile->setMimeType($mime);
+                    }
+                    if ($postname) {
+                        $cfile->setPostFilename($postname);
+                    }
+                    $postFields[$upload['fieldName']] = $cfile;
+                }
+                if (isset($this->headers['content-type'])) {
+                    unset($this->headers['content-type']);
+                }
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+            } elseif (!empty($this->postParams)) {
                 if (!isset($this->headers['content-type'])) {
                     $this->headers['content-type'] = 'application/x-www-form-urlencoded';
                 }
@@ -157,11 +196,24 @@ class P2CurlRequest
 
         $headers = array();
         foreach ($this->headers as $k => $v) {
+            if ($v === null) continue;
             if ($k === 'accept-encoding') {
                 curl_setopt($ch, CURLOPT_ENCODING, $v);
                 continue;
             }
-            $headers[] = ucwords($k, '-') . ': ' . $v;
+            if ($k === 'user-agent') {
+                curl_setopt($ch, CURLOPT_USERAGENT, $v);
+                continue;
+            }
+            if ($k === 'referer') {
+                curl_setopt($ch, CURLOPT_REFERER, $v);
+                continue;
+            }
+            if ($v === '') {
+                $headers[] = ucwords($k, '-') . ':';
+            } else {
+                $headers[] = ucwords($k, '-') . ': ' . $v;
+            }
         }
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 

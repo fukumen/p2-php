@@ -115,7 +115,7 @@ class P2ImgurUploader implements P2UploaderInterface
     public function upload($localPath, $filename)
     {
     	$data = fread(fopen($localPath, "rb"), filesize($localPath));
-    	$imgur_api = 'https://api.imgur.com/3/image.json';
+    	$imgur_api = 'https://api.imgur.com/3/image';
 
     	$req = P2Commun::createHTTPRequest ($imgur_api,HTTP_Request2::METHOD_POST);
 
@@ -134,7 +134,140 @@ class P2ImgurUploader implements P2UploaderInterface
             return $image_url;
         }
 
-        return null;
+        throw new RuntimeException("Imgur Upload Error: " . $response->getStatus() . " " . $response->getBody());
+    }
+}
+
+// }}}
+// {{{ P2ImgbbUploader
+
+class P2ImgbbUploader implements P2UploaderInterface
+{
+    /**
+     * @var string
+     */
+    private $api_key;
+
+    /**
+     * @param string $api_key
+     */
+    public function __construct($api_key)
+    {
+        $this->api_key = $api_key;
+    }
+
+    /**
+     * @param string $localPath
+     * @param string $filename
+     *
+     * @return string URL
+     */
+    public function upload($localPath, $filename)
+    {
+        $data = fread(fopen($localPath, "rb"), filesize($localPath));
+        $imgbb_api = 'https://api.imgbb.com/1/upload';
+
+        $req = P2Commun::createHTTPRequest($imgbb_api, HTTP_Request2::METHOD_POST);
+
+        $req->addPostParameter('key', $this->api_key);
+        $req->addPostParameter('image', base64_encode($data));
+
+        $response = P2Commun::getHTTPResponse($req);
+
+        if ($response->getStatus() == 200) {
+            $result = json_decode($response->getBody());
+            if (isset($result->data->url)) {
+                return $result->data->url;
+            }
+        }
+
+        throw new RuntimeException("Imgbb Upload Error: " . $response->getStatus() . " " . $response->getBody());
+    }
+}
+
+// }}}
+// {{{ P2CatboxUploader
+
+class P2CatboxUploader implements P2UploaderInterface
+{
+    /**
+     * @var string
+     */
+    private $userhash;
+
+    /**
+     * @param string $userhash
+     */
+    public function __construct($userhash = '')
+    {
+        $this->userhash = $userhash;
+    }
+
+    /**
+     * @param string $localPath
+     * @param string $filename
+     *
+     * @return string URL
+     */
+    public function upload($localPath, $filename)
+    {
+        $url = 'https://catbox.moe/user/api.php';
+        $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST);
+
+        $req->addPostParameter('reqtype', 'fileupload');
+        if ($this->userhash !== '') {
+            $req->addPostParameter('userhash', $this->userhash);
+        }
+        $req->addUpload('fileToUpload', $localPath, $filename);
+
+        $response = P2Commun::getHTTPResponse($req);
+
+        if ($response->getStatus() == 200) {
+            return trim($response->getBody());
+        }
+        throw new RuntimeException("Catbox Upload Error: " . $response->getStatus() . " " . $response->getBody());
+    }
+}
+
+// }}}
+// {{{ P2LitterboxUploader
+
+class P2LitterboxUploader implements P2UploaderInterface
+{
+    /**
+     * @var string
+     */
+    private $time;
+
+    /**
+     * @param string $time
+     */
+    public function __construct($time)
+    {
+        $this->time = $time;
+    }
+
+    /**
+     * @param string $localPath
+     * @param string $filename
+     *
+     * @return string URL
+     */
+    public function upload($localPath, $filename)
+    {
+        $url = 'https://litterbox.catbox.moe/resources/internals/api.php';
+        $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST);
+
+        $req->addPostParameter('reqtype', 'fileupload');
+        $req->addPostParameter('time', $this->time);
+        $req->addUpload('fileToUpload', $localPath, $filename);
+
+        $response = P2Commun::getHTTPResponse($req);
+
+        if ($response->getStatus() == 200) {
+            return trim($response->getBody());
+        }
+        throw new RuntimeException("Litterbox Upload Error: " . $response->getStatus() . " " . $response->getBody());
     }
 }
 
@@ -169,11 +302,25 @@ ob_start();
 // {{{ アップローダーをセットアップ
 
 try {
-    $uploader = new P2DropboxUploader(
-        $_conf['dropbox_auth_json'],
-        $_conf['p2name'],
-        $_conf['expack.dropbox.upload_prefix']
-    );
+    if (isset($_GET['mode'])) {
+        if ($_GET['mode'] === 'imgur') {
+            $client_id = isset($_conf['upload_imgur_clientid']) ? $_conf['upload_imgur_clientid'] : '';
+            $uploader = new P2ImgurUploader($client_id);
+        } elseif ($_GET['mode'] === 'imgbb') {
+            $api_key = isset($_conf['upload_imgbb_apikey']) ? $_conf['upload_imgbb_apikey'] : '';
+            $uploader = new P2ImgbbUploader($api_key);
+        } elseif ($_GET['mode'] === 'catbox') {
+            $userhash = isset($_conf['upload_catbox_userhash']) ? $_conf['upload_catbox_userhash'] : '';
+            $uploader = new P2CatboxUploader($userhash);
+        } elseif ($_GET['mode'] === 'litterbox') {
+            $time = isset($_conf['upload_litterbox_time']) ? $_conf['upload_litterbox_time'] : '';
+            $uploader = new P2LitterboxUploader($time);
+        } else {
+            $uploader = null;
+        }
+    } else {
+        $uploader = null;
+    }
 } catch (Exception $e) {
     $uploader = null;
     $error .= $e->getMessage() . "\n";

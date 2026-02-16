@@ -456,6 +456,31 @@ $conf_user_def['donguri_method'] = 0;  // (0)
 $conf_user_rad['donguri_method'] = array('0' => 'Gmail', '1' => 'UPLIFT');
 
 // }}}
+// {{{ upload
+
+// 使用するアップローダ
+$conf_user_def['upload_method'] = 0; // (0)
+$conf_user_rad['upload_method'] = array('0' => '使用しない', '1' => 'imgur', '2' => 'imgbb', '3' => 'catbox', '4' => 'litterbox');
+
+// Client ID
+$conf_user_def['upload_imgur_clientid'] = ""; // ("")
+
+// API Key
+$conf_user_def['upload_imgbb_apikey'] = ""; // ("")
+
+// User hash(省略すると削除出来ない)
+$conf_user_def['upload_catbox_userhash'] = ""; // ("")
+
+// time
+$conf_user_def['upload_litterbox_time'] = "72h"; // ("72h")
+$conf_user_rad['upload_litterbox_time'] = array(
+    '1h'    => '1h',
+    '12h'   => '12h',
+    '24h'   => '24h',
+    '72h'   => '72h',
+);
+
+// }}}
 // {{{ ETC
 
 // レス書き込み時のデフォルトの名前

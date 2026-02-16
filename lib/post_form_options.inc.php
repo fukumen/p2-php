@@ -361,7 +361,25 @@ if (!$_conf['ktai'] || $_conf['iphone']) {
 }
 */
 
-$upload_mode = 'imgur';
+if (isset($_conf['upload_method'])) {
+    switch ($_conf['upload_method']) {
+        case 1:
+            $upload_mode = 'imgur';
+            break;
+        case 2:
+            $upload_mode = 'imgbb';
+            break;
+        case 3:
+            $upload_mode = 'catbox';
+            break;
+        case 4:
+            $upload_mode = 'litterbox';
+            break;
+        default:
+            $upload_mode = null;
+            break;
+    }
+}
 
 if ($upload_mode !== null) {
     if ($_conf['ktai'] || $_conf['iphone']) {

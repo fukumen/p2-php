@@ -7,14 +7,14 @@
 // バージョン情報
 $_conf = array(
     'p2name'    => 'rep2-expack_allinone',   // rep2の名前
-    'p2version' => '260101.0000',   // rep2のバージョン
+    'p2version' => '260101.0001',   // rep2のバージョン
 );
 
 $_conf['p2ua'] = "{$_conf['p2name']}/{$_conf['p2version']}";
 
 define('P2_VERSION_ID', sprintf('%u', crc32($_conf['p2ua'])));
 
-$_conf['jquery_version'] = '3.2.1';
+$_conf['jquery_version'] = '3.7.1';
 
 /*
  * 通常はセッションファイルのロック待ちを極力短くするため

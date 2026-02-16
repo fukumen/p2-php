@@ -421,6 +421,29 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 }
 
 // }}}
+// {{{ upload
+
+$groupname = 'upload';
+$groups[] = $groupname;
+$flags = getGroupShowFlags($groupname);
+if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
+    $keep_old = true;
+} else {
+    $conflist = array(
+        array('upload_method', '使用するアップローダ'),
+        'imgur',
+        array('upload_imgur_clientid', 'Client ID'),
+        'imgbb',
+        array('upload_imgbb_apikey', 'API Key'),
+        'catbox',
+        array('upload_catbox_userhash', 'User hash(省略すると削除出来ない)'),
+        'litterbox',
+        array('upload_litterbox_time', 'time'),
+    );
+    printEditConfGroupHtml($groupname, $conflist, $flags);
+}
+
+// }}}
 // {{{ ETC
 
 $groupname = 'ETC';

@@ -27,6 +27,7 @@
 * 認証関係のハッシュや暗号化を強化
 * 5chのどんぐりシステムの警備員●とハンターに対応([詳細はこちら](doc/README-donguri.md))
 * UPLIFTの5chログインに対応([詳細はこちら](doc/README-login5ch.md))
+* 画像アップローダ(imgur/imgbb/catbox/litterbox)に対応
 
 なお、5ch以外やpinkでは全くテストしていません。
 
