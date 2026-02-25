@@ -248,7 +248,7 @@ function get_uplift_sid($idpw2ch = null)
         $data = @unserialize($content);
         $sid = $data['sid'];
         if ($sid && is_array($sid)) {
-            // 期限切れ1時間前で自動ログインするなら再ログイン
+            // 期限切れ1時間前なら再ログイン
             if (isset($sid['expires']) && time() > strtotime($sid['expires']) - 3600) {
                 if ($idpw2ch == null) {
                     $idpw2ch = P2Util::readIdPw2ch();

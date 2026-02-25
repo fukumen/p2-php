@@ -38,6 +38,7 @@ if (isset($_POST['login2chID']) && isset($_POST['login2chPW'])) {
 }
 
 $expiration_st = '';
+$sid_expires_st = '';
 // （フォーム入力用に）ID, PW設定を読み込む
 $array = P2Util::readIdPw2ch();
 if ($array) {
@@ -83,8 +84,22 @@ if ($array && file_exists($_conf['siduplift_file'])) {
                 // 期限切れ
                 unlink($_conf['siduplift_file']);
             }
-            $expiration_st = "有効期限: {$expiration_date}<br>";
+            $expiration_st = "アカウントの有効期限: {$expiration_date}<br>";
         }
+    }
+    if (isset($data['sid']['expires'])) {
+        $sid_expires_time = strtotime($data['sid']['expires']);
+        $sid_expires_date = date('Y/m/d H:i:s', $sid_expires_time);
+        $diff = $sid_expires_time - time();
+        if ($diff > 0) {
+            $days = floor($diff / 86400);
+            $hours = floor(($diff % 86400) / 3600);
+            $minutes = floor(($diff % 3600) / 60);
+            $sid_expires_date .= " (残り{$days}日 {$hours}時間 {$minutes}分)";
+        } else {
+            $sid_expires_date .= " (期限切れ)";
+        }
+        $sid_expires_st = "クッキー(sid)の有効期限: {$sid_expires_date}<br>";
     }
 }
 
@@ -168,6 +183,7 @@ if (file_exists($_conf['siduplift_file']) || file_exists($_conf['sid2ch_php'])) 
         <input type="submit" name="submit" value="{$logout_st}する">
     </form>\n
     {$expiration_st}
+    {$sid_expires_st}
 EOFORM;
 
 } else {
