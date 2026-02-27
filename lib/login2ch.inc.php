@@ -24,9 +24,9 @@ function login2ch()
     }
 
     if ($methodLogin2ch == 1) {
-        return login2ch_tora3($login2chID, $login2chPW);
+        login2ch_tora3($login2chID, $login2chPW);
     } else {
-        return login2ch_uplift($login2chID, $login2chPW);
+        login2ch_uplift($login2chID, $login2chPW);
     }
 }
 
@@ -216,9 +216,11 @@ function login2ch_uplift($login2chID, $login2chPW)
     // 有効期限を取得するが、失敗は気にしない
     $expiration = check_uplift_expiration($response_cookies);
 
+    $data = array('sid' => $sid, 'cookies' => $response_cookies, 'expiration' => $expiration);
+
     file_exists($_conf['sid2ch_php']) and unlink($_conf['sid2ch_php']);
     $temp_file = $_conf['siduplift_file'] . '.tmp';
-    if (FileCtl::file_write_contents($temp_file, serialize(array('sid' => $sid, 'cookies' => $response_cookies, 'expiration' => $expiration))) === false) {
+    if (FileCtl::file_write_contents($temp_file, serialize($data)) === false) {
         P2Util::pushInfoHtml("<p>p2 Error: {$_conf['siduplift_file']} を保存できませんでした。ログイン登録失敗。</p>");
         return false;
     }
@@ -230,7 +232,7 @@ function login2ch_uplift($login2chID, $login2chPW)
         return false;
     }
 
-    return [$sid, $response_cookies, $expiration];
+    return $data;
 }
 
 // }}}
@@ -259,6 +261,7 @@ function get_uplift_sid($idpw2ch = null)
                         $new_data = login2ch_uplift($login2chID, $login2chPW);
                         if ($new_data) {
                             $data = $new_data;
+                            $sid = $data['sid'];
                         }
                     }
                 }
