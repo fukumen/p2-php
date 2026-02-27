@@ -292,6 +292,7 @@ function checkUpdatan2($run_id)
                 $latest_run_id = $json['workflow_runs'][0]['id'];
                 if ($latest_run_id > $run_id) {
                     $docker_msg = isset($json['workflow_runs'][0]['head_commit']['message']) ? $json['workflow_runs'][0]['head_commit']['message'] : '';
+                    $docker_msg = (string)strtok($docker_msg, "\r\n");
                     $docker_msg = p2h(mb_convert_encoding($docker_msg, 'Shift_JIS', 'UTF-8'));
                     $docker_hash = isset($json['workflow_runs'][0]['head_sha']) ? substr($json['workflow_runs'][0]['head_sha'], 0, 7) : '';
                     $docker_date = isset($json['workflow_runs'][0]['head_commit']['timestamp']) ? $json['workflow_runs'][0]['head_commit']['timestamp'] : '';
@@ -309,6 +310,7 @@ function checkUpdatan2($run_id)
                     if ($response2->getStatus() == 200) {
                         $json2 = json_decode($response2->getBody(), true);
                         $rep2_msg = isset($json2['workflow_runs'][0]['head_commit']['message']) ? $json2['workflow_runs'][0]['head_commit']['message'] : '';
+                        $rep2_msg = (string)strtok($rep2_msg, "\r\n");
                         $rep2_msg = p2h(mb_convert_encoding($rep2_msg, 'Shift_JIS', 'UTF-8'));
                         $rep2_hash = isset($json2['workflow_runs'][0]['head_sha']) ? substr($json2['workflow_runs'][0]['head_sha'], 0, 7) : '';
                         $rep2_date = isset($json2['workflow_runs'][0]['head_commit']['timestamp']) ? $json2['workflow_runs'][0]['head_commit']['timestamp'] : '';
