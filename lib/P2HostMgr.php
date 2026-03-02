@@ -204,6 +204,20 @@ class P2HostMgr
     }
 
     // }}}
+    // }}}
+    // {{{ isHostHeadline()
+
+    /**
+     * host ‚ªƒwƒbƒhƒ‰ƒCƒ“‚È‚ç true ‚ð•Ô‚·
+     *
+     * @param string $host
+     * @return bool
+     */
+    static public function isHostHeadline($host)
+    {
+        return ($host == 'headline.5ch.net' || $host == 'headline.2ch.net');
+    }
+
     // {{{ isHostBe5chNet()
 
     /**

@@ -277,7 +277,7 @@ class ThreadList
         default:
             if (!$this->spmode) {
                 $aSubjectTxt = new SubjectTxt($this->host, $this->bbs);
-                if (P2HostMgr::isHost2chs($this->host)) {
+                if (P2HostMgr::isHost2chs($this->host) && !P2HostMgr::isHostHeadline($this->host)) {
                     // subject.txt を lastmodify.txt 形式に変換つつマージ
                     //   本来｢subject.txt を lastmodify.txt 形式に変換｣するのは SubjectTxt クラスの中で行ったほうが
                     //   将来的にいいかもしれないがとりあえずここでやる

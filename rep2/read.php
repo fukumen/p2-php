@@ -461,7 +461,7 @@ if ($aThread->rescount) {
 // —š—ð‚ð‹L˜^
 // ‘¬•ñheadline‚ÍÅ‹ß“Ç‚ñ‚¾ƒXƒŒ‚É‹L˜^‚µ‚È‚¢‚æ‚¤‚É‚µ‚Ä‚Ý‚é
 //===========================================================
-if ($aThread->rescount && !$is_ajax && $aThread->host != 'headline.2ch.net'&& $aThread->host != 'headline.5ch.net') {
+if ($aThread->rescount && !$is_ajax && !P2HostMgr::isHostHeadline($aThread->host)) {
     recRecent(implode('<>', array($aThread->ttitle, $aThread->key, $idx_data[2], '', '',
                                   $aThread->readnum, $idx_data[6], $idx_data[7], $idx_data[8], $newline,
                                   $aThread->host, $aThread->bbs)));

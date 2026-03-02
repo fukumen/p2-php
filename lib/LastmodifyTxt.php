@@ -30,8 +30,8 @@ class LastmodifyTxt
         $this->storage = 'file';
 
         $this->lastmodify_file = P2Util::datDirOfHostBbs($host, $bbs) . 'lastmodify.txt';
-        // 接続先が 2ch.net / 5ch / pink 以外の場合ダウンロードしない
-        if (!P2HostMgr::isHost2chs($this->host)) {
+        // 接続先が 2ch.net / 5ch / pink 以外、または headline サーバーの場合はダウンロードしない
+        if (!P2HostMgr::isHost2chs($this->host) || P2HostMgr::isHostHeadline($this->host)) {
         	return ;
         }
         $this->lastmodify_url = ($_conf['2ch_ssl.subject']?'https://':'http://') . $host . '/' . $bbs . '/lastmodify.txt';
