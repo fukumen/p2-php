@@ -151,6 +151,9 @@ if (isset($_POST['sync'])) {
             break;
     }
     if ($delflag) {
+        if (!$_conf['iphone'] && !$_conf['ktai']) {
+            P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
+        }
         P2Util::pushInfoHtml("<p>p2 info: {$deltitles[$_POST['delete']]}‚ğíœ‚µ‚Ü‚µ‚½B");
     } else {
         P2Util::pushInfoHtml("<p>p2 error: {$deltitles[$_POST['delete']]}‚Ìíœ‚É¸”s‚µ‚Ü‚µ‚½B");

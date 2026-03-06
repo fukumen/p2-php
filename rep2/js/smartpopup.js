@@ -99,7 +99,7 @@ SPM.init = function (aThread) {
 	if (opt[6] == 1) {
 		spm.appendItem('‚Ç‚ñ‚®‚è‘å–C', function () {
 			if (window.confirm('‚Ç‚ñ‚®‚è‘å–C‚ğŒ‚‚ÄI\nURL: ' + aThread.url + '\nDate: ' + spmResDate)) {
-				var url = 'https://donguri.5ch.net/confirm?url=' + encodeURIComponent(aThread.url) + '&date=' + encodeURIComponent(spmResDate);
+				var url = 'dongurictl.php?mode=confirm&url=' + encodeURIComponent(aThread.url) + '&date=' + encodeURIComponent(spmResDate);
 				window.open(url, '_blank');
 			}
 		});

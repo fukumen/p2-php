@@ -69,6 +69,10 @@ if (!empty($_POST['submit_save'])) {
         P2Util::pushInfoHtml('<p>×設定を更新保存できませんでした</p>');
     } else {
         P2Util::pushInfoHtml('<p>○設定を更新保存しました</p>');
+
+        if (!$_conf['iphone'] && !$_conf['ktai']) {
+            P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
+        }
         // 変更があれば、内部データも更新しておく
         $_conf = array_merge($_conf, $conf_user_def, $conf_save);
     }
@@ -81,6 +85,10 @@ if (!empty($_POST['submit_save'])) {
 } elseif (!empty($_POST['submit_default'])) {
     if (file_exists($_conf['conf_user_file']) and unlink($_conf['conf_user_file'])) {
         P2Util::pushInfoHtml('<p>○設定をデフォルトに戻しました</p>');
+
+        if (!$_conf['iphone'] && !$_conf['ktai']) {
+            P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
+        }
         // 変更があれば、内部データも更新しておく
         $_conf = array_merge($_conf, $conf_user_def);
         if (is_array($conf_save)) {
@@ -258,7 +266,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 板リストをオンラインURLから自動で読み込む。
 指定先は menu.html 形式、2channel.brd 形式のどちらでもよい。
 <!-- 必要なければ、空白に。 --><br>
-2ch基本 <a href="https://menu.5ch.net/bbsmenu.html" target="_blank">https://menu.5ch.net/bbsmenu.html</a><br>
+2ch基本 <a href="https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html" target="_blank">https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html</a><br>
 2ch + 外部BBS <a href="http://azlucky.s25.xrea.com/2chboard/bbsmenu.html" target="_blank">http://azlucky.s25.xrea.com/2chboard/bbsmenu.html</a>',
             P2_EDIT_CONF_USER_LONGTEXT),
     );

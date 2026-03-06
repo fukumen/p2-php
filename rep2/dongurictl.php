@@ -49,7 +49,7 @@ if (isset($_GET['mode']) && $_GET['mode'] === 'check') {
 <body>
 <?php
     if ($acorn) {
-        $js = "document.cookie = \"acorn=" . $acorn . "; domain=.5ch.net; path=/;";
+        $js = "document.cookie = \"acorn=" . $acorn . "; domain=." . $_conf['2ch_domain'] . "; path=/;";
         $js .= "\";";
         $bookmarklet = "javascript:(function(){" . $js . "alert('acorn set');})();";
         $bookmarklet_link = htmlspecialchars($bookmarklet, ENT_QUOTES, 'Shift_JIS');
@@ -58,7 +58,7 @@ if (isset($_GET['mode']) && $_GET['mode'] === 'check') {
 <p><b>注意：ブラウザのクッキーにどんぐりがある場合、手順2のどんぐりシステムのログアウトにより削除されます。削除されたくない場合、手順2,3,4でシークレットモードなどを使ってください。</b></p>
 <ol>
 <li>「<a href="<?php echo $bookmarklet_link; ?>">どんぐり設定</a>」のリンクをブックマークバーにドラッグ＆ドロップし、ブックマークに登録してください。スマホなどドラッグ＆ドロップでブックマークに登録が出来ないブラウザでは適当なブックマークを登録後に編集しリンクにあるjavascriptに置き換えてください</li>
-<li>「<a href="https://donguri.5ch.net/" target="_blank">どんぐり基地</a>」を開いてログインされていたら、ログアウトしてください</li>
+<li>「<a href="https://donguri.<?php echo $_conf['2ch_domain']; ?>/" target="_blank">どんぐり基地</a>」を開いてログインされていたら、ログアウトしてください</li>
 <li>どんぐりシステムのログイン画面のはずです。ここで登録したブックマークレットをクリックするとrep2のの警備員○のどんぐりをセッションクッキーとして設定されます</li>
 <li>この状態でどんぐり基地をリロード(F5)するとrep2の警備員○の情報が見えるはずです。確認が終わったらログアウトしてください。ログアウトすることでブラウザに登録されたどんぐりのクッキーが削除されます</li>
 </ol>
@@ -73,6 +73,9 @@ if (isset($_GET['mode']) && $_GET['mode'] === 'check') {
 <?php
     exit;
 } elseif (isset($_GET['mode']) && $_GET['mode'] === 'confirm') {
+    $url = 'https://donguri.' . $_conf['2ch_domain'] . '/confirm?url=' . urlencode($_GET['url']) . '&date=' . urlencode($_GET['date']);
+    header('Location: ' . $url);
+    exit;
 }
 
 // }}}

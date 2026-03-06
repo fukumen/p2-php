@@ -167,7 +167,7 @@ SPM.open = (function(action)
 SPM.donguri = (function()
 {
 	if (window.confirm('‚Ç‚ñ‚®‚è‘å–C‚ğŒ‚‚ÄI\nURL: ' + SPM.activeThread.url + '\nDate: ' + SPM.activeDate)) {
-		var url = 'https://donguri.5ch.net/confirm?url=' + encodeURIComponent(SPM.activeThread.url) + '&date=' + encodeURIComponent(SPM.activeDate);
+		var url = 'dongurictl.php?mode=confirm&url=' + encodeURIComponent(SPM.activeThread.url) + '&date=' + encodeURIComponent(SPM.activeDate);
 		window.open(url, '_blank');
 	}
 });
