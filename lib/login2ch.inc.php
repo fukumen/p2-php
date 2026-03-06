@@ -288,7 +288,7 @@ function check_uplift_expiration($uplift_cookie)
 {
     global $_conf;
 
-    $uplift_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'uplift.5ch.net/';
+    $uplift_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'uplift.' . $_conf['2ch_domain'] . '/';
     $body = null;
     try {
         $req = P2Commun::createHTTPRequest ($uplift_url . 'dashboard', HTTP_Request2::METHOD_GET);

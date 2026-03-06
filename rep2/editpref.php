@@ -94,6 +94,10 @@ if (isset($_POST['sync'])) {
         }
     }
 
+    if (!$_conf['iphone'] && !$_conf['ktai']) {
+        P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
+    }
+
 // お気に入りセット変更があれば、設定ファイルを書き換える
 } elseif ($_conf['expack.misc.multi_favs'] && isset($_POST['favsetlist'])) {
     updateFavSetList();
