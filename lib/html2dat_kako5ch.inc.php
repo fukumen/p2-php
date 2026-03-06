@@ -144,6 +144,8 @@ function html2dat_kako5ch($html, $outputFile) {
  * ノードを再帰的に処理し、<br>を保持しつつテキストを抽出・エスケープする関数
  */
 function processNode($node) {
+    global $_conf;
+
     $text = '';
     foreach ($node->childNodes as $child) {
         if ($child->nodeType === XML_TEXT_NODE) {
@@ -163,9 +165,9 @@ function processNode($node) {
                     }
                     // ssspアイコンの変換
                     if (preg_match('#^https?://img\.5ch\.net/ico/(.+)$#', $src, $m)) {
-                        $src = 'sssp://img.5ch.net/ico/' . $m[1];
+                        $src = 'sssp://img.' . $_conf['2ch_domain'] . '/ico/' . $m[1];
                     }
-                    $src = str_replace('8ch.net', '5ch.net', $src);
+                    $src = str_replace('8ch.net', $_conf['2ch_domain'], $src);
                     $text .= ' ' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . ' ';
                 }
             } else {

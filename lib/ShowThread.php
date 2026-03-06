@@ -630,7 +630,7 @@ abstract class ShowThread
         global $_conf;
 
         //$beid_replace = "<a href=\"http://be.2ch.net/test/p.php?i=\$1&u=d:http://{$this->thread->host}/test/read.cgi/{$this->thread->bbs}/{$this->thread->key}/{$i}\"{$_conf['ext_win_target_at']}>Lv.\$2</a>";
-        $beid_replace = "<a href=\"https://be.5ch.net/user/\$1\"{$_conf['ext_win_target_at']}>Lv.\$2</a>";
+        $beid_replace = "<a href=\"https://be.{$_conf['2ch_domain']}/user/\$1\"{$_conf['ext_win_target_at']}>Lv.\$2</a>";
 
         //<BE:23457986:1>
         $be_match = '|<BE:(\d+):(\d+)>|i';
@@ -640,7 +640,7 @@ abstract class ShowThread
         } else {
 
             //$beid_replace = "<a href=\"http://be.2ch.net/test/p.php?i=\$1&u=d:http://{$this->thread->host}/test/read.cgi/{$this->thread->bbs}/{$this->thread->key}/{$i}\"{$_conf['ext_win_target_at']}>?\$2</a>";
-            $beid_replace = "<a href=\"https://be.5ch.net/user/\$1\"{$_conf['ext_win_target_at']}>?\$2</a>";
+            $beid_replace = "<a href=\"https://be.{$_conf['2ch_domain']}/user/\$1\"{$_conf['ext_win_target_at']}>?\$2</a>";
             $date_id = preg_replace('|BE: ?(\d+)-(#*)|i', $beid_replace, $date_id);
         }
 

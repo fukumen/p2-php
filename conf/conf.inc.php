@@ -86,6 +86,7 @@ function p2_init()
     $_conf['read_php']              = 'read.php';
     $_conf['read_new_php']          = 'read_new.php';
     $_conf['read_new_k_php']        = 'read_new_k.php';
+    $_conf['2ch_domain']            = '5ch.io';
 
     // }}}
     // {{{ ŠÂ‹«İ’è

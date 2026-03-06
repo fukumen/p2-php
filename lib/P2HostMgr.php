@@ -197,8 +197,10 @@ class P2HostMgr
      */
     static public function isHost5ch($host)
     {
+        global $_conf;
         if (!array_key_exists($host, self::$_hostIs5ch)) {
-            self::$_hostIs5ch[$host] = (bool)preg_match('<^\\w+\\.(?:5ch\\.net)$>', $host);
+            $domain = preg_quote($_conf['2ch_domain'], '<');
+            self::$_hostIs5ch[$host] = (bool)preg_match('<^\\w+\\.(?:5ch\\.net|' . $domain . ')$>', $host);
         }
         return self::$_hostIs5ch[$host];
     }
@@ -215,7 +217,8 @@ class P2HostMgr
      */
     static public function isHostHeadline($host)
     {
-        return ($host == 'headline.5ch.net' || $host == 'headline.2ch.net');
+        global $_conf;
+        return ($host == 'headline.' . $_conf['2ch_domain'] || $host == 'headline.5ch.net' || $host == 'headline.2ch.net');
     }
 
     // {{{ isHostBe5chNet()
@@ -228,7 +231,8 @@ class P2HostMgr
      */
     static public function isHostBe5chNet($host)
     {
-        return $host == 'be.5ch.net';
+        global $_conf;
+        return ($host == 'be.' . $_conf['2ch_domain']) || ($host == 'be.5ch.net');
     }
 
     // }}}
@@ -242,7 +246,8 @@ class P2HostMgr
      */
     static public function isNotUse5chAPI($host)
     {
-        return ($host == 'qb5.5ch.net' || $host == 'carpenter.5ch.net');
+        global $_conf;
+        return ($host == 'qb5.' . $_conf['2ch_domain'] || $host == 'carpenter.' . $_conf['2ch_domain']) || ($host == 'qb5.5ch.net' || $host == 'carpenter.5ch.net');
     }
 
     // }}}
@@ -576,7 +581,7 @@ class P2HostMgr
         $type = self::getHostGroupName($host);
 
         // dat”j‘¹–hŽ~‚Ì‚½‚ßitest.[25]ch.net‚Í–â“š–³—p‚Åfalse
-        if($host == 'itest.5ch.net'||$host == 'itest.2ch.net') {
+        if($host == 'itest.' . $_conf['2ch_domain'] || $host == 'itest.5ch.net' || $host == 'itest.2ch.net') {
             return false;
         }
 

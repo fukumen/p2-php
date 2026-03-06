@@ -5,7 +5,7 @@ function find5ch_search($query)
 
     $q = $query_arry['q'];
 
-    $base_url = 'https://find.5ch.net';
+    $base_url = 'https://find.5ch.io';
     $endpoint = $base_url . '/search?q=' . urlencode($q);
     $referer = $endpoint;
 

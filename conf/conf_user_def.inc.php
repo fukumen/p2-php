@@ -37,9 +37,9 @@ $conf_user_def['first_page'] = "first_cont.php"; // ("first_cont.php")
     必要なければ、無指定("")にする。
 */
 // ("http://azlucky.s25.xrea.com/2chboard/bbsmenu.html")    // 2ch + 外部BBS
-// ("https://menu.5ch.net/bbsmenu.html")                     // 2ch基本
+// ("https://menu.5ch.io/bbsmenu.html")                     // 2ch基本
 
-$conf_user_def['brdfile_online'] = "https://menu.5ch.net/bbsmenu.html";
+$conf_user_def['brdfile_online'] = "https://menu.5ch.io/bbsmenu.html";
 $conf_user_rules['brdfile_online'] = array('emptyToDef', 'invalidUrlToDef');
 
 // }}}

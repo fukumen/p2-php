@@ -541,13 +541,13 @@ class ThreadRead extends Thread {
                 $this->modified = null;
                 return $this->_downloadDat2ch (0); // あぼーん検出。全部取り直し。
             } elseif ($code == '404' && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)) {
-                if ($this->host == 'kako.5ch.net') {
+                if ($this->host == 'kako.' . $_conf['2ch_domain'] || $this->host == 'kako.5ch.net') {
                     return $this->_downloadDat5chKako ();
                 } else {
                     $uri = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
                     return $this->_downloadDat2chKako ($uri, ".dat");
                 }
-            } elseif ($code == '301' && ($location = $response->getHeader('Location')) && strpos($location, 'kako.5ch.net') !== false) {
+            } elseif ($code == '301' && ($location = $response->getHeader('Location')) && (strpos($location, 'kako.' . $_conf['2ch_domain']) !== false || strpos($location, 'kako.5ch.net') !== false)) {
                 return $this->_downloadDat5chKako ();
             } elseif ($code == '522') {
                 $serverName = $response->getHeader('Server');
@@ -640,7 +640,7 @@ class ThreadRead extends Thread {
     protected function _downloadDat5chKako() {
         global $_conf;
 
-        $this->host = 'kako.5ch.net';
+        $this->host = 'kako.' . $_conf['2ch_domain'];
         $url = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
 
         try {

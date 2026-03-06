@@ -1489,6 +1489,8 @@ ERR;
      */
     static public function detectThread($url = null)
     {
+        global $_conf;
+
         if ($url) {
             $nama_url = $url;
         } elseif (isset($_GET['nama_url'])) {
@@ -1564,7 +1566,7 @@ ERR;
                 $ls = (isset($matches[5]) && strlen($matches[5])) ? $matches[5] : '';
 
                 // itest - https://itest.5ch.net/hayabusa9/test/read.cgi/mnewsplus/1510531889
-            } elseif (preg_match('<^https?://(itest\\.(?:[25]ch\\.net|bbspink\\.com))/(\\w+)/test/read\\.cgi/(\\w+)/(\\d+)(?:/(.+$))?>x', $nama_url, $matches)) {
+            } elseif (preg_match('<^https?://(itest\\.(?:[25]ch\\.net|' . preg_quote($_conf['2ch_domain'], '<') . '|bbspink\\.com))/(\\w+)/test/read\\.cgi/(\\w+)/(\\d+)(?:/(.+$))?>x', $nama_url, $matches)) {
                 $host = str_replace("itest", $matches[2], $matches[1]);
                 $bbs = $matches[3];
                 $key = $matches[4];

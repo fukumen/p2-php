@@ -21,7 +21,7 @@ class Donguri {
     {
         global $_conf, $_login;
 
-        $this->base_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'donguri.5ch.net/';
+        $this->base_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'donguri.' . $_conf['2ch_domain'] . '/';
         $this->cookie_key = $_login->user_u . '/' . self::COOKIE_HOST;
         $this->_read_cookie();
     }
@@ -425,7 +425,7 @@ class Donguri {
             $txt .= $delimiter . $data['name'] . $delimiter . $data['job'] . $delimiter . "ID:" . $data['id'];
             $txt .= $login_link;
         } elseif ($data['status'] == 4) {
-            $txt = '[<a href="https://donguri.5ch.net/" target="_blank">どんぐり基地</a>]';
+            $txt = '[<a href="https://donguri.' . $_conf['2ch_domain'] . '/" target="_blank">どんぐり基地</a>]';
             $txt .= $delimiter . $data['name'] . $delimiter . $data['job'] . $delimiter . "ID:". $data['id'];
             $txt .= $delimiter . '[<a href="javascript:void(0);" onclick="return logoutDonguri(' . $is_iphone . ');">ログアウト</a>]';
         } else {

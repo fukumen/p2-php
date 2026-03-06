@@ -157,7 +157,7 @@ function login2ch_uplift($login2chID, $login2chPW)
 {
     global $_conf;
 
-    $uplift_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'uplift.5ch.net/';
+    $uplift_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'uplift.' . $_conf['2ch_domain'] . '/';
     $sid_name = 'sid';
     $sid = null;
     $response_cookies = [];

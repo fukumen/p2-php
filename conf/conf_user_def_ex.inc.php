@@ -73,7 +73,7 @@ $conf_user_sel['expack.tgrep.engine'] = array(
     '1' => 'dig (dig.5ch.net)', // もうずっとサービス停止中
     '2' => 're.Find2ch (refind2ch.org)', // https://refind2ch.org/about
     '3' => '5chスレタイ検索 (ff5ch.syoboi.jp)', // http://z.syoboi.jp/web/ff2ch/
-    '4' => '5ちゃんねるスレタイ検索 (find.5ch.net)', // http://find.5ch.net/
+    '4' => '5ちゃんねるスレタイ検索 (find.' . $_conf['2ch_domain'] . ')', // http://find.5ch.net/
 );
 
 // }}}
