@@ -66,16 +66,19 @@ if (!empty($_conf['updatan_haahaa'])) {
 // github actionの情報表示
 //=========================================================
 $ver_str = array();
-foreach (array('VER_REPO_HASH', 'VER_REPO_LOG', 'VER_REP2_HASH', 'VER_REP2_LOG', 'VER_RUN_ID', 'VER_RUN_NUMBER') as $key) {
+foreach (array('VER_REPO_TYPE', 'VER_REPO_HASH', 'VER_REPO_LOG', 'VER_REP2_HASH', 'VER_REP2_LOG', 'VER_RUN_ID', 'VER_RUN_NUMBER') as $key) {
     if (($val = getenv($key)) !== false) {
         $ver_str[$key] = $val;
     }
 }
+if (empty($ver_str['VER_REPO_TYPE'])) {
+    $ver_str['VER_REPO_TYPE'] = 'docker-rep2';
+}
 
-if (count($ver_str) == 6) {
+if (count($ver_str) >= 6) {
     $newversion_found2 = '';
     if (!empty($_conf['updatan_haahaa'])) {
-        $newversion_found2 = checkUpdatan2($ver_str['VER_RUN_ID']);
+        $newversion_found2 = checkUpdatan2($ver_str['VER_REPO_TYPE'], $ver_str['VER_RUN_ID']);
     }
 
     $ver_str['VER_REP2_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REP2_LOG']), 'CP932', 'UTF-8');
@@ -85,7 +88,7 @@ if (count($ver_str) == 6) {
     <caption>ビルド情報</caption>
     <tbody>
         <tr><th>p2-php:</th><td>{$ver_str['VER_REP2_LOG']}&nbsp;{$ver_str['VER_REP2_HASH']}</td></tr>
-        <tr><th>docker-rep2:</th><td>{$ver_str['VER_REPO_LOG']}&nbsp;{$ver_str['VER_REPO_HASH']}</td></tr>
+        <tr><th>{$ver_str['VER_REPO_TYPE']}:</th><td>{$ver_str['VER_REPO_LOG']}&nbsp;{$ver_str['VER_REPO_HASH']}</td></tr>
         <tr><th>github action:</th><td>run_id:{$ver_str['VER_RUN_ID']}&nbsp;run_number:{$ver_str['VER_RUN_NUMBER']}</td></tr>
     </tbody>
 </table>
@@ -278,12 +281,21 @@ EOP;
  *
  * @return string HTML
  */
-function checkUpdatan2($run_id)
+function checkUpdatan2($repo_type, $run_id)
 {
     global $_conf;
 
+    if ($repo_type === 'rep2-allinone') {
+        $github_repo = 'fukumen/rep2-allinone';
+        $workflow_file = 'build-linux.yml';
+    } else {
+        $github_repo = 'fukumen/docker-rep2';
+        $workflow_file = 'publish-php8.yml';
+        $repo_type = 'docker-rep2';
+    }
+
     try {
-        $req = P2Commun::createHTTPRequest ('https://api.github.com/repos/fukumen/docker-rep2/actions/workflows/publish-php8.yml/runs?status=success&per_page=1', HTTP_Request2::METHOD_GET);
+        $req = P2Commun::createHTTPRequest ("https://api.github.com/repos/{$github_repo}/actions/workflows/{$workflow_file}/runs?status=success&per_page=1", HTTP_Request2::METHOD_GET);
         $response = P2Commun::getHTTPResponse($req);
         $code = $response->getStatus();
         if ($code == 200) {
@@ -327,8 +339,8 @@ function checkUpdatan2($run_id)
         <caption>新しいビルドがあります。</caption>
         <tbody>
             <tr><th>p2-php:</th><td>{$rep2_date}&nbsp;{$rep2_msg}&nbsp;{$rep2_hash}</td></tr>
-            <tr><th>docker-rep2:</th><td>{$docker_date}&nbsp;{$docker_msg}&nbsp;{$docker_hash}</td></tr>
-            <tr><th>github action:</th><td>run_id:<a href="https://github.com/fukumen/docker-rep2/actions/runs/{$latest_run_id}">{$latest_run_id}</td></tr>
+            <tr><th>{$repo_type}:</th><td>{$docker_date}&nbsp;{$docker_msg}&nbsp;{$docker_hash}</td></tr>
+            <tr><th>github action:</th><td>run_id:<a href="https://github.com/{$github_repo}/actions/runs/{$latest_run_id}">{$latest_run_id}</td></tr>
         </tbody>
     </table>
 </div>
