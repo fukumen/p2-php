@@ -1799,7 +1799,7 @@ ERR;
 
         $url = http_build_url(array(
             "scheme" => $_conf['2ch_ssl.post'] ? "https" : "http",
-            "host" => P2HostMgr::isHost5ch($host) ? "be.5ch.net" : "be.2ch.net",
+            "host" => P2HostMgr::isHost5ch($host) ? "be.{$_conf['2ch_domain']}" : "be.2ch.net",
             "path" => P2HostMgr::isHost5ch($host) ? "log" : "index.php"));
 
         try {
