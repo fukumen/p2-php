@@ -62,7 +62,8 @@
     "pear/file": "dev-master",
     "pear/html_template_flexy": "dev-master",
     "roojs/pdo_dataobject": "dev-master",
-    "symfony/console": "7.4.*"
+    "symfony/console": "7.4.*",
+    "vectorface/whip": "0.5.*"
   },
   "suggest": {
     "ext-exif": "Needed to show Exif in IC2",

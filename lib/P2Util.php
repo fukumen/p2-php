@@ -861,6 +861,8 @@ class P2Util
      */
     static public function getLastAccessLog($logfile)
     {
+        $lock = new P2Lock($logfile);
+
         // 読み込んで
         if (!$lines = DataPhp::fileDataPhp($logfile)) {
             return false;
@@ -887,16 +889,16 @@ class P2Util
     /**
      * アクセス情報をログに記録する
      */
-    static public function recAccessLog($logfile, $maxline = 100, $format = 'dataphp')
+    static public function recAccessLog($logfile, $maxline = 100)
     {
         global $_conf, $_login;
 
+        require_once P2_CONFIG_DIR . '/conf_lockout.inc.php';
+
+        $lock = new P2Lock($logfile);
+
         // ログファイルの中身を取得する
-        if ($format == 'dataphp') {
-            $lines = DataPhp::fileDataPhp($logfile);
-        } else {
-            $lines = FileCtl::file_read_lines($logfile);
-        }
+        $lines = DataPhp::fileDataPhp($logfile);
 
         if ($lines) {
             // 制限行調整
@@ -912,7 +914,9 @@ class P2Util
         $date = date('Y/m/d (D) G:i:s');
 
         // IPアドレスを取得
-        if (array_key_exists('REMOTE_ADDR', $_SERVER)) {
+        if ($_conf['login_attempts'] > 0) {
+            $remote_addr = $_conf['whip_clientip'];
+        } elseif (array_key_exists('REMOTE_ADDR', $_SERVER)) {
             $remote_addr = $_SERVER['REMOTE_ADDR'];
         } else {
             $remote_addr = '';
@@ -962,13 +966,40 @@ class P2Util
         $cont = implode("\n", $lines) . "\n";
 
         // 書き込み処理
-        if ($format == 'dataphp') {
-            DataPhp::writeDataPhp($logfile, $cont);
-        } else {
-            FileCtl::file_write_contents($logfile, $cont);
-        }
+        DataPhp::writeDataPhp($logfile, $cont);
 
         return true;
+    }
+
+    // }}}
+    // {{{ readAllAccessLog()
+
+    /**
+     * アクセスログを全件取得する
+     */
+    static public function readAllAccessLog($logfile)
+    {
+        $lock = new P2Lock($logfile);
+
+        if (!$lines = DataPhp::fileDataPhp($logfile)) {
+            return array();
+        }
+
+        $logs = array();
+        foreach ($lines as $line) {
+            $line = rtrim($line);
+            $lar = explode("\t", $line);
+            $log = array();
+            $log['date'] = $lar[0];
+            $log['ip'] = $lar[1];
+            $log['host'] = $lar[2];
+            $log['ua'] = $lar[3];
+            $log['referer'] = $lar[4];
+            $log['user'] = isset($lar[6]) ? $lar[6] : '';
+            $logs[] = $log;
+        }
+
+        return $logs;
     }
 
     // }}}

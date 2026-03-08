@@ -240,8 +240,7 @@ class Login
 
                 // ログイン失敗ログを記録する
                 if (!empty($_conf['login_log_rec'])) {
-                    $recnum = isset($_conf['login_log_rec_num']) ? intval($_conf['login_log_rec_num']) : 100;
-                    P2Util::recAccessLog($_conf['login_failed_log_file'], $recnum);
+                    $this->logLoginFailed();
                 }
 
                 return false;
@@ -311,6 +310,13 @@ class Login
         // {{{ フォームからログインした時
 
         if (!empty($_POST['submit_member'])) {
+
+            if ($this->checkLockout()) {
+                P2Util::pushInfoHtml('<p>p2 info: ログイン試行回数が多すぎます。<br>ﾀｲ━━━━||Φ|(|ﾟ|∀|ﾟ|)|Φ||━━━━ﾎ!!</p>');
+                $_login_failed_flag = true;
+
+                return false;
+            }
 
             // フォームログイン成功なら
             if ($_POST['form_login_id'] == $this->user_u and $this->_passwordVerify($_POST['form_login_pass'])) {
@@ -401,10 +407,65 @@ class Login
 
         if (!empty($_conf['login_log_rec'])) {
             $recnum = isset($_conf['login_log_rec_num']) ? intval($_conf['login_log_rec_num']) : 100;
-            P2Util::recAccessLog($_conf['login_failed_log_file'], $recnum, 'txt');
+            P2Util::recAccessLog($_conf['login_failed_log_file'], $recnum);
         }
 
         return true;
+    }
+
+    // }}}
+    // {{{ checkLockout()
+
+    /**
+     * ロックアウト判定を行う
+     *
+     * @return bool ロックアウトされている場合はtrue
+     */
+    public function checkLockout()
+    {
+        global $_conf;
+
+        require_once P2_CONFIG_DIR . '/conf_lockout.inc.php';
+
+        if ($_conf['login_attempts'] == 0) {
+            return false;
+        }
+
+        $client_ip = $_conf['whip_clientip'];
+        $limit_time = time() - ($_conf['login_lockout_time']);
+
+        $success_logs = P2Util::readAllAccessLog($_conf['login_log_file']);
+        $failed_logs = P2Util::readAllAccessLog($_conf['login_failed_log_file']);
+
+        $events = array();
+        foreach ($success_logs as $log) {
+            if ($log['ip'] === $client_ip) {
+                $events[] = array('time' => strtotime(preg_replace('/\s\([^)]+\)\s/', ' ', $log['date'])), 'type' => 'success');
+            }
+        }
+        foreach ($failed_logs as $log) {
+            if ($log['ip'] === $client_ip) {
+                $events[] = array('time' => strtotime(preg_replace('/\s\([^)]+\)\s/', ' ', $log['date'])), 'type' => 'failure');
+            }
+        }
+
+        usort($events, function($a, $b) {
+            return $b['time'] - $a['time'];
+        });
+
+        $fail_count = 0;
+        foreach ($events as $event) {
+            if ($event['time'] < $limit_time) {
+                break;
+            }
+            if ($event['type'] === 'success') {
+                break;
+            } else {
+                $fail_count++;
+            }
+        }
+
+        return $fail_count >= $_conf['login_attempts'];
     }
 
     // }}}
