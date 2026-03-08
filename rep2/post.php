@@ -111,7 +111,7 @@ if (P2HostMgr::isHostMachiBbs($host) or P2HostMgr::isHostJbbsShitaraba($host)) {
     } else {
         $bbs_cgi = '/test/bbs.cgi';
     }
-    if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
+    if (P2HostMgr::isHost2chs($host)) {
         if (!empty($_POST['p2_post_confirm_cookie'])) {
             $bbs_cgi = $bbs_cgi . "?guid=ON";
         }
@@ -189,7 +189,7 @@ if (!empty($_POST['maru']) and P2HostMgr::isHost2chs($host)) {
 // }}}
 
 if (!empty($_POST['p2_post_confirm_cookie'])) {
-    if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
+    if (P2HostMgr::isHost2chs($host)) {
         // 5chでは確認画面のフィールド順や値を忠実に再現する
         unset($post);
         $post = [];
@@ -437,8 +437,8 @@ function postIt($host, $bbs, $key, $post)
     global $_conf, $post_result, $post_error2ch, $p2cookies, $popup, $rescount, $ttitle_en;
     global $bbs_cgi;
 
-    // 接続先が2ch.netならばSSL通信を行う(pinkは対応していないのでしない)
-    if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host) && $_conf['2ch_ssl.post']) {
+    // 接続先が2ch.netならばSSL通信を行う
+    if (P2HostMgr::isHost2chs($host) && $_conf['2ch_ssl.post']) {
         $bbs_cgi_url = 'https://' . $host . $bbs_cgi;
     } else {
         $bbs_cgi_url = 'http://' . $host . $bbs_cgi;
@@ -459,7 +459,7 @@ function postIt($host, $bbs, $key, $post)
             $req->setHeader($name, $value);
         }
 
-        if (P2HostMgr::isHost2chs($host) && !P2HostMgr::isHostBbsPink($host)){
+        if (P2HostMgr::isHost2chs($host)){
             if (empty($_POST['p2_post_confirm_cookie'])) {
                 if ($_conf['2ch_ssl.post']) {
                     $req->setHeader('Referer', "https://{$host}/test/read.cgi/{$bbs}/{$key}/");
@@ -524,7 +524,7 @@ function postIt($host, $bbs, $key, $post)
             // したらば or be.2ch.netなら、EUCに変換
             if (P2HostMgr::isHostJbbsShitaraba($host) || P2HostMgr::isHostBe2chs($host)) {
                 $value = mb_convert_encoding($value, 'CP51932', 'UTF-8,CP932');
-            } elseif (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
+            } elseif (P2HostMgr::isHost2chs($host)) {
                 // 5chのread.cgiに合わせてフォームのaccept-charsetをShift_JISにしているので特に変換しない
                 // Shift_JIS範囲外の文字が入力されていると最近のブラウザであればNumeric Character Reference(NCR)に変換してくれる
             }
@@ -797,7 +797,7 @@ function showCookieConfirmation($host, $response)
     foreach ($rmattrs as $name) {
         $form->removeAttribute($name);
     }
-    if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host)) {
+    if (P2HostMgr::isHost2chs($host)) {
         $form->setAttribute('accept-charset', $_conf['accept_charset']);
     } else {
         $form->setAttribute('accept-charset', $_conf['accept_charset']);
