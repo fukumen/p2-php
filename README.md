@@ -28,6 +28,7 @@
 * 5chのどんぐりシステムの警備員●とハンターに対応([詳細はこちら](doc/README-donguri.md))
 * UPLIFTの5chログインに対応([詳細はこちら](doc/README-login5ch.md))
 * 画像アップローダ(imgur/imgbb/catbox/litterbox)に対応
+* ログインロックアウト機能を追加([詳細はこちら](doc/README-lockout.md))
 
 なお、5ch以外やpinkでは全くテストしていません。
 
