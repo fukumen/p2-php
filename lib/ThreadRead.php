@@ -732,7 +732,7 @@ class ThreadRead extends Thread {
                     if (preg_match('/このスレッドは過去ログ倉庫に格.{1,2}されています/', $body203)) {
                         $reason = 'datochi';
                         $this->setDatochiResiduums();
-                    } elseif (preg_match('{http://[^/]+/[^/]+/kako/\\d+(/\\d+)?/(\\d+)\\.html}', $body203, $matches)) {
+                    } elseif (preg_match('{https?://[^/]+/[^/]+/kako/\\d+(/\\d+)?/(\\d+)\\.html}', $body203, $matches)) {
                         $reason = 'kakohtml';
                     }
                 }

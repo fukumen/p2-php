@@ -56,7 +56,7 @@ function setFavItaByRequest()
             $itaj = $_POST['itaj'];
         }
         if (isset($_POST['url'])) {
-            if (preg_match("/http:\/\/(.+)\/([^\/]+)\/([^\/]+\.html?)?/", $_POST['url'], $matches)) {
+            if (preg_match("/https?:\/\/(.+)\/([^\/]+)\/([^\/]+\.html?)?/", $_POST['url'], $matches)) {
                 $host = $matches[1];
                 $host = preg_replace('{/test/read\.cgi$}', '', $host);
                 $bbs = $matches[2];

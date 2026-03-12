@@ -169,7 +169,7 @@ foreach ($items as $item) {
         $date_ht = "<td class=\"t\">{$date}</td>";
     }
     // 2ch,bbspinkのスレッドをp2で表示
-    if (preg_match('/http:\/\/([^\/]+\.(2ch\.net|bbspink\.com))\/test\/read\.cgi\/([^\/]+)\/([0-9]+)(\/)?([^\/]+)?/', $item['link'])) {
+    if (preg_match('/https?:\/\/([^\/]+\.(2ch\.net|bbspink\.com))\/test\/read\.cgi\/([^\/]+)\/([0-9]+)(\/)?([^\/]+)?/', $item['link'])) {
         $link_orig = preg_replace_callback('/http:\/\/([^\/]+\.(2ch\.net|bbspink\.com))\/test\/read\.cgi\/([^\/]+)\/([0-9]+)(\/)?([^\/]+)?/', 'rss_link2ch_callback', $item['link']);
         $preview_one = "<a href=\"{$link_orig}&amp;one=true\">&gt;&gt;1</a> ";
     } else {

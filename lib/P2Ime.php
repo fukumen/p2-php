@@ -193,7 +193,7 @@ class P2Ime
             }
         }
 
-        if (!($this->_ignoreHttp && preg_match('!^http://!', $url))) {
+        if (!($this->_ignoreHttp && preg_match('!^https?://!', $url))) {
             $url = $this->{$this->_method}($url, $delay);
         }
         if ($escape) {

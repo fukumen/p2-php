@@ -151,11 +151,11 @@ window.iui =
 		return false;
 	},
 	nativeUrlPatterns: [
-		new RegExp("^http:\/\/maps.google.com\/maps\?"),
+		new RegExp("^https?:\/\/maps.google.com\/maps\?"),
 		new RegExp("^mailto:"),
 		new RegExp("^tel:"),
-		new RegExp("^http:\/\/www.youtube.com\/watch\\?v="),
-		new RegExp("^http:\/\/www.youtube.com\/v\/"),
+		new RegExp("^https?:\/\/www.youtube.com\/watch\\?v="),
+		new RegExp("^https?:\/\/www.youtube.com\/v\/"),
 		new RegExp("^javascript:"),
 
 	]
