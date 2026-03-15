@@ -33,7 +33,7 @@
     }
   ],
   "require": {
-    "php": ">8.2",
+    "php": ">=8.2",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-json": "*",
@@ -64,6 +64,11 @@
     "roojs/pdo_dataobject": "dev-master",
     "symfony/console": "7.4.*",
     "vectorface/whip": "0.5.*"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2"
+    }
   },
   "suggest": {
     "ext-exif": "Needed to show Exif in IC2",
