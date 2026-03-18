@@ -258,7 +258,7 @@ if ($_conf['ktai']) {
         //}
     } else {
         if ($aThread->rescount) {
-            if ($_GET['showbl']) {
+            if (isset($_GET['showbl']) && $_GET['showbl']) {
                 $content = $aShowThread->getDatToHtml_resFrom();
             } else {
                 $content = $aShowThread->getDatToHtml();

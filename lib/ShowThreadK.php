@@ -480,7 +480,7 @@ EOP;
         $msg = $this->transLink($msg);
 
         // Wikipedia‹L–@‚Ö‚Ì©“®ƒŠƒ“ƒN
-        if ($_conf['mobile._linkToWikipeida']) {
+        if ($_conf['mobile.link_wikipedia']) {
             $msg = $this->_wikipediaFilter($msg);
         }
 

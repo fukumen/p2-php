@@ -48,9 +48,9 @@ if (!(isset($host) && isset($bbs)) && !isset($spmode)) {
 }
 
 // –¢“Ç”§ŒÀ
-if (ctype_digit($_GET['unum_limit'])) {
+if (isset($_GET['unum_limit']) && ctype_digit((string)$_GET['unum_limit'])) {
     $unum_limit = (int)$_GET['unum_limit'];
-} elseif (ctype_digit($_POST['unum_limit'])) {
+} elseif (isset($_POST['unum_limit']) && ctype_digit((string)$_POST['unum_limit'])) {
     $unum_limit = (int)$_POST['unum_limit'];
 } else {
     $unum_limit = 0;
