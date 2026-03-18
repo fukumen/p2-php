@@ -1,0 +1,20 @@
+--- a/PDO/DataObject/Introspection/pgsql.php.orig	2026-03-13 01:30:36
++++ b/PDO/DataObject/Introspection/pgsql.php	2026-03-09 20:43:02
+@@ -118,7 +118,7 @@
+             list($schema, $table) =explode('.', $table);
+         }
+         // not used?
+-        $database = $this->do->PDO()->dsn['database_name'];
++        //$database = $this->do->PDO()->dsn['database_name'];
+         
+         
+         
+@@ -129,7 +129,7 @@
+                         pg_class.relname AS tablename, 
+                         
+                         
+-                        (SELECT pg_attrdef.adsrc FROM pg_attrdef 
++                        (SELECT pg_get_expr(pg_attrdef.adbin, pg_attrdef.adrelid) FROM pg_attrdef
+                             WHERE pg_attrdef.adrelid = pg_class.oid 
+                             AND pg_attrdef.adnum = pg_attribute.attnum)
+                         AS default_value_raw,

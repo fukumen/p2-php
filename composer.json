@@ -63,11 +63,16 @@
     "pear/html_template_flexy": "dev-master",
     "roojs/pdo_dataobject": "dev-master",
     "symfony/console": "7.4.*",
-    "vectorface/whip": "0.5.*"
+    "vectorface/whip": "0.5.*",
+    "cweagans/composer-patches": "^2.0"
   },
   "config": {
     "platform": {
       "php": "8.2"
+    },
+    "allow-plugins": {
+      "cweagans/composer-patches": true,
+      "cweagans/composer-configurable-plugin": true
     }
   },
   "suggest": {

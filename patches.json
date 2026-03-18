@@ -1,0 +1,13 @@
+{
+  "patches": {
+    "roojs/pdo_dataobject": [
+      {
+        "description": "for PostgreSQL 12",
+        "url": "patches/roojs-pdo_dataobject-postgresql.patch",
+        "sha256": "3edf4c0e517eb451caf06ff345d4c4472b1251d2fbdc7b1ccfea337adbc1bd0e",
+        "depth": 1,
+        "extra": {}
+      }
+    ]
+  }
+}
