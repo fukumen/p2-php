@@ -116,6 +116,8 @@ class Thumbnailer_Gd extends Thumbnailer
             case '.jpg': $src = imagecreatefromjpeg($source); break;
             case '.png': $src = imagecreatefrompng($source); break;
             case '.gif': $src = imagecreatefromgif($source); break;
+            case '.webp': $src = imagecreatefromwebp($source); break;
+            case '.avif': $src = imagecreatefromavif($source); break;
             default:
                 $src = false;
         }

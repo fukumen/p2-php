@@ -60,7 +60,7 @@ switch ($type) {
         $search->whereAddQuoted('id', '=', $uri);
         break;
     case 'file':
-        preg_match('/^([1-9][0-9]*)_([0-9a-f]{32})(?:_x(15|20))?(?:\.(jpg|png|gif))?$/', $uri, $fdata);
+        preg_match('/^([1-9][0-9]*)_([0-9a-f]{32})(?:_x(15|20))?(?:\.(jpg|png|gif|webp|avif))?$/', $uri, $fdata);
         $search->whereAddQuoted('size', '=', $fdata[0]);
         $search->whereAddQuoted('md5', '=', $fdata[1]);
         break;

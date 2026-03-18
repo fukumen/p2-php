@@ -56,8 +56,8 @@ $maxheight = (int)$ini['Source']['maxheight'];
 $isPopUp = empty($_REQUEST['popup']) ? 0 : 1;
 
 // 対応MIMEタイプ
-$mimemap = array(IMAGETYPE_GIF => 'image/gif', IMAGETYPE_JPEG => 'image/jpeg', IMAGETYPE_PNG => 'image/png');
-$mimeregex = '{^(image/(p?jpeg|png|gif)|application/octet-stream)$}';
+$mimemap = array(IMAGETYPE_GIF => 'image/gif', IMAGETYPE_JPEG => 'image/jpeg', IMAGETYPE_PNG => 'image/png', IMAGETYPE_WEBP => 'image/webp', IMAGETYPE_AVIF => 'image/avif');
+$mimeregex = '{^(image/(p?jpeg|png|gif|webp|avif)|application/octet-stream)$}';
 
 // エラーメッセージのフォーマット
 $err_fmt = array();

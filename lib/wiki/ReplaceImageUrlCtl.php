@@ -222,7 +222,7 @@ class ReplaceImageUrlCtl extends WikiPluginCtlBase
         // ƒqƒbƒg‚µ‚È‚©‚Á‚½ê‡
         if (count($return) === 0) {
             // ‰æ‘œ‚Á‚Û‚¢URL‚Ìê‡
-            if (preg_match('{^https?://.+?\\.(jpe?g|gif|png)$}i', $url)) {
+            if (preg_match('{^https?://.+?\\.(jpe?g|gif|png|webp|avif)$}i', $url)) {
                 $return[0]['url']     = $url;
                 $return[0]['referer'] = '';
             }

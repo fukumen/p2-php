@@ -22,7 +22,7 @@ if (!$_conf['expack.ic2.enabled']) {
 require_once P2EX_LIB_DIR . '/ImageCache2/bootstrap.php';
 
 // 受け付けるMIMEタイプ
-$mimemap = array('image/jpeg' => '.jpg', 'image/png' => '.png', 'image/gif' => '.gif');
+$mimemap = array('image/jpeg' => '.jpg', 'image/png' => '.png', 'image/gif' => '.gif', 'image/webp' => '.webp', 'image/avif' => '.avif');
 
 // 設定ファイル読み込み
 $ini = ic2_loadconfig();
@@ -93,7 +93,7 @@ if (!empty($uri)) {
 
     $doDL = true;
 } else {
-    if (isset($file) && !preg_match('/^(?P<size>[1-9][0-9]*)_(?P<md5>[0-9a-f]{32})(?:\.(?P<ext>jpg|png|gif))?$/', $file, $fdata)) {
+    if (isset($file) && !preg_match('/^(?P<size>[1-9][0-9]*)_(?P<md5>[0-9a-f]{32})(?:\.(?P<ext>jpg|png|gif|webp|avif))?$/', $file, $fdata)) {
         ic2_error('x06', '不正なファイル名です。', false);
     }
     $doDL = false;
@@ -689,6 +689,8 @@ function ic2_display($url, $params)
                 case '.jpg': header("Content-Type: image/jpeg; name=\"{$name}\""); break;
                 case '.png': header("Content-Type: image/png; name=\"{$name}\""); break;
                 case '.gif': header("Content-Type: image/gif; name=\"{$name}\""); break;
+                case '.webp': header("Content-Type: image/webp; name=\"{$name}\""); break;
+                case '.avif': header("Content-Type: image/avif; name=\"{$name}\""); break;
                 default:
                     if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false ||
                         strpos($_SERVER['HTTP_USER_AGENT'], 'Opera') !== false
