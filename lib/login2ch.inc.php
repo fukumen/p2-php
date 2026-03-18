@@ -195,7 +195,13 @@ function login2ch_uplift($login2chID, $login2chPW)
             }
         } elseif ($code == 200) {
             // ログイン失敗と思われる
-            P2Util::pushInfoHtml("<p>p2 error: UPLIFTのログイン接続に失敗しました。IDとパスワードを確認の上、ログインし直して下さい。</p>");
+            $body = $response->getBody();
+            $pattern = mb_convert_encoding('アカウントの購読が期限切れです。', 'UTF-8', 'CP932');
+            if (strpos($body, $pattern) !== false) {
+                P2Util::pushInfoHtml("<p>p2 error: UPLIFTのログイン接続に失敗しました。アカウントの購読が期限切れです。</p>");
+            } else {
+                P2Util::pushInfoHtml("<p>p2 error: UPLIFTのログイン接続に失敗しました。IDとパスワードを確認の上、ログインし直して下さい。</p>");
+            }
             $sid = null;
         } else {
             P2Util::pushInfoHtml("<p>p2 Error: HTTP Error({$code})</p>");
