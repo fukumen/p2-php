@@ -582,6 +582,12 @@ if ($all === 0) {
 
     // ƒŒƒR[ƒh‚È‚µ
     $flexy->setData('nomatch', true);
+    $flexy->setData('current_page', '');
+    $flexy->setData('last', 0);
+    $flexy->setData('all', 0);
+    $flexy->setData('from', 0);
+    $flexy->setData('to', 0);
+    $flexy->setData('popup', false);
     $flexy->setData('reset', $_SERVER['SCRIPT_NAME']);
     if ($_conf['ktai']) {
         $flexy->setData('kfilter', !empty($_SESSION['iv2i_filter']));
