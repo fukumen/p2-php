@@ -14,7 +14,7 @@ class P2CurlMulti
         $this->file_update = array();
     }
 
-    private function __destruct() {
+    public function __destruct() {
         foreach ($this->ch as $ch_array) {
             curl_multi_remove_handle($this->mh, $ch_array);
             curl_close($ch_array);
@@ -29,7 +29,6 @@ class P2CurlMulti
         if(empty($subjects)){ return; }
 
         $time = time() - $_conf['sb_dl_interval'];
-        $isOldFile = array();
 
         foreach ($subjects as $key => $subject) {
             list($host, $bbs) = explode("_", $key);
@@ -41,9 +40,7 @@ class P2CurlMulti
             }
             $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
 
-            $isOldFile[$key] = false;
             if (!$force && file_exists($file) && $time <= filemtime($file)) {
-                $isOldFile[$key] = true;
                 continue;
             }
 
@@ -72,21 +69,21 @@ class P2CurlMulti
             if(P2HostMgr::isHost2chs($host) && !P2HostMgr::isNotUse2chsAPI($host) && $_conf['2chapi_use']){
                 $user_agent = sprintf ($_conf['2chapi_ua.read'], $_conf['2chapi_appname']);
             } else {
-                $user_agent = P2Commun::getP2UA(true, P2HostMgr::isHost2chs($purl['host']));
+                $user_agent = P2Commun::getP2UA(true, P2HostMgr::isHost2chs($host));
             }
             curl_setopt($this->ch[$key], CURLOPT_USERAGENT, $user_agent);
 
             // プロキシ
-            if ($_conf['tor_use'] && P2HostMgr::isHostTor($purl['host'], 0)) { // Tor(.onion)はTor用の設定をセット
+            if ($_conf['tor_use'] && P2HostMgr::isHostTor($host, 0)) { // Tor(.onion)はTor用の設定をセット
                 $tor_user_info = sprintf("%s%s@", $_conf['tor_proxy_user'], empty($_conf['tor_proxy_password']) ? "" : ":{$_conf['tor_proxy_password']}");
                 $tor_address   = "{$_conf['tor_proxy_host']}:{$_conf['tor_proxy_port']}";
                 $address = sprintf("http://%s%s", strpos($tor_user_info, "@") === 0 ? "" : $tor_user_info, $tor_address);
 
-                curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, 1);
-                curl_setopt($ch, CURLOPT_PROXY, $address);
+                curl_setopt($this->ch[$key], CURLOPT_HTTPPROXYTUNNEL, 1);
+                curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
 
                 if($_conf['tor_proxy_mode'] == 'socks5'){
-                    curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+                    curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
                 }
 
             } elseif ($_conf['proxy_use']) {
@@ -94,11 +91,11 @@ class P2CurlMulti
                 $proxy_address   = "{$_conf['proxy_host']}:{$_conf['proxy_port']}";
                 $address = sprintf("http://%s%s", strpos($proxy_user_info, "@") === 0 ? "" : $proxy_user_info, $proxy_address);
 
-                curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, 1);
-                curl_setopt($ch, CURLOPT_PROXY, $address);
+                curl_setopt($this->ch[$key], CURLOPT_HTTPPROXYTUNNEL, 1);
+                curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
 
                 if($_conf['proxy_mode'] == 'socks5'){
-                    curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+                    curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
                 }
             }
 
@@ -115,35 +112,8 @@ class P2CurlMulti
 
         // execute
         do {
-            $stat = curl_multi_exec($this->mh, $running);
-        } while ($stat === CURLM_CALL_MULTI_PERFORM);
-
-        // check
-        // 暫定で残す(not start Download なら終了でも?)
-//      if (!$running || $stat !== CURLM_OK) {
-//      //  throw new RuntimeException("$running $stat");
-//          error_log("not start download. please check. running:[$running], stat:[$stat]\n");
-//      }
-
-        // wait
-        do {
-            switch (curl_multi_select($this->mh, $_conf['http_conn_timeout'] + $_conf['http_read_timeout'])) {
-                case -1: // selectに失敗するケースがあるらしい https://bugs.php.net/bug.php?id=61141
-                    usleep(10);
-                    do{
-                        $stat = curl_multi_exec($this->mh, $running);
-                    } while ($stat === CURLM_CALL_MULTI_PERFORM);
-                    continue 2;
-
-                case 0: //timeout
-                    continue 2;
-
-                default:
-                    //何か変化があった
-                    do{
-                        $stat = curl_multi_exec($this->mh, $running);
-                    } while ($stat === CURLM_CALL_MULTI_PERFORM);
-            }
+            curl_multi_exec($this->mh, $running);
+            curl_multi_select($this->mh, $_conf['http_conn_timeout'] + $_conf['http_read_timeout']);
         } while ($running);
     }
 
@@ -153,10 +123,6 @@ class P2CurlMulti
 
         foreach ($this->ch as $key => $ch_array) {
             list($host, $bbs) = explode("_", $key);
-
-            if ($isOldFile[$key]) {
-                continue;
-            }
 
             $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
 
