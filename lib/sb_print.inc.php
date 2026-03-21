@@ -463,6 +463,7 @@ EOP;
         }
         // +live ƒXƒŒ‚ÌƒŠƒ“ƒNæ‚ğÀ‹µ‚É‘‚«Š·‚¦‚é
         $thre_addtag = '';
+        $livelink_body = '';
         if($_conf['live.livebbs_forcelive']==1&&$livebbs_bool) {
             $thre_addtag = $live_ic2_off."target=\"_blank\"";
             $thre_url = $live_url;

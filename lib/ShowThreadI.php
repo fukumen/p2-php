@@ -945,7 +945,7 @@ EOP;
 
         $url = $purl[0];
         $replaced = $replaceImageUrlCtl->replaceImageUrl($url);
-        if (!$replaced[0]) {
+        if (!isset($replaced[0]) || !$replaced[0]) {
             return false;
         }
 
@@ -1034,6 +1034,8 @@ EOP;
                             } else {
                                 $prv_onload = '';
                             }
+                            $prvw_size[0] = $prvw_size[0] ?? '';
+                            $prvw_size[1] = $prvw_size[1] ?? '';
                             $img_str = "<img src=\"{$prv_url}\"{$prv_onload} width=\"{$prvw_size[0]}\" height=\"{$prvw_size[1]}\">";
                         }
                         $inline_preview_done = true;
@@ -1065,7 +1067,7 @@ EOP;
                     $update->rank = $rank;
 
                 }
-                if ($update !== null) {
+                if (isset($update) && $update !== null) {
                     $update->update();
                 }
 
@@ -1080,6 +1082,8 @@ EOP;
                 // インラインプレビューが有効で、サムネイル表示制限数以内なら
                 if ($this->thumbnailer->ini['General']['inline'] == 1 && $inline_preview_flag) {
                     $rank_str = ($rank !== null) ? '&rank=' . $rank : '';
+					$prvw_size[0] = $prvw_size[0] ?? '';
+					$prvw_size[1] = $prvw_size[1] ?? '';
                     $img_str = "<img src=\"ic2.php?r=2&amp;t=1&amp;uri={$url_en}{$this->img_memo_query}{$rank_str}{$ref_en}\" width=\"{$prvw_size[0]}\" height=\"{$prvw_size[1]}\">";
                     $inline_preview_done = true;
                 } else {
@@ -1089,7 +1093,7 @@ EOP;
 
             // 表示数制限をデクリメント
             if ($inline_preview_flag && $inline_preview_done) {
-                $pre_thumb_limit_k--;
+                if (!is_null($pre_thumb_limit_k)) $pre_thumb_limit_k--;
             }
 
             if (!empty($_SERVER['REQUEST_URI'])) {

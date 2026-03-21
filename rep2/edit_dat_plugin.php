@@ -52,6 +52,7 @@ $csrfid = P2Util::getCsrfId();
 // ヘッダHTMLをプリント
 P2Util::header_nocache();
 echo $_conf['doctype'];
+$_conf['meta_charset_ht'] = $_conf['meta_charset_ht'] ?? '';
 echo <<<EOP
 <html lang="ja">
 <head>

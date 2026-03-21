@@ -106,7 +106,7 @@ if (isset($_GET['ic'])) {
     // •\Ž¦”ÍˆÍ
     echo $disp_range;
     //if ($_conf['test.search_dig2ch']) { echo "<li>{$profile['cm0']}</li>";}
-    if ($_conf['test.search_dig2ch']) { echo "<li>"; echo $profile['cm0'];echo $profile['cm1'];echo $profile['cm2'];echo "</li>";}
+    if ($_conf['test.search_dig2ch']) { echo "<li>"; echo $profile['cm0'] ?? '';echo $profile['cm1'] ?? '';echo $profile['cm2'] ?? '';echo "</li>";}
 
     foreach ($threads as $o => $t) {
         $ttitle_ht = strip_tags($t->title);

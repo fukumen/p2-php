@@ -213,6 +213,7 @@ EOP;
 }
 
 $onload_script = '';
+$bodyadd = '';
 
 if ($_conf['iframe_popup_type'] == 1) {
     $fade = empty($_GET['fade']) ? 'false' : 'true';

@@ -119,7 +119,7 @@ class ReplaceImageUrlCtl extends WikiPluginCtlBase
     {
         global $_conf;
 
-        if ($this->cacheData[$key]) {
+        if ($this->cacheData[$key] ?? null) {
             // overwrite the cache file
             $this->cacheData[$key] = $data;
             $body = '';
@@ -244,7 +244,7 @@ class ReplaceImageUrlCtl extends WikiPluginCtlBase
 
         $source =  @preg_replace ('{'.$match.'}', $source, $url);
         $get_url = $referer;
-        if ($this->extractErrors[$get_url]) {
+        if ($this->extractErrors[$get_url] ?? null) {
             // 今回リクエストでエラーだった場合
             return ($this->cacheData[$url] && $this->cacheData[$url]['data'])
                 ? $this->cacheData[$url]['data'] : $ret;
@@ -252,7 +252,7 @@ class ReplaceImageUrlCtl extends WikiPluginCtlBase
 
         try {
             $req = P2Commun::createHTTPRequest ($get_url, HTTP_Request2::METHOD_GET);
-            if ($this->cacheData[$url] && $this->cacheData[$url]['responseHeaders']
+            if (($this->cacheData[$url] ?? null) && $this->cacheData[$url]['responseHeaders']
                     && $this->cacheData[$url]['responseHeaders']['last-modified']
                     && strlen($this->cacheData[$url]['responseHeaders']['last-modified'])) {
                 $req->setHeader("If-Modified-Since",
@@ -336,7 +336,7 @@ class ReplaceImageUrlCtl extends WikiPluginCtlBase
 
     protected function _checkLost($url, $data)
     {
-        if (count($data) == 0 && $this->cacheData[$url] &&
+        if (count($data) == 0 && ($this->cacheData[$url] ?? null) &&
                 $this->cacheData[$url]['data'] &&
                 count($this->cacheData[$url]['data']) > 0) {
             $rec = $this->cacheData[$url];

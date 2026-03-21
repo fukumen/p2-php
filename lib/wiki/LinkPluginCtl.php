@@ -62,7 +62,7 @@ class LinkPluginCtl extends WikiPluginCtlBase
         foreach ($data as $na_info) {
             $a[0] = strtr(trim($na_info['match'], "\t\r\n"), "\t\r\n", "   ");
             $a[1] = strtr(trim($na_info['replace'], "\t\r\n"), "\t\r\n", "   ");
-            if ($na_info['del'] || ($a[0] === '' || $a[1] === '')) {
+            if ($na_info['del'] ?? false || ($a[0] === '' || $a[1] === '')) {
                 continue;
             }
             $newdata .= implode("\t", $a) . "\n";

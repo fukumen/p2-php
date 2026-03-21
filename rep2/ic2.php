@@ -316,7 +316,7 @@ try {
 
 // ƒŠƒtƒ@ƒ‰İ’è
     if (is_null($referer)) {
-        $send_referer = (boolean)$ini['Getter']['sendreferer'];
+        $send_referer = (bool)$ini['Getter']['sendreferer'];
         if ($send_referer) {
             if ($ini['Getter']['norefhosts']) {
                 $pattern = preg_quote($ini['Getter']['norefhosts'], '/');

@@ -187,9 +187,9 @@ EOP;
         $list_disp_all_num = $this->num;
         $list_disp_range = $_conf['mobile.rnum_range'];
 
-        if ($_GET['from']) {
+        if ($_GET['from'] ?? null) {
             $list_disp_from = $_GET['from'];
-            if ($_GET['end']) {
+            if ($_GET['end'] ?? null) {
                 $list_disp_range = $_GET['end'] - $list_disp_from + 1;
                 if ($list_disp_range < 1) {
                     $list_disp_range = 1;
@@ -234,6 +234,7 @@ EOP;
         }
 
         if (!$disp_navi['all_once']) {
+            $mae_ht = $mae_ht ?? '';
             echo "<div class=\"navi\">{$disp_navi['range_st']} {$mae_ht} {$tugi_ht}</div>\n";
         }
     }
@@ -277,7 +278,7 @@ EOP;
             }
 
             // ‘å‚«‚³§ŒÀ
-            if (!$_GET['k_continue']) {
+            if (!isset($_GET['k_continue']) || !$_GET['k_continue']) {
                 $msg = $a_res->msg;
                 if (strlen($msg) > $_conf['mobile.res_size']) {
                     $msg = substr($msg, 0, $_conf['mobile.ryaku_size']);

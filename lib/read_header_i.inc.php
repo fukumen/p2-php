@@ -354,7 +354,7 @@ if ($do_filtering) {
 
 // }}}
 
-if ($_GET['showbl']) {
+if (isset($_GET['showbl']) && $_GET['showbl']) {
     echo  '<div class="hits">' . p2h($aThread->resrange['start']) . '‚Ö‚ÌÚ½</div>';
 }
 

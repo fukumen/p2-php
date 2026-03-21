@@ -186,9 +186,9 @@ foreach ($threads as $o => $t) {
 <table>
 <tr>
     <!--dig2ch‚ÌŽg—pðŒ‚Ì‚½‚ß•\Ž¦-->
-    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm0'];}?></td>
-    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm1'];}?></td>
-    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm2'];}?></td>
+    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm0'] ?? '';}?></td>
+    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm1'] ?? '';}?></td>
+    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm2'] ?? '';}?></td>
 </tr>
 </table>
 <?php } ?>

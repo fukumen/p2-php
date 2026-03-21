@@ -50,9 +50,9 @@ if (!(isset($host) && isset($bbs)) && !isset($spmode)) {
 }
 
 // 未読数制限
-if (ctype_digit($_GET['unum_limit'])) {
+if (isset($_GET['unum_limit']) && ctype_digit($_GET['unum_limit'])) {
     $unum_limit = (int)$_GET['unum_limit'];
-} elseif (ctype_digit($_POST['unum_limit'])) {
+} elseif (isset($_POST['unum_limit']) && ctype_digit($_POST['unum_limit'])) {
     $unum_limit = (int)$_POST['unum_limit'];
 } else {
     $unum_limit = 0;
@@ -123,6 +123,8 @@ if ($aThreadList->spmode) {
 $sb_ht = <<<EOP
 <a href="{$ita_url}">{$ptitle_hd}</a>
 EOP;
+$_conf['k_accesskey_at']['up'] = $_conf['k_accesskey_at']['up'] ?? '';
+$_conf['k_accesskey_st']['up'] = $_conf['k_accesskey_st']['up'] ?? '';
 $sb_ht_btm = <<<EOP
 <a href="{$ita_url}"{$_conf['k_accesskey_at']['up']}>{$_conf['k_accesskey_st']['up']}{$ptitle_hd}</a>
 EOP;
@@ -206,6 +208,8 @@ EOP;
 
     echo '</div>';
 } else{
+	$_conf['k_accesskey_at']['bottom'] = $_conf['k_accesskey_at']['bottom'] ?? '';
+	$_conf['k_accesskey_st']['bottom'] = $_conf['k_accesskey_st']['bottom'] ?? '';
     echo <<<EOP
 <body{$_conf['k_colors']}>
 <div id="read_new_header">{$sb_ht}の新まとめ
@@ -661,6 +665,11 @@ if ($_conf['iphone']) {
     } else {
         $str = '新まとめの更新/続き';
     }
+   	$_conf['k_accesskey_at']['next'] = $_conf['k_accesskey_at']['next'] ?? '';
+   	$_conf['k_accesskey_st']['next'] = $_conf['k_accesskey_st']['next'] ?? '';
+   	$_conf['k_accesskey_at']['above'] = $_conf['k_accesskey_at']['above'] ?? '';
+   	$_conf['k_accesskey_st']['above'] = $_conf['k_accesskey_st']['above'] ?? '';
+   	$_conf['k_to_index_ht'] = $_conf['k_to_index_ht'] ?? '';
     echo <<<EOP
 <div id="read_new_footer">{$sb_ht_btm}の<a href="{$shinchaku_matome_url}"{$_conf['k_accesskey_at']['next']}>{$_conf['k_accesskey_st']['next']}{$str}</a>
 <a class="button" id="bottom" name="bottom" href="#above"{$_conf['k_accesskey_at']['above']}>{$_conf['k_accesskey_st']['above']}▲</a></div>

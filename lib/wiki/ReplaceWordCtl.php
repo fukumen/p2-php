@@ -172,8 +172,8 @@ class ReplaceWordCtl
             '$host'      => $aThread->host,
             '$bbs'       => $aThread->bbs,
             '$key'       => $aThread->key,
-            '$id'        => $matches[1],
-            '$id_base64' => base64_encode($matches[1]),
+            '$id'        => $matches[1] ?? null,
+            '$id_base64' => base64_encode($matches[1] ?? ''),
             '$i'         => $i
         );
         foreach ($this->data_filtered[$cont] as $v) {
