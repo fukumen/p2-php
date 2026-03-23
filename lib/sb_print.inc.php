@@ -337,7 +337,7 @@ EOP;
         // ƒ^ƒCƒgƒ‹–¢Žæ“¾‚È‚ç
         $ttitle_ht = $aThread->ttitle_ht;
         if (strlen($ttitle_ht) == 0) {
-            $ttitle_ht = "http://{$aThread->host}/test/read.cgi/{$aThread->bbs}/{$aThread->key}/";
+            $ttitle_ht = P2Util::selectScheme($aThread->host) . "://{$aThread->host}/test/read.cgi/{$aThread->bbs}/{$aThread->key}/";
         }
 
         if ($aThread->similarity) {

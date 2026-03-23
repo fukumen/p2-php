@@ -34,7 +34,7 @@ class LastmodifyTxt
         if (!P2HostMgr::isHost2chs($this->host) || P2HostMgr::isHostHeadline($this->host)) {
         	return ;
         }
-        $this->lastmodify_url = ($_conf['2ch_ssl.subject']?'https://':'http://') . $host . '/' . $bbs . '/lastmodify.txt';
+        $this->lastmodify_url = P2Util::selectScheme($host) . '://' . $host . '/' . $bbs . '/lastmodify.txt';
 
         // lastmodify.txtを ダウンロード＆セットする
         $this->dlAndSetLastmodify();

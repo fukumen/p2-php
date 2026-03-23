@@ -33,11 +33,8 @@ class P2CurlMulti
         foreach ($subjects as $key => $subject) {
             list($host, $bbs) = explode("_", $key);
 
-            if ($_conf['2ch_ssl.subject']) {
-                $url = "https://{$host}/{$bbs}/subject.txt";
-            } else {
-                $url = "http://{$host}/{$bbs}/subject.txt";
-            }
+            $scheme = P2Util::selectScheme($host);
+            $url = "{$scheme}://{$host}/{$bbs}/subject.txt";
             $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
 
             if (!$force && file_exists($file) && $time <= filemtime($file)) {

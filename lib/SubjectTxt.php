@@ -30,12 +30,7 @@ class SubjectTxt
         $this->storage = 'file';
 
         $this->subject_file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
-        // 接続先が2ch.netならばSSL通信を行う(pinkは対応していないのでしない)
-        if (P2HostMgr::isHost2chs($host) && ! P2HostMgr::isHostBbsPink($host) && $_conf['2ch_ssl.subject']) {
-            $this->subject_url = 'https://' . $host . '/' . $bbs . '/subject.txt';
-        } else {
-            $this->subject_url = 'http://' . $host . '/' . $bbs . '/subject.txt';
-        }
+        $this->subject_url = P2Util::selectScheme($host) . '://' . $host . '/' . $bbs . '/subject.txt';
 
         // したらばのlivedoor移転に対応。読込先をlivedoorとする。
         if(P2HostMgr::isHostJbbsShitaraba($host))

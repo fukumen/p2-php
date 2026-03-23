@@ -21,7 +21,7 @@ class Donguri {
     {
         global $_conf, $_login;
 
-        $this->base_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'donguri.' . $_conf['2ch_domain'] . '/';
+        $this->base_url = P2Util::selectScheme($_conf['2ch_domain']) . '://donguri.' . $_conf['2ch_domain'] . '/';
         $this->cookie_key = $_login->user_u . '/' . self::COOKIE_HOST;
         $this->_read_cookie();
     }

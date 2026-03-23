@@ -409,7 +409,7 @@ class ThreadRead extends Thread {
             $from_bytes = $from_bytes - 1;
         }
 
-        $url = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/{$this->bbs}/dat/{$this->key}.dat";
+        $url = P2Util::selectScheme($this->host)."://{$this->host}/{$this->bbs}/dat/{$this->key}.dat";
         // $url="http://news2.2ch.net/test/read.cgi?bbs=newsplus&key=1038486598";
 
         $purl = parse_url ($url); // URL分解
@@ -419,7 +419,7 @@ class ThreadRead extends Thread {
         try {
             $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);
             // ヘッダ
-            $req->setHeader ('Referer', ($_conf['2ch_ssl.subject']?"https":"http")."://{$purl['host']}/{$this->bbs}/");
+            $req->setHeader ('Referer', P2Util::selectScheme($purl['host'])."://{$purl['host']}/{$this->bbs}/");
 
             if (! empty ($_GET['one'])) {
                 // >>1プレビューの時はサーバーに最初の部分だけ請求
@@ -544,7 +544,7 @@ class ThreadRead extends Thread {
                 if ($this->host == 'kako.' . $_conf['2ch_domain'] || $this->host == 'kako.5ch.net') {
                     return $this->_downloadDat5chKako ();
                 } else {
-                    $uri = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
+                    $uri = P2Util::selectScheme($this->host)."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
                     return $this->_downloadDat2chKako ($uri, ".dat");
                 }
             } elseif ($code == '301' && ($location = $response->getHeader('Location')) && (strpos($location, 'kako.' . $_conf['2ch_domain']) !== false || strpos($location, 'kako.5ch.net') !== false)) {
@@ -641,7 +641,7 @@ class ThreadRead extends Thread {
         global $_conf;
 
         $this->host = 'kako.' . $_conf['2ch_domain'];
-        $url = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
+        $url = P2Util::selectScheme($this->host)."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
 
         try {
             $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);
@@ -739,7 +739,7 @@ class ThreadRead extends Thread {
             }
         }
 
-        $read_url = ($_conf['2ch_ssl.subject']?"https":"http")."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
+        $read_url = P2Util::selectScheme($this->host)."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
 
         // {{{ read.cgi からHTMLを取得
 

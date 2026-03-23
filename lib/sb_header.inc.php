@@ -44,7 +44,7 @@ $norefresh_q = '&amp;norefresh=true';
 // ページタイトル部分URL設定 ====================================
 // 通常 板
 if (!$aThreadList->spmode) {
-    $ptitle_url = "http://{$aThreadList->host}/{$aThreadList->bbs}/";
+    $ptitle_url = P2Util::selectScheme($aThreadList->host) . "://{$aThreadList->host}/{$aThreadList->bbs}/";
     // match登録よりheadなげて聞いたほうがよさそうだが、ワンレスポンス増えるのが困る
     if (!strcasecmp($aThreadList->host, 'livesoccer.net')) {
         $ptitle_url .= 'index2.html';

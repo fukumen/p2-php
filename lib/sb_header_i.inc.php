@@ -27,7 +27,7 @@ if (!$aThreadList->spmode) {
 
     // その他
     } else {
-        $ptitle_url = "http://{$aThreadList->host}/{$aThreadList->bbs}/";
+        $ptitle_url = P2Util::selectScheme($aThreadList->host) . "://{$aThreadList->host}/{$aThreadList->bbs}/";
         // 特別なパターン index2.html
         // match登録よりheadなげて聞いたほうがよさそうだが、ワンレスポンス増えるのが困る
         if (!strcasecmp($aThreadList->host, 'livesoccer.net')) {

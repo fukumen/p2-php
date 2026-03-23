@@ -638,13 +638,12 @@ $conf_user_rad['pane_mode'] = array('0' => '•W€i‚ÉŒ`j', '1' => '‰¡ˆê—ñiìŒ`
 // SSL’ÊM‚ÌÚ‘±æ‚ğŒŸØ‚·‚é‚½‚ß‚Ég—p‚·‚éØ–¾‘‚ªŠi”[‚³‚ê‚½ƒfƒBƒŒƒNƒgƒŠ ¦ŒŸØ‚Å‚«‚È‚¢‚Ì‚İw’è
 $conf_user_def['ssl_capath'] = ""; // ()
 
-// 2ch.net‚Ìsubjec.txt‚ÆSETTING.TXT‚Ìæ“¾‚ÉSSL‚ğg—p‚·‚é
-$conf_user_def['2ch_ssl.subject'] = 1;  // (1)
-$conf_user_rad['2ch_ssl.subject'] = array('1' => '‚·‚é', '0' => '‚µ‚È‚¢');
+// HTTPSÚ‘±‚ğg—p‚·‚é
+$conf_user_def['use_https'] = 1;  // (1)
+$conf_user_rad['use_https'] = array('1' => '‚·‚é', '0' => '‚µ‚È‚¢');
 
-// 2ch.net‚Ì‘‚«‚İ‚ÉSSL‚ğg—p‚·‚é
-$conf_user_def['2ch_ssl.post'] = 1;  // (1)
-$conf_user_rad['2ch_ssl.post'] = array('1' => '‚·‚é', '0' => '‚µ‚È‚¢');
+// HTTPÚ‘±‚ğg—p‚·‚éƒhƒƒCƒ“ (ƒJƒ“ƒ}‹æØ‚è‚Å•¡”w’è‰Â)
+$conf_user_def['use_http_domains'] = "";  // ("")
 
 // ˜Ql‚Ì—LŒøŠúŒÀ•\¦
 $conf_user_def['disp_ronin_expiration'] = 3;  // (3)

@@ -1829,7 +1829,7 @@ ERR;
         global $_conf;
 
         $url = http_build_url(array(
-            "scheme" => $_conf['2ch_ssl.post'] ? "https" : "http",
+            "scheme" => P2Util::selectScheme($host),
             "host" => P2HostMgr::isHost5ch($host) ? "be.{$_conf['2ch_domain']}" : "be.2ch.net",
             "path" => P2HostMgr::isHost5ch($host) ? "log" : "index.php"));
 
@@ -2058,6 +2058,36 @@ ERR;
         unset($parts2['scheme']);
 
         return $parts1 === $parts2;
+    }
+
+    // }}}
+    // {{{ selectScheme()
+
+    /**
+     * https‚ðŽg—p‚·‚é‚©
+     *
+     * @access  public
+     * @param   string $host
+     * @return  string
+     */
+    static public function selectScheme($host)
+    {
+        global $_conf;
+
+        if (!$_conf['use_https']) {
+            return 'http';
+        }
+
+        if (!empty($_conf['use_http_domains'])) {
+            $domains = array_map('trim', explode(',', $_conf['use_http_domains']));
+            foreach ($domains as $domain) {
+                if ($host === $domain || str_ends_with($host, '.' . $domain)) {
+                    return 'http';
+                }
+            }
+        }
+
+        return 'https';
     }
 
     // }}}

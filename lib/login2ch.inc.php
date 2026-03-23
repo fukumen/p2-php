@@ -157,7 +157,7 @@ function login2ch_uplift($login2chID, $login2chPW)
 {
     global $_conf;
 
-    $uplift_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'uplift.' . $_conf['2ch_domain'] . '/';
+    $uplift_url = P2Util::selectScheme($_conf['2ch_domain']) . '://uplift.' . $_conf['2ch_domain'] . '/';
     $sid_name = 'sid';
     $sid = null;
     $response_cookies = [];
@@ -294,7 +294,7 @@ function check_uplift_expiration($uplift_cookie)
 {
     global $_conf;
 
-    $uplift_url = ($_conf['2ch_ssl.post'] ? 'https://' : 'http://') . 'uplift.' . $_conf['2ch_domain'] . '/';
+    $uplift_url = P2Util::selectScheme($_conf['2ch_domain']) . '://uplift.' . $_conf['2ch_domain'] . '/';
     $body = null;
     try {
         $req = P2Commun::createHTTPRequest ($uplift_url . 'dashboard', HTTP_Request2::METHOD_GET);

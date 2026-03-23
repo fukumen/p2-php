@@ -437,12 +437,8 @@ function postIt($host, $bbs, $key, $post)
     global $_conf, $post_result, $post_error2ch, $p2cookies, $popup, $rescount, $ttitle_en;
     global $bbs_cgi;
 
-    // 接続先が2ch.netならばSSL通信を行う
-    if (P2HostMgr::isHost2chs($host) && $_conf['2ch_ssl.post']) {
-        $bbs_cgi_url = 'https://' . $host . $bbs_cgi;
-    } else {
-        $bbs_cgi_url = 'http://' . $host . $bbs_cgi;
-    }
+    $scheme = P2Util::selectScheme($host);
+    $bbs_cgi_url = $scheme . '://' . $host . $bbs_cgi;
 
     $post_seikou = false;
     try {
@@ -461,26 +457,13 @@ function postIt($host, $bbs, $key, $post)
 
         if (P2HostMgr::isHost2chs($host)){
             if (empty($_POST['p2_post_confirm_cookie'])) {
-                if ($_conf['2ch_ssl.post']) {
-                    $req->setHeader('Referer', "https://{$host}/test/read.cgi/{$bbs}/{$key}/");
-                } else {
-                    $req->setHeader('Referer', "http://{$host}/test/read.cgi/{$bbs}/{$key}/");
-                }
+                $req->setHeader('Referer', "{$scheme}://{$host}/test/read.cgi/{$bbs}/{$key}/");
             } else {
-                if ($_conf['2ch_ssl.post']) {
-                    $req->setHeader('Referer', "https://{$host}/test/bbs.cgi");
-                } else {
-                    $req->setHeader('Referer', "http://{$host}/test/bbs.cgi");
-                }
+                $req->setHeader('Referer', "{$scheme}://{$host}/test/bbs.cgi");
             }
         } else {
-            if ($_conf['2ch_ssl.post']) {
-                $req->setHeader('Referer', "https://{$host}/{$bbs}/{$key}/");
-                $req->setHeader("Origin", "https://{$host}/{$bbs}/{$key}/");
-            } else {
-                $req->setHeader('Referer', "http://{$host}/{$bbs}/{$key}/");
-                $req->setHeader("Origin", "http://{$host}/{$bbs}/{$key}/");
-            }
+            $req->setHeader('Referer', "{$scheme}://{$host}/{$bbs}/{$key}/");
+            $req->setHeader("Origin", "{$scheme}://{$host}/{$bbs}/{$key}/");
         }
 
         // クッキー

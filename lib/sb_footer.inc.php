@@ -82,14 +82,15 @@ if ($have_sb_footer_links) {
 // スペシャルモードでなければフォーム入力補完========================
 $ini_url_text = '';
 if (!$aThreadList->spmode) {
+    $scheme = P2Util::selectScheme($aThreadList->host);
     if (P2HostMgr::isHostJbbsShitaraba($aThreadList->host)) { // したらば
-        $ini_url_text = "http://{$aThreadList->host}/bbs/read.cgi?BBS={$aThreadList->bbs}&KEY=";
+        $ini_url_text = "{$scheme}://{$aThreadList->host}/bbs/read.cgi?BBS={$aThreadList->bbs}&KEY=";
     } elseif (P2HostMgr::isHostMachiBbs($aThreadList->host)) { // まちBBS
-        $ini_url_text = "http://{$aThreadList->host}/bbs/read.pl?BBS={$aThreadList->bbs}&KEY=";
+        $ini_url_text = "{$scheme}://{$aThreadList->host}/bbs/read.pl?BBS={$aThreadList->bbs}&KEY=";
     } elseif (P2HostMgr::isHostMachiBbsNet($aThreadList->host)) { // まちビねっと
-        $ini_url_text = "http://{$aThreadList->host}/test/read.cgi?bbs={$aThreadList->bbs}&key=";
+        $ini_url_text = "{$scheme}://{$aThreadList->host}/test/read.cgi?bbs={$aThreadList->bbs}&key=";
     } else {
-        $ini_url_text = "http://{$aThreadList->host}/test/read.cgi/{$aThreadList->bbs}/";
+        $ini_url_text = "{$scheme}://{$aThreadList->host}/test/read.cgi/{$aThreadList->bbs}/";
     }
 }
 
