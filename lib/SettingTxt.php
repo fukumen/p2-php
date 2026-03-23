@@ -31,7 +31,7 @@ class SettingTxt
         global $_conf;
         $this->_cache_interval = 60 * 60 * 12; // キャッシュは12時間有効
 
-        $this->_host = $host;
+        $this->_host = P2HostMgr::normalize5chHost($host);
         $this->_bbs =  $bbs;
 
         $dat_host_bbs_dir_s = P2Util::datDirOfHostBbs($host, $bbs);

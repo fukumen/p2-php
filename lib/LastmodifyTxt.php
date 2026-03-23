@@ -25,7 +25,7 @@ class LastmodifyTxt
     public function __construct($host, $bbs)
     {
         global $_conf;
-        $this->host = $host;
+        $this->host = P2HostMgr::normalize5chHost($host);
         $this->bbs =  $bbs;
         $this->storage = 'file';
 

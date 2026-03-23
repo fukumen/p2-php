@@ -541,13 +541,13 @@ class ThreadRead extends Thread {
                 $this->modified = null;
                 return $this->_downloadDat2ch (0); // あぼーん検出。全部取り直し。
             } elseif ($code == '404' && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)) {
-                if ($this->host == 'kako.' . $_conf['2ch_domain'] || $this->host == 'kako.5ch.net') {
+                if ($this->host == 'kako.' . $_conf['2ch_domain']) {
                     return $this->_downloadDat5chKako ();
                 } else {
                     $uri = P2Util::selectScheme($this->host)."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
                     return $this->_downloadDat2chKako ($uri, ".dat");
                 }
-            } elseif ($code == '301' && ($location = $response->getHeader('Location')) && (strpos($location, 'kako.' . $_conf['2ch_domain']) !== false || strpos($location, 'kako.5ch.net') !== false)) {
+            } elseif ($code == '301' && ($location = $response->getHeader('Location')) && (strpos($location, 'kako.' . $_conf['2ch_domain']) !== false)) {
                 return $this->_downloadDat5chKako ();
             } elseif ($code == '522') {
                 $serverName = $response->getHeader('Server');
@@ -558,6 +558,12 @@ class ThreadRead extends Thread {
                 return $this->_downloadDat2chNotFound ($code);
             }
         } catch (Exception $e) {
+            if ($e instanceof HTTP_Request2_Exception && $e->getNativeCode() === 6
+                && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)
+            ) {
+                return $this->_downloadDat5chKako ();
+            }
+
             $this->getdat_error_msg_ht .= "<p>サーバ接続エラー: " . $e->getMessage ();
             $this->getdat_error_msg_ht .= "<br>rep2 error: 板サーバへの接続に失敗しました。</p>";
             $this->diedat = true;

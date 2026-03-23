@@ -90,7 +90,7 @@ class ThreadList
      */
     public function setIta($host, $bbs, $itaj = "")
     {
-        $this->host = $host;
+        $this->host = P2HostMgr::normalize5chHost($host);
         $this->bbs = $bbs;
         $this->setItaj($itaj);
 

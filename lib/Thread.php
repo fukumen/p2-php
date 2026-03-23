@@ -266,7 +266,7 @@ class Thread
     public function getThreadInfoFromExtIdxLine($l)
     {
         $la = explode('<>', rtrim($l));
-        $this->host = $la[10];
+        $this->host = P2HostMgr::normalize5chHost($la[10]);
         $this->bbs = $la[11];
         $this->key = $la[1];
 
@@ -289,7 +289,7 @@ class Thread
     {
         //$GLOBALS['debug'] && $GLOBALS['profiler']->enterSection('setThreadPathInfo()');
 
-        $this->host = $host;
+        $this->host = P2HostMgr::normalize5chHost($host);
         $this->bbs = $bbs;
         $this->key = $key;
 

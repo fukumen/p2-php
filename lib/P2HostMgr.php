@@ -206,7 +206,6 @@ class P2HostMgr
     }
 
     // }}}
-    // }}}
     // {{{ isHostHeadline()
 
     /**
@@ -221,6 +220,7 @@ class P2HostMgr
         return ($host == 'headline.' . $_conf['2ch_domain'] || $host == 'headline.5ch.net' || $host == 'headline.2ch.net');
     }
 
+    // }}}
     // {{{ isHostBe5chNet()
 
     /**
@@ -895,6 +895,24 @@ class P2HostMgr
         } else {
             return $host;
         }
+    }
+
+    // }}}
+    // {{{ normalize5chHost()
+
+    /**
+     * 2ch.net ‚ð $_conf['2ch_domain'] ‚É’u‚«Š·‚¦‚é
+     *
+     * @param string $host
+     * @return string
+     */
+    static public function normalize5chHost($host)
+    {
+        global $_conf;
+        if ($_conf['2ch_to_5ch']) {
+            return preg_replace('/\.(2ch\.net|5ch\.net)$/', '.' . $_conf['2ch_domain'], $host);
+        }
+        return $host;
     }
 
     // }}}

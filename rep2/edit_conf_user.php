@@ -512,7 +512,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         '浪人設定',
         array('disp_ronin_expiration', '浪人の有効期限を表示'),
         '5ch設定',
-        array('2ch_to_5ch', 'read.phpで2ch.netへのアクセスを5ch.netへ置き換える'),
+        array('2ch_to_5ch', '2chへのアクセスを5chへ置き換える'),
         array('http_post_method', 'BBSへHTTP接続する際のPOSTメソッド'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
