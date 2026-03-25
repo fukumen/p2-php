@@ -68,8 +68,10 @@
   },
   "config": {
     "platform": {
-      "php": "8.2"
+      "php": "8.2",
+      "ext-gettext": "0"
     },
+    "_comment": "ext-gettext: static PHPで不足しているため追加。使用している html_template_flexy では function_exists でガードしており不足していても問題無し",
     "allow-plugins": {
       "cweagans/composer-patches": true,
       "cweagans/composer-configurable-plugin": true
