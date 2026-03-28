@@ -4,4 +4,3 @@
 **.txt diff=sjis
 **.js diff=sjis
 **.css diff=sjis
-doc/**.md diff=sjis
