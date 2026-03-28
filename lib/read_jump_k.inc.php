@@ -159,7 +159,7 @@ function _get_read_jump_filter(ThreadRead $aThread, ResFilter $resFilter, $use_o
     if ($use_onchange) {
         return _get_read_jump_filter_js($aThread, $options);
     } else {
-        return _get_read_jump_filter_form($aThread, $options);
+        return _get_read_jump_filter_form($aThread, $options, $resFilter);
     }
 }
 
@@ -190,18 +190,23 @@ EOP;
 /**
  * ページ遷移用フォーム要素を取得する (検索時)
  */
-function _get_read_jump_filter_form(ThreadRead $aThread, $options)
+function _get_read_jump_filter_form(ThreadRead $aThread, $options, ResFilter $resFilter = null)
 {
     global $_conf, $hd;
+
+    $word = isset($hd['word']) ? $hd['word'] : '';
+    $method = isset($resFilter) ? p2h($resFilter->method) : '';
+    $field = isset($resFilter) ? p2h($resFilter->field) : '';
+    $match = isset($resFilter) ? p2h($resFilter->match) : '';
 
     return <<<EOP
 <input type="hidden" name="host" value="{$aThread->host}">
 <input type="hidden" name="bbs" value="{$aThread->bbs}">
 <input type="hidden" name="key" value="{$aThread->key}">
-<input type="hidden" name="word" value="{$hd['word']}">
-<input type="hidden" name="method" value="{$hd['method']}">
-<input type="hidden" name="field" value="{$hd['field']}">
-<input type="hidden" name="match" value="{$hd['match']}">
+<input type="hidden" name="word" value="{$word}">
+<input type="hidden" name="method" value="{$method}">
+<input type="hidden" name="field" value="{$field}">
+<input type="hidden" name="match" value="{$match}">
 <select name="page">{$options}</select><input type="submit" value="GO">
 <input type="hidden" name="offline" value="1">
 {$_conf['detect_hint_input_ht']}{$_conf['k_input_ht']}

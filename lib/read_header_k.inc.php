@@ -240,6 +240,7 @@ echo "<hr>";
 echo "<h3><font color=\"{$STYLE['mobile_read_ttitle_color']}\">{$aThread->ttitle_hd}</font></h3>\n";
 
 $filter_fields = array(
+    ResFilter::FIELD_NUMBER => 'Ú½”Ô†‚ª',
     ResFilter::FIELD_HOLE => '', 
     ResFilter::FIELD_MESSAGE => 'Ò¯¾°¼Þ‚ª',
     ResFilter::FIELD_NAME => '–¼‘O‚ª',
@@ -255,7 +256,7 @@ if ($do_filtering) {
     echo "&quot;{$hd['word']}&quot;‚ð";
     echo ($resFilter->match == ResFilter::MATCH_ON) ? 'ŠÜ‚Þ' : 'ŠÜ‚Ü‚È‚¢';
 }
-if ($_GET['showbl']) {
+if ($_GET['showbl'] ?? null) {
     echo  p2h($aThread->resrange['start']) . '‚Ö‚ÌÚ½';
 }
 

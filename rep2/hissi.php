@@ -27,7 +27,7 @@ $hissi->host = $_GET['host'];
 $hissi->bbs  = $_GET['bbs'];
 
 // ‰æ‘œ‚ð•\Ž¦‚·‚éê‡
-if ($_GET['img']) {
+if ($_GET['img'] ?? null) {
     if ($hissi->isEnabled()) {
         header('Content-Type: image/png');
         readfile(P2_PLUGIN_DIR . '/hissi/hissi.png');
