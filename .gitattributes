@@ -2,3 +2,6 @@
 **.inc diff=sjis
 **.php diff=sjis
 **.txt diff=sjis
+**.js diff=sjis
+**.css diff=sjis
+doc/**.md diff=sjis
