@@ -63,7 +63,7 @@ chmod 0777 data/* rep2/ic
 
 - **[docker-rep2](https://github.com/fukumen/docker-rep2)**:  rep2+PHP+Caddyで構成されたdockerコンテナ
 - **[docker-rep2-win](https://github.com/fukumen/docker-rep2-win)**:  Windows11でdocker-rep2を使うためのアプリ
-- **[rep2-allinone](https://github.com/fukumen/rep2-allinone)**:  rep2+PHP+Caddyで構成されたパッケージ(Linux用deb/rpm)
+- **[rep2-allinone](https://github.com/fukumen/rep2-allinone)**:  rep2+PHP+Caddyで構成されたパッケージ(Linux用deb/rpm、macOS用Homebrew)
 
 環境を移行する場合、インストール後に data,conf,rep2/ic をコピーするだけで OK です。
 
