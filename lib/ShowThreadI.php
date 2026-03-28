@@ -548,6 +548,11 @@ EOP;
         $_spm_bbs = addslashes($this->thread->bbs);
         $_spm_key = addslashes($this->thread->key);
         $_spm_ls = addslashes($this->thread->ls);
+        $_spm_rnum_range = (int)$_conf['mobile.rnum_range'];
+        $_spm_rref_params = 'rf[field]=' . ResFilter::FIELD_NUMBER . 
+                            '&rf[method]=' . ResFilter::METHOD_JUST .
+                            '&rf[match]=' . ResFilter::MATCH_ON .
+                            '&rf[include]=' . ResFilter::INCLUDE_REFERENCED;
         $_spm_b = ($_conf['view_forced_by_query']) ? "&b={$_conf['b']}" : '';
 
         $code = <<<EOJS
@@ -564,6 +569,8 @@ var {$this->spmObjName} = {
     'bbs':'{$_spm_bbs}',
     'key':'{$_spm_key}',
     'ls':'{$_spm_ls}',
+    'rnum_range': '{$_spm_rnum_range}',
+    'rref_params': '{$_spm_rref_params}',
     'client':['{$_conf['b']}','{$_conf['client_type']}']
 };
 {$this->spmObjName}.show = (function(no,id,evt,date){SPM.show({$this->spmObjName},no,id,evt,date);});

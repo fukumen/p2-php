@@ -3,6 +3,11 @@
  * rep2 - 特殊機能実行スクリプト（携帯）
  */
 
+// session_write_close されないように P2_SESSION_CLOSE_AFTER_AUTHENTICATION を定義しておく
+// 今更携帯(spm_k.php) のために read.php と post_form.php の冒頭に変なロジックを入れたくないため、
+// read.php と post_form.php を inlucde したときに多重定義で警告は出るが実害ないので修正しない
+define('P2_SESSION_CLOSE_AFTER_AUTHENTICATION', 0);
+
 require_once __DIR__ . '/../init.php';
 require_once P2_LIB_DIR . '/spm_k.inc.php';
 

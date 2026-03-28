@@ -91,14 +91,13 @@ SPM.hide = (function(evt)
  */
 SPM.replyTo = (function(quote)
 {
-	var uri = 'spm_k.php?ktool_name=res';
-	if (quote) {
-		uri += '_quote';
-	}
+	var uri = 'post_form.php?resnum=' + SPM.activeNumber;
+	uri += '&inyou=' + (quote ? '1' : '-1');
+	uri += '&popup=1';
 	if (location.href.indexOf('/read_new_k.php?') != -1) {
 		uri += '&from_read_new=1';
 	}
-	uri += '&ktool_value=' + SPM.activeNumber + SPM.activeThread.query;
+	uri += SPM.activeThread.query;
 
 	window.open(uri);
 });
@@ -113,34 +112,34 @@ SPM.replyTo = (function(quote)
  */
 SPM.doAction = (function()
 {
-	var action = document.getElementById('spm-select-action');
-	var target = document.getElementById('spm-select-target');
-	var uri = 'spm_k.php?ktool_name=';
+	var action = document.getElementById('spm-select-action').value;
+	var target = document.getElementById('spm-select-target').value;
+	var uri;
 
-	switch (action.options[action.selectedIndex].value) {
+	switch (action) {
 	  case 'aborn':
 	  case 'ng':
-		uri += action.options[action.selectedIndex].value + '_';
+		uri = 'info_sp.php?mode=' + action + '_';
 		break;
 	  default:
 		alert('SPM: Invalid Action!');
 		return;
 	}
 
-	switch (target.options[target.selectedIndex].value) {
+	switch (target) {
 	  case 'name':
 	  case 'mail':
 	  case 'id':
 	  case 'msg':
 	  case 'be':
-		uri += target.options[target.selectedIndex].value;
+		uri += target;
 		break;
 	  default:
 		alert('SPM: Invalid Target!');
 		return;
 	}
 
-	uri += '&ktool_value=' + SPM.activeNumber + SPM.activeThread.query;
+	uri += '&resnum=' + SPM.activeNumber + '&popup=1' + SPM.activeThread.query;
 
 	window.open(uri);
 });
@@ -152,7 +151,32 @@ SPM.doAction = (function()
  */
 SPM.open = (function(action)
 {
-	var uri = 'spm_k.php?ktool_name=' + action + '&ktool_value=' + SPM.activeNumber + SPM.activeThread.query;
+	var uri;
+	switch (action) {
+	  case 'goto':
+		var to = parseInt(SPM.activeNumber) + parseInt(SPM.activeThread.rnum_range);
+		uri = 'read.php?ls=' + SPM.activeNumber + '-' + (isNaN(to) ? '' : to);
+		break;
+	  case 'rref':
+		uri = 'read.php?' + SPM.activeThread.rref_params + '&rf[word]=' + SPM.activeNumber;
+		break;
+	  case 'copy':
+		uri = 'read_copy_k.php?copy=' + SPM.activeNumber;
+		break;
+	  case 'copy_quote':
+		uri = 'read_copy_k.php?copy=' + SPM.activeNumber + '&inyou=1';
+		break;
+	  case 'aas':
+		uri = 'aas.php?resnum=' + SPM.activeNumber;
+		break;
+	  case 'aas_rotate':
+		uri = 'aas.php?resnum=' + SPM.activeNumber + '&rotate=1';
+		break;
+	  default:
+		alert('SPM: Invalid Action!');
+		return;
+	}
+	uri += SPM.activeThread.query;
 	window.open(uri);
 });
 
