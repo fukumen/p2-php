@@ -1,68 +1,68 @@
-# ���O�C�����b�N�A�E�g�@�\��IP�A�h���X�Ւf�ւ̊��p
+# ログインロックアウト機能とIPアドレス遮断への活用
 
-## �T�v
+## 概要
 
-�{�@�\�́A����IP�A�h���X����̃��O�C�����s���Z���ԂɌJ��Ԃ��ꂽ�ꍇ�ɁA����IP�A�h���X����̃��O�C�����ꎞ�I�ɐ����i���b�N�A�E�g�j������̂ł��B
-�ݒ�̏ڍׂ� `conf/conf_lockout.inc.php` ���Q�Ƃ��Ă��������B
+本機能は、同一IPアドレスからのログイン失敗が短時間に繰り返された場合に、そのIPアドレスからのログインを一時的に制限（ロックアウト）するものです。
+設定の詳細は `conf/conf_lockout.inc.php` を参照してください。
 
-## IP�A�h���X�L�^�̉��P
+## IPアドレス記録の改善
 
-����܂ł� rep2 �ł́A�v���O�������F������u���ڂ̐ڑ���IP�A�h���X�iREMOTE_ADDR�j�v�����̂܂܃��O�ɋL�^���Ă��܂����B
-���̂��߁Arep2 �����o�[�X�v���L�V�⃋�[�^�[�̔w��ɔz�u����Ă���\���ł́A�U���҂�IP�A�h���X�ł͂Ȃ��u�v���L�V�T�[�o�[�⃋�[�^�[�̃v���C�x�[�gIP�v���L�^����Ă��܂��A�O���c�[���ifail2ban���j�Ń��O���Ď����Ă��A�U��������肵�ĎՒf���邱�Ƃ�����ł����B
+これまでの rep2 では、プログラムが認識する「直接の接続元IPアドレス（REMOTE_ADDR）」をそのままログに記録していました。
+そのため、rep2 がリバースプロキシやルーターの背後に配置されている構成では、攻撃者のIPアドレスではなく「プロキシサーバーやルーターのプライベートIP」が記録されてしまい、外部ツール（fail2ban等）でログを監視しても、攻撃元を特定して遮断することが困難でした。
 
-����̃A�b�v�f�[�g�ɂ�� `vectorface/whip` ���C�u�����𓱓��������ƂŁA�K�؂Ȑݒ�i`conf/conf_lockout.inc.php`�j���s�����Ƃɂ��A���o�[�X�v���L�V�� Cloudflare ���o�R���Ă���ꍇ�ł� **�u�U���҂̖{����IP�A�h���X�v** �� `p2_login_failed.dat.php` �ɐ��m�ɋL�^�ł���悤�ɂȂ�܂����B
+今回のアップデートにより `vectorface/whip` ライブラリを導入したことで、適切な設定（`conf/conf_lockout.inc.php`）を行うことにより、リバースプロキシや Cloudflare を経由している場合でも **「攻撃者の本来のIPアドレス」** を `p2_login_failed.dat.php` に正確に記録できるようになりました。
 
-����ɂ��A���̃��O�t�@�C�����Ď����āA�t�@�C�A�E�H�[���inftables/iptables�j�� Web�T�[�o�[�inginx / Apache�j�̑w�ŕs���A�N�Z�X�𓮓I�ɎՒf���邱�Ƃ��\�ɂȂ�܂��B
+これにより、このログファイルを監視して、ファイアウォール（nftables/iptables）や Webサーバー（nginx / Apache）の層で不正アクセスを動的に遮断することが可能になります。
 
-### ���m��IP��F�������邽�߂̃|�C���g (Web�T�[�o�[���̐ݒ�)
+### 正確なIPを認識させるためのポイント (Webサーバー側の設定)
 
-���o�[�X�v���L�V�� Cloudflare ���o�R����\���ł́A�U���҂̖{����IP�A�h���X�� HTTP �w�b�_�[�i`X-Forwarded-For` �� `CF-Connecting-IP` �Ȃǁj�Ɋi�[����� Web�T�[�o�[�֓`�B����܂��B
-Web�T�[�o�[�w�ł̃A�N�Z�X���ۂ𐳂����@�\������ɂ́A�����̃w�b�_�[�����߂��u�{����IP����̒��ڃA�N�Z�X�v�Ƃ��ĔF��������ݒ肪�d�v�ɂȂ�܂��B
+リバースプロキシや Cloudflare を経由する構成では、攻撃者の本来のIPアドレスは HTTP ヘッダー（`X-Forwarded-For` や `CF-Connecting-IP` など）に格納されて Webサーバーへ伝達されます。
+Webサーバー層でのアクセス拒否を正しく機能させるには、これらのヘッダーを解釈し「本来のIPからの直接アクセス」として認識させる設定が重要になります。
 
-*   **nginx �̏ꍇ**: `ngx_http_realip_module` ���g�p���� `real_ip` �̐ݒ���s���܂��B
-*   **Apache �̏ꍇ**: `mod_remoteip` ���W���[�����g�p���܂��B
-
----
-
-## �l�b�g���[�N�\���ʂ̎Ւf�V�i���I
-
-�\���ɉ����āA�ǂ̃��C���[�ŎՒf���s���̂��K�؂��̃T���v�����ȉ��Ɏ����܂��B
-����̓I�� fail2ban �� Web�T�[�o�[�̐ݒ�菇�͊e�c�[���̃h�L�������g���Q�Ƃ��Ă��������B
-
-### 1. ���ڌ��J�E���[�^�[�EDocker�\�� (���M��IP���T�[�o�[OS���璼�ڌ�����ꍇ)
-*   �C���^�[�l�b�g <-> (���[�^�[/Docker) <-> Web�T�[�o�[ + PHP + rep2
-*   **�Ւf���C���[�ƊT�v**:
-    *   **OS�t�@�C�A�E�H�[�� (nft/iptables)**: fail2ban �Ń��O���Ď����AOS���x���ōU���҂�IP�𒼐� drop ���܂��BDocker �̏ꍇ�̓z�X�g���Ŏ��s���܂��B
-    *   **Web�T�[�o�[ (nginx / Apache)**: OS�̑��쌠�����Ȃ��ꍇ�AWeb�T�[�o�[�̃A�N�Z�X���ېݒ�inginx �� `deny` �� Apache �� `Require not ip` ���j�� fail2ban �œ��I�ɍX�V���ĎՒf���܂��B
-
-### 2. ���o�[�X�v���L�V�E(Cloudflare DNS Proxy) �\�� (���M��IP��HTTP�w�b�_�[�ɂ���ꍇ)
-*   �C���^�[�l�b�g <-> (Cloudflare) <-> ���o�[�X�v���L�V <-> Web�T�[�o�[ + PHP + rep2
-*   **�Ւf���C���[�ƊT�v**:
-    *   **CDN/Edge (Cloudflare)**: Cloudflare API �o�R�� IP Access Rules �ɓo�^���A�G�b�W�ŎՒf���܂��B
-    *   **���o�[�X�v���L�V**: �v���L�V�w�̃A�N�Z�X���ېݒ��t�@�C�A�E�H�[���ŎՒf���܂��B
-    *   **Web�T�[�o�[**: �A�v���P�[�V�������� Web�T�[�o�[�ŁAHTTP�w�b�_�[�����ɎՒf���܂��B
-
-### 3. Cloudflare Zero Trust (Tunnel) �\�� (���M��IP��OS���猩���Ȃ��ꍇ)
-*   �C���^�[�l�b�g <-> Cloudflare Zero Trust <-> cloudflared <-> (���o�[�X�v���L�V) <-> Web�T�[�o�[ + PHP + rep2
-*   **�Ւf���C���[�ƊT�v**:
-    *   **Cloudflare (Edge)**: Zero Trust (Access/Gateway) �̃|���V�[�ŊY��IP�����⃊�X�g�ɒǉ����܂��B
-    *   **���o�[�X�v���L�V**: �O�i�ɒu���ꂽ�v���L�V�w�ŁAHTTP�w�b�_�[�����ɎՒf���܂��B
-    *   **Web�T�[�o�[**: �g���l���ʐM�̂��� OS ���x���̃t�@�C�A�E�H�[���ł͎Ւf�ł��܂���B�ł����� Web�T�[�o�[�w�ŁAHTTP �w�b�_�[�����ɎՒf���܂��B
+*   **nginx の場合**: `ngx_http_realip_module` を使用して `real_ip` の設定を行います。
+*   **Apache の場合**: `mod_remoteip` モジュールを使用します。
 
 ---
 
-## ���o�[�X�v���L�V�ݒ莞�̒��ӓ_
+## ネットワーク構成別の遮断シナリオ
 
-���o�[�X�v���L�V�\���ɂ����Ė{�@�\�i����� Web�T�[�o�[�w�ł�IP�Ւf�j�𐳂������삳���邽�߂ɂ́A**���o�[�X�v���L�V����o�b�N�G���h�irep2�j�֓K�؂� HTTP �w�b�_�[��n���ݒ�** ���s���ł��B
+構成に応じて、どのレイヤーで遮断を行うのが適切かのサンプルを以下に示します。
+※具体的な fail2ban や Webサーバーの設定手順は各ツールのドキュメントを参照してください。
 
-�������o�[�X�v���L�V���� `X-Forwarded-For` ���̃w�b�_�[��t�^���Y���ƁA�o�b�N�G���h���ɂ́u���o�[�X�v���L�V���g��IP�v�����`��炸�A���ׂẴA�N�Z�X�������IP�Ƃ݂Ȃ���Ă��܂��܂��B���̏�Ԃł́A�P��̍U���ɂ���ĈӐ}�����S���[�U�[�����b�N�A�E�g�����Ȃǂ̃g���u���Ɍq���邽�߁A�\�����ӂ��Ă��������B
+### 1. 直接公開・ルーター・Docker構成 (送信元IPがサーバーOSから直接見える場合)
+*   インターネット <-> (ルーター/Docker) <-> Webサーバー + PHP + rep2
+*   **遮断レイヤーと概要**:
+    *   **OSファイアウォール (nft/iptables)**: fail2ban でログを監視し、OSレベルで攻撃者のIPを直接 drop します。Docker の場合はホスト側で実行します。
+    *   **Webサーバー (nginx / Apache)**: OSの操作権限がない場合、Webサーバーのアクセス拒否設定（nginx の `deny` や Apache の `Require not ip` 等）を fail2ban で動的に更新して遮断します。
 
-*   **nginx �����o�[�X�v���L�V�ɂ���ꍇ�̐ݒ��**:
+### 2. リバースプロキシ・(Cloudflare DNS Proxy) 構成 (送信元IPがHTTPヘッダーにある場合)
+*   インターネット <-> (Cloudflare) <-> リバースプロキシ <-> Webサーバー + PHP + rep2
+*   **遮断レイヤーと概要**:
+    *   **CDN/Edge (Cloudflare)**: Cloudflare API 経由で IP Access Rules に登録し、エッジで遮断します。
+    *   **リバースプロキシ**: プロキシ層のアクセス拒否設定やファイアウォールで遮断します。
+    *   **Webサーバー**: アプリケーション側の Webサーバーで、HTTPヘッダーを元に遮断します。
+
+### 3. Cloudflare Zero Trust (Tunnel) 構成 (送信元IPがOSから見えない場合)
+*   インターネット <-> Cloudflare Zero Trust <-> cloudflared <-> (リバースプロキシ) <-> Webサーバー + PHP + rep2
+*   **遮断レイヤーと概要**:
+    *   **Cloudflare (Edge)**: Zero Trust (Access/Gateway) のポリシーで該当IPを拒絶リストに追加します。
+    *   **リバースプロキシ**: 前段に置かれたプロキシ層で、HTTPヘッダーを元に遮断します。
+    *   **Webサーバー**: トンネル通信のため OS レベルのファイアウォールでは遮断できません。最も後ろの Webサーバー層で、HTTP ヘッダーを元に遮断します。
+
+---
+
+## リバースプロキシ設定時の注意点
+
+リバースプロキシ構成において本機能（および Webサーバー層でのIP遮断）を正しく動作させるためには、**リバースプロキシからバックエンド（rep2）へ適切な HTTP ヘッダーを渡す設定** が不可欠です。
+
+もしリバースプロキシ側で `X-Forwarded-For` 等のヘッダーを付与し忘れると、バックエンド側には「リバースプロキシ自身のIP」しか伝わらず、すべてのアクセスが同一のIPとみなされてしまいます。この状態では、単一の攻撃によって意図せず全ユーザーがロックアウトされるなどのトラブルに繋がるため、十分注意してください。
+
+*   **nginx をリバースプロキシにする場合の設定例**:
     ```nginx
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Real-IP $remote_addr;
     ```
-*   **Apache �����o�[�X�v���L�V�ɂ���ꍇ�̐ݒ��**:
+*   **Apache をリバースプロキシにする場合の設定例**:
     ```apache
     RequestHeader set X-Forwarded-For %{REMOTE_ADDR}e
     ```

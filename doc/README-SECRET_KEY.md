@@ -1,20 +1,20 @@
-# ���ϐ�SECRET_KEY
+# 環境変数SECRET_KEY
 
-���ϐ�SECRET_KEY��openssl rand -hex 32�̌��ʂ�ݒ肷��K�v������܂��B
+環境変数SECRET_KEYにopenssl rand -hex 32の結果を設定する必要があります。
 
-�ݒ���@�́A���s���i�R���e�i�����@���j�ƁAPHP�𓮂����d�g�݁iApache���W���[�����APHP-FPM���j�ɂ���đ���ɂ킽��܂��B
+設定方法は、実行環境（コンテナか実機か）と、PHPを動かす仕組み（Apacheモジュールか、PHP-FPMか）によって多岐にわたります。
 
 > [!IMPORTANT]
-> �Ȃ�̂�������H�Ƃ����ꍇ�Adocker-rep2�ɏ�芷���Ă��炤�̂���ԊȒP���Ǝv���܂��B
+> なんのこっちゃ？という場合、docker-rep2に乗り換えてもらうのが一番簡単だと思います。
 
-��\�I�ȃp�^�[���𐮗����ĉ�����܂��B
+代表的なパターンを整理して解説します。
 
-## �R���e�i���iDocker / LXC�j
-�R���e�i���ł́A**�u���s���ɊO�����璍������v** �̂��ł���ʓI�ŃZ�L���A�ȕ��@�ł��B
+## コンテナ環境（Docker / LXC）
+コンテナ環境では、**「実行時に外部から注入する」** のが最も一般的でセキュアな方法です。
 
-### Docker�̏ꍇ
+### Dockerの場合
 
-docker-compose.yml �� Dockerfile �Œ�`���܂��B
+docker-compose.yml や Dockerfile で定義します。
 
 <details open>
 <summary>docker-compose.yml</summary>
@@ -32,19 +32,19 @@ services:
 <summary>Dockerfile</summary>
 
 ```INI
-ENV SECRET_KEY=your_secret_value �i���C���[�W���̂ɏ������܂�邽�߁A�閧���̊Ǘ��ɂ͒��ӂ��K�v�j
+ENV SECRET_KEY=your_secret_value （※イメージ自体に書き込まれるため、秘密情報の管理には注意が必要）
 ```
 </details>
 
 
-docker-rep2�ł�docker-compose.yml��docker-compose.override.yml�ɋL�ڂ��Ă��炤�z��ł��B
+docker-rep2ではdocker-compose.ymlやdocker-compose.override.ymlに記載してもらう想定です。
 
-### LXC�̏ꍇ
+### LXCの場合
 
-�R���e�i�̐ݒ�t�@�C���i/var/lib/lxc/�e�햼/config�j�ɋL�ڂ��܂��B
+コンテナの設定ファイル（/var/lib/lxc/容器名/config）に記載します。
 
 <details open>
-<summary>/var/lib/lxc/�e�햼/config</summary>
+<summary>/var/lib/lxc/容器名/config</summary>
 
 ```INI
 lxc.environment = SECRET_KEY=your_secret_value
@@ -54,28 +54,28 @@ lxc.environment = SECRET_KEY=your_secret_value
 
 
 
-## Apache���g�p���Ă���ꍇ
-Apache�̏ꍇ�APHP�̓��샂�[�h�iMPM�j��ڑ������ɂ���ď����ꏊ���ς��܂��B
+## Apacheを使用している場合
+Apacheの場合、PHPの動作モード（MPM）や接続方式によって書き場所が変わります。
 
-### mod_php�iApache���W���[���Ƃ��ē���j
-httpd.conf �� .htaccess �ɋL�q���܂��BMPM�iPrefork���j�Ɋւ�炸���̕��@�Őݒ�\�ł��B
+### mod_php（Apacheモジュールとして動作）
+httpd.conf や .htaccess に記述します。MPM（Prefork等）に関わらずこの方法で設定可能です。
 
 <details open>
-<summary>httpd.conf �� .htaccess</summary>
+<summary>httpd.conf や .htaccess</summary>
 
 ```INI
 SetEnv SECRET_KEY "your_secret_value"
 ```
 </details>
 
-### PHP-FPM �� Apache ���痘�p���Ă���ꍇ
-���݂̎嗬�iEvent MPM + ProxyPass�j�ł��BApache���� SetEnv �����Ă��APHP-FPM���Ŏ󂯎��������Ȃ��Ɣ��f����܂���i��q��PHP-FPM�̍����Q�Ɓj�B
+### PHP-FPM を Apache から利用している場合
+現在の主流（Event MPM + ProxyPass）です。Apache側で SetEnv をしても、PHP-FPM側で受け取りを許可しないと反映されません（後述のPHP-FPMの項を参照）。
 
-## Nginx + PHP-FPM �̏ꍇ
-Nginx���� fastcgi_param ���g����PHP�ɒl��n���܂��B
+## Nginx + PHP-FPM の場合
+Nginx側で fastcgi_param を使ってPHPに値を渡します。
 
 <details open>
-<summary>/etc/nginx/sites-enabled/�Ȃ�Ƃ� ��</summary>
+<summary>/etc/nginx/sites-enabled/なんとか 等</summary>
 
 ```INI
 location ~ \.php$ {
@@ -86,11 +86,11 @@ location ~ \.php$ {
 ```
 </details>
 
-## :warning:PHP-FPM���̂̐ݒ�i�d�v�j
-PHP-FPM���g���Ă���ꍇ�iNginx�A�g��AApache��FastCGI�A�g�j�A�Z�L�����e�B�̂��߂�**�uOS�̊��ϐ����N���A����v**�ݒ肪�f�t�H���g�ŗL���ɂȂ��Ă��邱�Ƃ������ł��B
+## :warning:PHP-FPM自体の設定（重要）
+PHP-FPMを使っている場合（Nginx連携や、ApacheのFastCGI連携）、セキュリティのために**「OSの環境変数をクリアする」**設定がデフォルトで有効になっていることが多いです。
 
-### �p�^�[��A�Fpool�ݒ�t�@�C���ɒ��ڏ���
-/etc/php/X.X/fpm/pool.d/www.conf �Ȃǂɒ��ڋL�q���܂��B
+### パターンA：pool設定ファイルに直接書く
+/etc/php/X.X/fpm/pool.d/www.conf などに直接記述します。
 
 <details open>
 <summary>/etc/php/X.X/fpm/pool.d/www.conf</summary>
@@ -100,23 +100,23 @@ env[SECRET_KEY] = 'your_secret_value'
 ```
 </details>
 
-### �p�^�[��B�FOS�̊��ϐ��������p��
-OS��Docker�Őݒ肵�����ϐ���PHP�œǂݎ�肽���ꍇ�́Awww.conf �ňȉ��̐ݒ���m�F���Ă��������B
+### パターンB：OSの環境変数を引き継ぐ
+OSやDockerで設定した環境変数をPHPで読み取りたい場合は、www.conf で以下の設定を確認してください。
 
 <details open>
 <summary>/etc/php/X.X/fpm/pool.d/www.conf</summary>
 
 ```INI
-; �f�t�H���g�� yes�B����� no �ɂ���� OS �̊��ϐ��� PHP �Ŏ擾�\�ɂȂ�
+; デフォルトは yes。これを no にすると OS の環境変数が PHP で取得可能になる
 clear_env = no
 ```
 
 
-## OS�iLinux�j���x���ł̐ݒ�
-Web�T�[�o�[�ł͂Ȃ�OS���Őݒ肷��ꍇ�ł��B�O�q�̂悤��PHP-FPM���g���Ă���Ƃ��ꂾ������ʖڂł��B
+## OS（Linux）レベルでの設定
+WebサーバーではなくOS側で設定する場合です。前述のようにPHP-FPMを使っているとこれだけじゃ駄目です。
 
-#### Systemd �T�[�r�X�t�@�C��
-PHP-FPM�Ȃǂ�OS�N�����ɓ������ꍇ�A���j�b�g�t�@�C���ɋL�ڂ��܂��B
+#### Systemd サービスファイル
+PHP-FPMなどをOS起動時に動かす場合、ユニットファイルに記載します。
 
 <details open>
 <summary>sudo systemctl edit php8.2-fpm</summary>
@@ -126,15 +126,15 @@ PHP-FPM�Ȃǂ�OS�N�����ɓ������ꍇ�A���j�b�g�t�@�C���ɋL�ڂ��܂��B
 Environment="SECRET_KEY=your_secret_value"
 ```
 
-### /etc/environment�ɏ���
-�V�X�e���S�̂ɓK�p����܂��i�ċN�����K�v�j�B
+### /etc/environmentに書く
+システム全体に適用されます（再起動が必要）。
 
-# �܂Ƃ�
+# まとめ
 
-| ���s��                  | �ݒ�ꏊ                                    | ���l                         |
+| 実行環境                  | 設定場所                                    | 備考                         |
 | :------------------------ | :------------------------------------------ | :--------------------------- |
-| Docker                    | docker-compose.yml                          | �ł���ʓI                   |
-| Apache (mod_php)          | .htaccess / httpd.conf                      | SetEnv ���g�p                |
-| Nginx + PHP-FPM           | nginx.conf                                  | fastcgi_param �œn��         |
-| PHP-FPM                   | www.conf                                    | clear_env = no �̐ݒ�ɒ���  |
-| OS�iLinux�j���x���ł̐ݒ� | Systemd �T�[�r�X�t�@�C�� / /etc/environment | OS�̊��ϐ��Ɉˑ� |
+| Docker                    | docker-compose.yml                          | 最も一般的                   |
+| Apache (mod_php)          | .htaccess / httpd.conf                      | SetEnv を使用                |
+| Nginx + PHP-FPM           | nginx.conf                                  | fastcgi_param で渡す         |
+| PHP-FPM                   | www.conf                                    | clear_env = no の設定に注意  |
+| OS（Linux）レベルでの設定 | Systemd サービスファイル / /etc/environment | OSの環境変数に依存 |
