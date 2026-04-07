@@ -12,32 +12,18 @@ $STYLE['a_underline_none'] = "2"; // ("2") リンクに下線を（つける:0, つけない:1,
 
 // {{{ フォント
 
-$STYLE['fontfamily'] = "ヒラギノ角ゴ Pro W3"; // ("ヒラギノ角ゴ Pro W3") 基本のフォント
+$STYLE['fontfamily'] = "system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Hiragino Kaku Gothic ProN, Hiragino Sans, Meiryo, MS PGothic, sans-serif";
+$STYLE['fontfamily_bold'] = ""; // ("") 基本ボールド用フォント
+$STYLE['fontweight_bold'] = "bold"; // ("bold") 太字ウェイト
+$STYLE['fontstyle_bold'] = "normal"; // ("normal") 太字スタイル
 
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'Mac') !== false) {
-    if(!UA::isSafariGroup()){ /* ブラウザが Macで Safari 以外 なら */
-        $STYLE['fontfamily_bold'] = "ヒラギノ角ゴ Pro W6"; // ("ヒラギノ角ゴ Pro W6") 基本ボールド用フォント（普通に太字にしたい場合は指定しない("")）
-    }
-
-    /* Mac用フォントサイズ */
-    $STYLE['fontsize'] = "12px"; // ("12px") 基本フォントの大きさ
-    $STYLE['menu_fontsize'] = "11px"; // ("11px") 板メニューのフォントの大きさ
-    $STYLE['sb_fontsize'] = "11px"; // ("11px") スレ一覧のフォントの大きさ
-    $STYLE['read_fontsize'] = "12px"; // ("12px") スレッド内容表示のフォントの大きさ
-    $STYLE['respop_fontsize'] = "11px"; // ("11px") 引用レスポップアップ表示のフォントの大きさ
-    $STYLE['infowin_fontsize'] = "11px"; // ("11px") 情報ウィンドウのフォントの大きさ
-    $STYLE['form_fontsize'] = "11px"; // ("11px") input, option, select のフォントの大きさ（Caminoを除く）
-}else{
-
-    /* Mac以外のフォントサイズ */
-    $STYLE['fontsize'] = "12px"; // ("12px") 基本フォントの大きさ
-    $STYLE['menu_fontsize'] = "12px"; // ("12px") 板メニューのフォントの大きさ
-    $STYLE['sb_fontsize'] = "12px"; // ("12px") スレ一覧のフォントの大きさ
-    $STYLE['read_fontsize'] = "13px"; // ("13px") スレッド内容表示のフォントの大きさ
-    $STYLE['respop_fontsize'] = "12px"; // ("12px") 引用レスポップアップ表示のフォントの大きさ
-    $STYLE['infowin_fontsize'] = "12px"; // ("12px") 情報ウィンドウのフォントの大きさ
-    $STYLE['form_fontsize'] = "12px"; // ("12px") input, option, select のフォントの大きさ
-}
+$STYLE['fontsize'] = "12px"; // ("12px") 基本フォントの大きさ
+$STYLE['menu_fontsize'] = "12px"; // ("12px") 板メニューのフォントの大きさ
+$STYLE['sb_fontsize'] = "12px"; // ("12px") スレ一覧のフォントの大きさ
+$STYLE['read_fontsize'] = "13px"; // ("13px") スレッド内容表示のフォントの大きさ
+$STYLE['respop_fontsize'] = "12px"; // ("12px") 引用レスポップアップ表示のフォントの大きさ
+$STYLE['infowin_fontsize'] = "12px"; // ("12px") 情報ウィンドウのフォントの大きさ
+$STYLE['form_fontsize'] = "12px"; // ("12px") フォームのフォントの大きさ
 
 // }}}
 /**

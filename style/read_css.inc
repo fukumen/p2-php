@@ -25,7 +25,7 @@ if (!empty($STYLE['fontfamily_bold'])) {
     echo <<<EOSTYLE
 
 h3, h4 {
-	font-family:"{$STYLE['fontfamily_bold']}";
+	font-family:{$STYLE['fontfamily_bold']};
 	font-style: {$fontstyle_bold};
 	font-weight: {$fontweight_bold};
 }
@@ -235,22 +235,8 @@ a.newres:link, a.newres:visited, a.newres:hover, a.newres:active{ /* V’…ƒŒƒX */
 .ActiveMona {
 	white-space: nowrap;
 	line-height: 100%;
-	font-family: "{$_conf['expack.am.fontfamily']}";
-	font-size: {$_conf['expack.am.fontsize']};
-}
-
-.NoMona {
-	white-space: normal;
-	line-height: 130%;
-	font-family: "{$STYLE['fontfamily']}";
-	font-size: {$STYLE['read_fontsize']};
-}
-
-.NoMonaQ {
-	white-space: normal;
-	line-height: 120%;
-	font-family: "{$STYLE['fontfamily']}";
-	font-size: {$STYLE['respop_fontsize']};
+	font-family: {$STYLE['fontfamily_aa']};
+	font-size: {$STYLE['aa_fontsize']};
 }
 
 /* }}}*/

@@ -8,40 +8,6 @@
 
 $STYLE['a_underline_none'] = "1"; // リンクに下線を（つける:0, つけない:1, スレタイトル一覧だけつけない:2）
 
-// {{{ フォント
-
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'Mac') !== false) {
-	/* Mac用フォントファミリー*/
-	if (UA::isSafariGroup()){ /* Safari系なら */
-		$STYLE['fontfamily'] = array("Hiragino Maru Gothic ProN", "Arial");
-		$STYLE['fontfamily_bold'] = array("Hiragino Kaku Gothic StdN", "Arial Black");
-//		$STYLE['fontweight_bold'] = "bold";
-	} else {
-		$STYLE['fontfamily'] = array("Hiragino Maru Gothic ProN", "ヒラギノ丸ゴ ProN W4", "Arial"); // 基本のフォント
-		$STYLE['fontfamily_bold'] = array("Hiragino Kaku Gothic StdN", "ヒラギノ角ゴ StdN W8", "Arial Black"); // 基本ボールド用フォント（普通に太字にしたい場合は指定しない("")）
-	}
-	/* Mac用フォントサイズ */
-	$STYLE['fontsize'] = "12px"; // ("12px") 基本フォントの大きさ
-	$STYLE['menu_fontsize'] = "10px"; // ("10px") 板メニューのフォントの大きさ
-	$STYLE['sb_fontsize'] = "10px"; // ("10px") スレ一覧のフォントの大きさ
-	$STYLE['read_fontsize'] = "12px"; // ("12px") スレッド内容表示のフォントの大きさ
-	$STYLE['respop_fontsize'] = "12px"; // ("12px") 引用レスポップアップ表示のフォントの大きさ
-	$STYLE['infowin_fontsize'] = "12px"; // ("12px") 情報ウィンドウのフォントの大きさ
-	$STYLE['form_fontsize'] = "10px"; // ("10px") input, option, select のフォントの大きさ（Caminoを除く）
-}else{
-	/* Mac以外のフォントファミリー*/
-	$STYLE['fontfamily'] = array("メイリオ", "Meiryo", "ＭＳ Ｐゴシック", "MS P Gothic"); // ("ＭＳ Ｐゴシック") 基本のフォント
-	/* Mac以外のフォントサイズ */
-	$STYLE['fontsize'] = "12px"; // ("12px") 基本フォントの大きさ
-	$STYLE['menu_fontsize'] = "10px"; // ("10px") 板メニューのフォントの大きさ
-	$STYLE['sb_fontsize'] = "10px"; // ("10px") スレ一覧のフォントの大きさ
-	$STYLE['read_fontsize'] = "12px"; // ("12px") スレッド内容表示のフォントの大きさ
-	$STYLE['respop_fontsize'] = "12px"; // ("12px") 引用レスポップアップ表示のフォントの大きさ
-	$STYLE['infowin_fontsize'] = "12px"; // ("12px") 情報ウィンドウのフォントの大きさ
-	$STYLE['form_fontsize'] = "10px"; // ("10px") input, option, select のフォントの大きさ
-}
-
-// }}}
 /**
  * 色彩の設定
  *

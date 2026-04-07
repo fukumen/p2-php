@@ -7,6 +7,7 @@
 var SPM = {
 	'activeThread': null,
 	'activeNumber': null,
+	'activeId': null,
 	'activeDate': null
 };
 
@@ -35,6 +36,7 @@ SPM.show = (function(thread, no, id, evt, date)
 
 	SPM.activeThread = thread;
 	SPM.activeNumber = no;
+	SPM.activeId = id;
 	SPM.activeDate = date;
 
 	var num = document.getElementById('spm-num');
@@ -117,26 +119,26 @@ SPM.doAction = (function()
 	var uri;
 
 	switch (action) {
-	  case 'aborn':
-	  case 'ng':
-		uri = 'info_sp.php?mode=' + action + '_';
-		break;
-	  default:
-		alert('SPM: Invalid Action!');
-		return;
+		case 'aborn':
+		case 'ng':
+			uri = 'info_sp.php?mode=' + action + '_';
+			break;
+		default:
+			alert('SPM: Invalid Action!');
+			return;
 	}
 
 	switch (target) {
-	  case 'name':
-	  case 'mail':
-	  case 'id':
-	  case 'msg':
-	  case 'be':
-		uri += target;
-		break;
-	  default:
-		alert('SPM: Invalid Target!');
-		return;
+		case 'name':
+		case 'mail':
+		case 'id':
+		case 'msg':
+		case 'be':
+			uri += target;
+			break;
+		default:
+			alert('SPM: Invalid Target!');
+			return;
 	}
 
 	uri += '&resnum=' + SPM.activeNumber + '&popup=1' + SPM.activeThread.query;
@@ -153,28 +155,32 @@ SPM.open = (function(action)
 {
 	var uri;
 	switch (action) {
-	  case 'goto':
-		var to = parseInt(SPM.activeNumber) + parseInt(SPM.activeThread.rnum_range);
-		uri = 'read.php?ls=' + SPM.activeNumber + '-' + (isNaN(to) ? '' : to);
-		break;
-	  case 'rref':
-		uri = 'read.php?' + SPM.activeThread.rref_params + '&rf[word]=' + SPM.activeNumber;
-		break;
-	  case 'copy':
-		uri = 'read_copy_k.php?copy=' + SPM.activeNumber;
-		break;
-	  case 'copy_quote':
-		uri = 'read_copy_k.php?copy=' + SPM.activeNumber + '&inyou=1';
-		break;
-	  case 'aas':
-		uri = 'aas.php?resnum=' + SPM.activeNumber;
-		break;
-	  case 'aas_rotate':
-		uri = 'aas.php?resnum=' + SPM.activeNumber + '&rotate=1';
-		break;
-	  default:
-		alert('SPM: Invalid Action!');
-		return;
+		case 'goto':
+			var to = parseInt(SPM.activeNumber) + parseInt(SPM.activeThread.rnum_range);
+			uri = 'read.php?ls=' + SPM.activeNumber + '-' + (isNaN(to) ? '' : to);
+			break;
+		case 'rref':
+			uri = 'read.php?' + SPM.activeThread.rref_params + '&rf[word]=' + SPM.activeNumber;
+			break;
+		case 'copy':
+			uri = 'read_copy_k.php?copy=' + SPM.activeNumber;
+			break;
+		case 'copy_quote':
+			uri = 'read_copy_k.php?copy=' + SPM.activeNumber + '&inyou=1';
+			break;
+		case 'am':
+			activeMona(SPM.activeId);
+			SPM.hide();
+			return;
+		case 'aas':
+			uri = 'aas.php?resnum=' + SPM.activeNumber;
+			break;
+		case 'aas_rotate':
+			uri = 'aas.php?resnum=' + SPM.activeNumber + '&rotate=1';
+			break;
+		default:
+			alert('SPM: Invalid Action!');
+			return;
 	}
 	uri += SPM.activeThread.query;
 	window.open(uri);

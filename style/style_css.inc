@@ -36,7 +36,7 @@ if (!empty($STYLE['fontfamily_bold'])) {
 	echo <<<EOSTYLE
 
 b,strong,th{
-	font-family:"{$STYLE['fontfamily_bold']}";
+	font-family:{$STYLE['fontfamily_bold']};
 	font-style: {$fontstyle_bold};
 	font-weight: {$fontweight_bold};
 }
@@ -53,7 +53,7 @@ body,td{
 	line-height:135%;
 	font-size:{$STYLE['fontsize']};
 	color:{$STYLE['textcolor']};
-	font-family:"{$STYLE['fontfamily']}";
+	font-family:{$STYLE['fontfamily']};
 }
 a:link{color:{$STYLE['acolor']};}
 a:visited{color:{$STYLE['acolor_v']};}

@@ -86,6 +86,34 @@ if ($_conf['expack.spm.enabled']) {
 <script type="text/javascript" src="js/spm_iphone.js?{$_conf['p2_version_id']}"></script>
 EOS;
 }
+// ActiveMona
+if ($_conf['expack.am.enabled']) {
+    if ($STYLE['aa_textar_webfont']) {
+        $_conf['extra_headers_ht'] .= <<<EOS
+<style type="text/css">
+@font-face {
+  font-family: 'Textar';
+  src: url('https://yamacraft.github.io/textar-font/fonts/textar-min.woff') format('woff'),
+       url('https://yamacraft.github.io/textar-font/fonts/textar-min.ttf') format('truetype');
+}
+</style>
+EOS;
+    }
+    if ($_conf['expack.am.autodetect_i']) {
+        $_conf['extra_headers_ht'] .= <<<EOS
+<script type="text/javascript" src="js/asciiart.js?{$_conf['p2_version_id']}"></script>
+<style type="text/css">
+.aMonaSW { cursor: pointer; }
+div.res > div.message.ActiveMona {
+	white-space: nowrap;
+	line-height: 100%;
+	font-family: {$STYLE['fontfamily_aa']};
+	font-size: {$STYLE['aa_fontsize']};
+}
+</style>
+EOS;
+    }
+}
 // Limelight
 if ($_conf['expack.aas.enabled'] || $_conf['expack.ic2.enabled']) {
     $_conf['extra_headers_ht'] .= <<<EOS

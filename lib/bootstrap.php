@@ -412,16 +412,9 @@ foreach ($STYLE as $K => $V) {
     }
 }
 
-if (!$_conf['ktai']) {
+if (!$_conf['ktai'] || $_conf['iphone']) {
     if (!function_exists('p2_fontconfig_apply_custom')) {
         include P2_LIB_DIR . '/fontconfig.inc.php';
-    }
-
-    if ($_conf['expack.am.enabled']) {
-        $_conf['expack.am.fontfamily'] = p2_correct_css_fontfamily($_conf['expack.am.fontfamily']);
-        if ($STYLE['fontfamily']) {
-            $_conf['expack.am.fontfamily'] .= '","' . $STYLE['fontfamily'];
-        }
     }
 
     p2_fontconfig_apply_custom();

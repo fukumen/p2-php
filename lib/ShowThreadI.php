@@ -18,6 +18,9 @@ class ShowThreadI extends ShowThread
     static private $_spm_objects = array();
 
     public $am_autong = false; // 自動AA略をするか否か
+    public $am_autodetect = false;
+    public $am_side_of_id = false;
+    public $am_on_spm = false;
 
     public $aas_rotate = '90°回転'; // AAS 回転リンク文字列
 
@@ -176,6 +179,10 @@ class ShowThreadI extends ShowThread
         $ng_type = $this->_ngAbornCheck($i, strip_tags($name), $mail, $date_id, $id, $msg, $nong, $ng_info);
         if ($ng_type == self::ABORN) {
             return $this->_abornedRes($res_id);
+        }
+        $msg_class = 'message';
+        if ($this->am_autodetect && $this->activeMona->detectAA($msg)) {
+            $msg_class .= ' ActiveMona';
         }
         if (!$nong && $this->am_autong && $this->activeMona->detectAA($msg)) {
             $is_ng = array_key_exists($i, $this->_ng_nums);
@@ -346,9 +353,15 @@ EOP;
         }
 
         // SPM
+        $msg_id = $res_id . '_msg';
+        if (!empty($_GET['ajax']) && isset($_GET['respop_id'])) {
+            $spm_msg_id = sprintf('_respop%d_', $_GET['respop_id']) . $msg_id;
+        } else {
+            $spm_msg_id = $msg_id;
+        }
         if ($_conf['expack.spm.enabled']) {
             $js_date = $raw_date ? "'$raw_date'" : 'null';
-            $no_onclick = " onclick=\"{$this->spmObjName}.show({$i},'{$res_id}',event,{$js_date})\"";
+            $no_onclick = " onclick=\"{$this->spmObjName}.show({$i},'{$spm_msg_id}',event,{$js_date})\"";
         }
 
         // 番号
@@ -358,9 +371,13 @@ EOP;
         // メール
         $tores .= " <span class=\"mail\">{$mail}</span>";
         // 日付とID
-        $tores .= " <span class=\"date-id\">{$date_id}</span></div>\n";
+        $tores .= " <span class=\"date-id\">{$date_id}</span>";
+        if ($this->am_side_of_id) {
+            $tores .= ' ' . $this->activeMona->getMona($msg_id);
+        }
+        $tores .= "</div>\n";
         // 内容
-        $tores .= "<div class=\"message\">{$msg}</div>";
+        $tores .= "<div id=\"{$msg_id}\" class=\"{$msg_class}\">{$msg}</div>";
         // 被レスリスト
         if ($_conf['mobile.backlink_list'] == 1) {
             $linkstr = $this->_quotebackListHtml($i, 2);
@@ -398,7 +415,7 @@ EOP;
      */
     public function transName($name)
     {
-        $name = strtr($name, array('<b>' => '', '</b>' => '')); 
+        $name = strtr($name, array('<b>' => '', '</b>' => ''));
 
         // トリップやホスト付きなら分解する
         if (($pos = strpos($name, '◆')) !== false) {
@@ -452,9 +469,9 @@ EOP;
             $msg = preg_replace('/&amp(?=[^;])/', '&', $msg);
         }
 
-		// サロゲートペアの数値文字参照を変換
+        // サロゲートペアの数値文字参照を変換
         $msg = P2Util::replaceNumericalSurrogatePair($msg);
-		
+
         // &補正
         $msg = preg_replace('/&(?!#?\\w+;)/', '&amp;', $msg);
 
@@ -549,10 +566,10 @@ EOP;
         $_spm_key = addslashes($this->thread->key);
         $_spm_ls = addslashes($this->thread->ls);
         $_spm_rnum_range = (int)$_conf['mobile.rnum_range'];
-        $_spm_rref_params = 'rf[field]=' . ResFilter::FIELD_NUMBER . 
-                            '&rf[method]=' . ResFilter::METHOD_JUST .
-                            '&rf[match]=' . ResFilter::MATCH_ON .
-                            '&rf[include]=' . ResFilter::INCLUDE_REFERENCED;
+        $_spm_rref_params = 'rf[field]=' . ResFilter::FIELD_NUMBER .
+            '&rf[method]=' . ResFilter::METHOD_JUST .
+            '&rf[match]=' . ResFilter::MATCH_ON .
+            '&rf[include]=' . ResFilter::INCLUDE_REFERENCED;
         $_spm_b = ($_conf['view_forced_by_query']) ? "&b={$_conf['b']}" : '';
 
         $code = <<<EOJS
@@ -601,6 +618,11 @@ EOJS;
     <span id="spm-reply-noquote" onclick="SPM.replyTo(false)">これにレス</span>
     <span id="spm-reply-quote" onclick="SPM.replyTo(true)">引用してレス</span>
 EOP;
+        if ($_conf['expack.am.autodetect_i'] && ($_conf['expack.am.display'] == 1 || $_conf['expack.am.display'] == 2)) {
+            $spm .= <<<EOP
+    <span id="spm-am" onclick="SPM.open('am')">アクティブモナー</span>
+EOP;
+        }
         if ($_conf['expack.aas.enabled']) {
             $spm .= <<<EOP
     <span id="spm-aas" onclick="SPM.open('aas')">AAS</span>
@@ -661,20 +683,20 @@ EOP;
         */
 
         $filter_url = $_conf['read_php'] . '?' . http_build_query(array(
-                'host' => $this->thread->host,
-                'bbs' => $this->thread->bbs,
-                'key' => $this->thread->key,
-                'ls' => 'all',
-                'offline' => '1',
-                'idpopup' => '1',
-                'rf' => array(
-                    'field' => ResFilter::FIELD_ID,
-                    'method' => ResFilter::METHOD_JUST,
-                    'match' => ResFilter::MATCH_ON,
-                    'include' => ResFilter::INCLUDE_NONE,
-                    'word' => $id,
-                ),
-            ), '', '&amp;') . $_conf['k_at_a'];
+            'host' => $this->thread->host,
+            'bbs' => $this->thread->bbs,
+            'key' => $this->thread->key,
+            'ls' => 'all',
+            'offline' => '1',
+            'idpopup' => '1',
+            'rf' => array(
+                'field' => ResFilter::FIELD_ID,
+                'method' => ResFilter::METHOD_JUST,
+                'match' => ResFilter::MATCH_ON,
+                'include' => ResFilter::INCLUDE_NONE,
+                'word' => $id,
+            ),
+        ), '', '&amp;') . $_conf['k_at_a'];
 
         if (isset($this->thread->idcount[$id]) && $this->thread->idcount[$id] > 0) {
             $num_ht = "(<a href=\"{$filter_url}\"{$this->target_at}>{$this->thread->idcount[$id]}</a>)";
@@ -1089,8 +1111,8 @@ EOP;
                 // インラインプレビューが有効で、サムネイル表示制限数以内なら
                 if ($this->thumbnailer->ini['General']['inline'] == 1 && $inline_preview_flag) {
                     $rank_str = ($rank !== null) ? '&rank=' . $rank : '';
-					$prvw_size[0] = $prvw_size[0] ?? '';
-					$prvw_size[1] = $prvw_size[1] ?? '';
+                    $prvw_size[0] = $prvw_size[0] ?? '';
+                    $prvw_size[1] = $prvw_size[1] ?? '';
                     $img_str = "<img src=\"ic2.php?r=2&amp;t=1&amp;uri={$url_en}{$this->img_memo_query}{$rank_str}{$ref_en}\" width=\"{$prvw_size[0]}\" height=\"{$prvw_size[1]}\">";
                     $inline_preview_done = true;
                 } else {
@@ -1172,13 +1194,13 @@ EOP;
         $plus_str = count($plus) > 0 ? '+' . ($plus_cnt > 0 ? $plus_cnt : '') : '';
 
         $url = $_conf['read_php'] . '?' . http_build_query(array(
-                'host' => $this->thread->host,
-                'bbs' => $this->thread->bbs,
-                'key' => $this->thread->key,
-                'ls' => $resnum,
-                'offline' => '1',
-                'showbl' => '1',
-            ), '', '&amp;') . $_conf['k_at_a'];
+            'host' => $this->thread->host,
+            'bbs' => $this->thread->bbs,
+            'key' => $this->thread->key,
+            'ls' => $resnum,
+            'offline' => '1',
+            'showbl' => '1',
+        ), '', '&amp;') . $_conf['k_at_a'];
 
         $suppress = false;
         $n = 0;

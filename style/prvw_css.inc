@@ -42,29 +42,29 @@ echo <<<EOSTYLE
 .prvw_msg {
 	white-space: normal;
 	line-height: 130%;
-	font-family: "{$STYLE['fontfamily']}";
+	font-family: {$STYLE['fontfamily']};
 	font-size: {$STYLE['read_fontsize']};
 }
 
 .prvw_msg_pre {
 	white-space: pre;
 	line-height: 115%;
-	font-family: "{$STYLE['fontfamily']}";
+	font-family: {$STYLE['fontfamily']};
 	font-size: {$STYLE['read_fontsize']};
 }
 
 .prvw_msg_mona {
 	white-space: nowrap;
 	line-height: 100%;
-	font-family: "{$_conf['expack.am.fontfamily']}";
-	font-size: {$_conf['expack.am.fontsize']};
+	font-family: {$STYLE['fontfamily_aa']};
+	font-size: {$STYLE['aa_fontsize']};
 }
 
 .prvw_msg_pre_mona {
 	white-space: pre;
 	line-height: 100%;
-	font-family: "{$_conf['expack.am.fontfamily']}";
-	font-size: {$_conf['expack.am.fontsize']};
+	font-family: {$STYLE['fontfamily_aa']};
+	font-size: {$STYLE['aa_fontsize']};
 }
 
 #orig_msg, #dp_msg {

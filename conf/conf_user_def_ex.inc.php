@@ -114,10 +114,17 @@ $conf_user_sel['expack.spm.filter_target'] = array(
 // {{{ アクティブモナー
 
 // フォント
-$conf_user_def['expack.am.fontfamily'] = "Mona,モナー"; // ("Mona,モナー")
+$conf_user_def['expack.am.fontfamily'] = "Textar"; // ("Textar")
 
-// 文字の大きさ
+// Textar WebFontを使用する
+$conf_user_def['expack.am.textar_webfont'] = 1; // (1)
+$conf_user_rad['expack.am.textar_webfont'] = array('1' => 'する', '0' => 'しない');
+
+// 文字の大きさ (PC)
 $conf_user_def['expack.am.fontsize'] = "16px"; // ("16px")
+
+// 文字の大きさ (スマホ)
+$conf_user_def['expack.am.fontsize_i'] = "9px"; // ("9px")
 
 // スイッチを表示する位置
 $conf_user_def['expack.am.display'] = 0; // (0)
@@ -126,6 +133,10 @@ $conf_user_sel['expack.am.display'] = array('0' => 'IDの横', '1' => 'SPM', '2' =
 // 自動判定 (PC)
 $conf_user_def['expack.am.autodetect'] = 0; // (0)
 $conf_user_rad['expack.am.autodetect'] = array('1' => 'する', '0' => 'しない');
+
+// 自動判定 (スマホ)
+$conf_user_def['expack.am.autodetect_i'] = 0; // (0)
+$conf_user_rad['expack.am.autodetect_i'] = array('1' => 'する', '0' => 'しない');
 
 // 自動判定 & NG ワード化、AAS が有効なら AAS のリンクも作成 (携帯)
 $conf_user_def['expack.am.autong_k'] = 0; // (0)

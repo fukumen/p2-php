@@ -55,9 +55,7 @@ class ExpackLoader
             return;
         }
 
-        if ((!$_conf['ktai'] && $_conf['expack.am.enabled']) ||
-            ($_conf['ktai'] && $_conf['expack.am.enabled'] && $_conf['expack.am.autong_k'])
-        ) {
+        if ($_conf['expack.am.enabled']) {
             self::loadClass('ActiveMona', 'ActiveMona.php');
             define('P2_ACTIVEMONA_AVAILABLE', 1);
         } else {
@@ -82,6 +80,16 @@ class ExpackLoader
             if ($_conf['expack.am.autodetect']) {
                 $aShowThread->am_autodetect = true;
             }
+            if ($_conf['expack.am.display'] == 0) {
+                $aShowThread->am_side_of_id = true;
+            } elseif ($_conf['expack.am.display'] == 1) {
+                $aShowThread->am_on_spm = true;
+            } elseif ($_conf['expack.am.display'] == 2) {
+                $aShowThread->am_side_of_id = true;
+                $aShowThread->am_on_spm = true;
+            }
+        } elseif ($_conf['iphone'] && $_conf['expack.am.autodetect_i']) {
+            $aShowThread->am_autodetect = true;
             if ($_conf['expack.am.display'] == 0) {
                 $aShowThread->am_side_of_id = true;
             } elseif ($_conf['expack.am.display'] == 1) {

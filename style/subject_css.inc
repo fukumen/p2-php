@@ -116,7 +116,7 @@ table.threadlist td {
 }
 
 table.threadlist tr.tableheader th {
-	font-family: "{$STYLE['fontfamily']}";
+	font-family: {$STYLE['fontfamily']};
 	font-weight: normal;
 	background: {$STYLE['sb_th_bgcolor']} {$STYLE['sb_th_background']};
 }

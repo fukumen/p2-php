@@ -5,7 +5,7 @@
  */
 
 if (!empty($STYLE['fontfamily_bold'])) {
-    $boldstyle = "font-family: \"{$STYLE['fontfamily_bold']}\";";
+    $boldstyle = "font-family: {$STYLE['fontfamily_bold']};";
     if (!empty($STYLE['fontstyle_bold'])) {
         $boldstyle .= "font-style: {$STYLE['fontstyle_bold']};";
     }

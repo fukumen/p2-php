@@ -7,6 +7,21 @@ require_once __DIR__ . '/../init.php';
 
 $_login->authorize(); // ユーザ認証
 
+if (!empty($_GET['saved'])) {
+    P2Util::pushInfoHtml('<p>○設定を更新保存しました</p>');
+
+    if (!$_conf['iphone'] && !$_conf['ktai']) {
+        P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
+    }
+}
+if (!empty($_GET['defaulted'])) {
+    P2Util::pushInfoHtml('<p>○設定をデフォルトに戻しました</p>');
+
+    if (!$_conf['iphone'] && !$_conf['ktai']) {
+        P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
+    }
+}
+
 $csrfid = P2Util::getCsrfId(__FILE__);
 
 if (!empty($_POST['submit_save']) || !empty($_POST['submit_default'])) {
@@ -68,13 +83,16 @@ if (!empty($_POST['submit_save'])) {
     if (FileCtl::file_write_contents($_conf['conf_user_file'], $cont) === false) {
         P2Util::pushInfoHtml('<p>×設定を更新保存できませんでした</p>');
     } else {
-        P2Util::pushInfoHtml('<p>○設定を更新保存しました</p>');
+        $redirect_args = array('saved' => '1');
+        if (isset($_POST['active_tab1'])) $redirect_args['active_tab1'] = $_POST['active_tab1'];
+        if (isset($_POST['active_tab2'])) $redirect_args['active_tab2'] = $_POST['active_tab2'];
+        if (isset($_POST['edit_conf_user_group'])) $redirect_args['edit_conf_user_group'] = $_POST['edit_conf_user_group'];
+        if (isset($_POST['edit_conf_user_group_en'])) $redirect_args['edit_conf_user_group_en'] = $_POST['edit_conf_user_group_en'];
+        if (isset($_POST['b'])) $redirect_args['b'] = $_POST['b'];
 
-        if (!$_conf['iphone'] && !$_conf['ktai']) {
-            P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
-        }
-        // 変更があれば、内部データも更新しておく
-        $_conf = array_merge($_conf, $conf_user_def, $conf_save);
+        $query = http_build_query($redirect_args, '', '&');
+        header('Location: ' . $_SERVER['SCRIPT_NAME'] . '?' . $query);
+        exit;
     }
 
     unset($conf_save);
@@ -84,16 +102,16 @@ if (!empty($_POST['submit_save'])) {
 
 } elseif (!empty($_POST['submit_default'])) {
     if (file_exists($_conf['conf_user_file']) and unlink($_conf['conf_user_file'])) {
-        P2Util::pushInfoHtml('<p>○設定をデフォルトに戻しました</p>');
+        $redirect_args = array('defaulted' => '1');
+        if (isset($_POST['active_tab1'])) $redirect_args['active_tab1'] = $_POST['active_tab1'];
+        if (isset($_POST['active_tab2'])) $redirect_args['active_tab2'] = $_POST['active_tab2'];
+        if (isset($_POST['edit_conf_user_group'])) $redirect_args['edit_conf_user_group'] = $_POST['edit_conf_user_group'];
+        if (isset($_POST['edit_conf_user_group_en'])) $redirect_args['edit_conf_user_group_en'] = $_POST['edit_conf_user_group_en'];
+        if (isset($_POST['b'])) $redirect_args['b'] = $_POST['b'];
 
-        if (!$_conf['iphone'] && !$_conf['ktai']) {
-            P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
-        }
-        // 変更があれば、内部データも更新しておく
-        $_conf = array_merge($_conf, $conf_user_def);
-        if (is_array($conf_save)) {
-            $_conf = array_merge($_conf, $conf_save);
-        }
+        $query = http_build_query($redirect_args, '', '&');
+        header('Location: ' . $_SERVER['SCRIPT_NAME'] . '?' . $query);
+        exit;
     }
 }
 
@@ -703,22 +721,18 @@ $flags = getGroupShowFlags($groupname, 'expack.am.enabled');
 if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
     $keep_old = true;
 } else {
-    if (isset($_conf['expack.am.fontfamily.orig'])) {
-        $_current_am_fontfamily = $_conf['expack.am.fontfamily'];
-        $_conf['expack.am.fontfamily'] = $_conf['expack.am.fontfamily.orig'];
-    }
     $conflist = array(
         array('expack.am.fontfamily', 'AA用のフォント'),
-        array('expack.am.fontsize', 'AA用の文字の大きさ'),
+        array('expack.am.textar_webfont', 'Textar WebFontを使用する'),
+        array('expack.am.fontsize', 'AA用の文字の大きさ (PC)'),
+        array('expack.am.fontsize_i', 'AA用の文字の大きさ (スマホ)'),
         array('expack.am.display', 'スイッチを表示する位置'),
         array('expack.am.autodetect', '自動で判定し、AA用表示をする（PC）'),
+        array('expack.am.autodetect_i', '自動で判定し、AA用表示をする（スマホ）'),
         array('expack.am.autong_k', '自動で判定し、NGワードにする。AAS が有効なら AAS のリンクも作成（携帯）'),
         array('expack.am.lines_limit', '自動判定する行数の下限'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
-    if (isset($_conf['expack.am.fontfamily.orig'])) {
-        $_conf['expack.am.fontfamily'] = $_current_am_fontfamily;
-    }
 }
 
 // }}}

@@ -204,7 +204,7 @@ function mystyle_extract($style, $important = false)
             $css .= $selector . " {\n";
             foreach ($properties as $property => $value) {
                 if ($property == 'font-family') {
-                    $value = '"' . p2_correct_css_fontfamily($value) . '"';
+                    $value = p2_correct_css_fontfamily($value);
                 } elseif ($property == 'background-image' && strpos($value, 'url(') !== 0) {
                     $value = "url('" . p2_escape_css_url($value) . "')";
                 }
