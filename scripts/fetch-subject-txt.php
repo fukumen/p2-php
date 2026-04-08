@@ -20,7 +20,9 @@ if (!$_conf['expack.use_curl_multi'] && !$_conf['expack.use_pecl_http']) {
     exit(1);
 }
 
-P2HttpExt::activate();
+if ($_conf['expack.use_pecl_http'] == 1) {
+    P2HttpExt::activate();
+}
 
 // }}}
 // {{{ コマンドライン引数を取得

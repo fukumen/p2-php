@@ -97,6 +97,9 @@ if (file_exists($_conf['conf_user_file'])) {
 
 // コマンドラインモードではここまで
 if (defined('P2_CLI_RUN')) {
+    $_conf['ktai'] = false;
+    $_conf['iphone'] = false;
+    $_conf['ext_win_target_at'] = '';
     return;
 }
 
