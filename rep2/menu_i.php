@@ -220,7 +220,7 @@ if ($_conf['expack.misc.multi_favs']) {
         } else {
             $favlist[$no] = $name = ($no ? "お気にスレ{$no}" : 'お気にスレ');
         }
-        $fav_url = "subject.php?spmode=fav&amp;m_favlist_set={$no}";
+        $fav_url = "subject.php?spmode=fav&amp;m_favlist_set={$no}{$_conf['k_at_a']}";
         $fav_elems .= "<li><a href=\"{$fav_url}\" target=\"_self\">{$name}</a></li>";
         //$fav_new_elems .= "<li><a href=\"{$fav_url}&amp;sb_view=shinchaku\" target=\"_self\">{$name}</a></li>";
     }

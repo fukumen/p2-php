@@ -134,7 +134,7 @@ function menu_iphone_show_board_menu($cateid = 0)
                 echo "<ul id=\"cate{$cateid}\" title=\"{$category->name}\">";
                 foreach ($category->menuitas as $mita) {
                     echo "<li><a href=\"{$_conf['subject_php']}?host={$mita->host}&amp;bbs={$mita->bbs}",
-                            "&amp;itaj_en={$mita->itaj_en}\" target=\"_self\">{$mita->itaj_ht}</a></li>";
+                            "&amp;itaj_en={$mita->itaj_en}{$_conf['k_at_a']}\" target=\"_self\">{$mita->itaj_ht}</a></li>";
                 }
                 echo "</ul>\n";
                 return;
@@ -187,7 +187,7 @@ function menu_iphone_show_matched_boards($word)
                     $t = true;
                 }
                 echo "<li><a href=\"{$_conf['subject_php']}?host={$mita->host}&amp;bbs={$mita->bbs}",
-                        "&amp;itaj_en={$mita->itaj_en}\" target=\"_self\">{$mita->itaj_ht}</a></li>";
+                        "&amp;itaj_en={$mita->itaj_en}{$_conf['k_at_a']}\" target=\"_self\">{$mita->itaj_ht}</a></li>";
                 $i++;
             }
         }
@@ -230,7 +230,7 @@ function menu_iphone_show_favorite_boards($title, $no = null)
                 $itaj_view = p2h($itaj);
                 $itaj_en = UrlSafeBase64::encode($itaj);
                 echo "<li><a href=\"{$_conf['subject_php']}?host={$matches[1]}&amp;bbs={$matches[2]}",
-                        "&amp;itaj_en={$itaj_en}\" target=\"_self\">{$itaj_view}</a></li>";
+                        "&amp;itaj_en={$itaj_en}{$_conf['k_at_a']}\" target=\"_self\">{$itaj_view}</a></li>";
             }
         }
     }
