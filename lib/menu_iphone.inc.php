@@ -114,7 +114,7 @@ function menu_iphone_show_board_menu($cateid = 0)
         foreach ($brd_menus as $a_brd_menu) {
             foreach ($a_brd_menu->categories as $category) {
                 $i++;
-                echo "<li><a href=\"menu_i.php?cateid={$i}\">{$category->name}</a></li>";
+                echo "<li><a href=\"menu_i.php?cateid={$i}{$_conf['k_at_a']}\">{$category->name}</a></li>";
             }
             if ($j++ > 0) {
                 echo '<li class="group">&nbsp;</li>';

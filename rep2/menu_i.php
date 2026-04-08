@@ -10,7 +10,7 @@ require_once P2_LIB_DIR . '/menu_iphone.inc.php';
 
 $_login->authorize(); //ユーザ認証
 
-if ($_conf['view_forced_by_query']) {
+if ($_conf['view_forced_by_query'] || isset($_REQUEST['b'])) {
     output_add_rewrite_var('b', $_conf['b']);
 }
 
@@ -160,19 +160,19 @@ if (isset($hashes) && is_array($hashes) && count($hashes)) {
     <li><a href="#fav">お気にスレ</a></li>
 <?php } else { ?>
     <?php /* <li><a href="subject.php?spmode=fav&amp;sb_view=shinchaku" target="_self">お気にスレの新着</a></li> */ ?>
-    <li><a href="subject.php?spmode=fav" target="_self">お気にスレ</a></li>
+    <li><a href="subject.php?spmode=fav<?php echo $_conf['k_at_a']; ?>" target="_self">お気にスレ</a></li>
 <?php } ?>
     <li><a href="#favita">お気に板</a></li>
-    <li><a href="menu_i.php?cateid=0">板リスト</a></li>
-    <li><a href="subject.php?spmode=palace&amp;norefresh=1" target="_self">スレの殿堂</a></li>
+    <li><a href="menu_i.php?cateid=0<?php echo $_conf['k_at_a']; ?>">板リスト</a></li>
+    <li><a href="subject.php?spmode=palace&amp;norefresh=1<?php echo $_conf['k_at_a']; ?>" target="_self">スレの殿堂</a></li>
 
     <li class="group">履歴</li>
     <?php /* <li><a href="subject.php?spmode=recent&amp;sb_view=shinchaku" target="_self">最近読んだスレの新着</a></li> */ ?>
-    <li><a href="subject.php?spmode=recent&amp;norefresh=true" target="_self">最近読んだスレ</a></li>
+    <li><a href="subject.php?spmode=recent&amp;norefresh=true<?php echo $_conf['k_at_a']; ?>" target="_self">最近読んだスレ</a></li>
 <?php if ($_conf['res_hist_rec_num']) { ?>
-    <li><a href="subject.php?spmode=res_hist" target="_self">書き込み履歴</a></li>
+    <li><a href="subject.php?spmode=res_hist<?php echo $_conf['k_at_a']; ?>" target="_self">書き込み履歴</a></li>
 <?php if ($_conf['res_write_rec']) { ?>
-    <li><a href="read_res_hist.php" target="_self">書き込み履歴の内容</a></li>
+    <li><a href="read_res_hist.php<?php echo $_conf['k_at_q']; ?>" target="_self">書き込み履歴の内容</a></li>
 <?php } } ?>
 
     <li class="group">expack</li>
@@ -180,13 +180,13 @@ if (isset($hashes) && is_array($hashes) && count($hashes)) {
     <li><a href="#rss">RSS</a></li>
 <?php } ?>
 <?php if ($_conf['expack.ic2.enabled'] == 2 || $_conf['expack.ic2.enabled'] == 3) { ?>
-    <li><a href="iv2.php?reset_filter=1" target="_self">画像キャッシュ一覧</a></li>
+    <li><a href="iv2.php?reset_filter=1<?php echo $_conf['k_at_a']; ?>" target="_self">画像キャッシュ一覧</a></li>
 <?php } ?>
     <li><a href="#tgrep">スレッド検索</a></li>
-    <li><a href="first_cont.php" target="_self">スレURLを入力</a></li>
+    <li><a href="first_cont.php<?php echo $_conf['k_at_q']; ?>" target="_self">スレURLを入力</a></li>
     <li class="group">管理</li>
-    <li><a href="editpref.php" target="_self">設定管理</a></li>
-    <li><a href="setting.php" target="_self">ログイン管理</a></li>
+    <li><a href="editpref.php<?php echo $_conf['k_at_q']; ?>" target="_self">設定管理</a></li>
+    <li><a href="setting.php<?php echo $_conf['k_at_q']; ?>" target="_self">ログイン管理</a></li>
     <li><a href="#login_info">ログイン情報</a></li>
 </ul>
 
