@@ -642,6 +642,8 @@ function p2_correct_css_fontfamily($fonts)
     } elseif (!is_array($fonts)) {
         return '';
     }
+    $fonts = array_map(fn($f) => trim($f, " \t\"'"), $fonts);
+    $fonts = array_filter($fonts, 'strlen');
     $fonts = '"' . implode('","', $fonts) . '"';
     $fonts = preg_replace('/"(serif|sans-serif|cursive|fantasy|monospace|system-ui|emoji|math|fangsong|ui-serif|ui-sans-serif|ui-monospace|ui-rounded)"/i', '\\1', $fonts);
     return $fonts;

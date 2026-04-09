@@ -1,3 +1,5 @@
+<?php
+echo <<<EOSTYLE
 /* rep2expack - stylesheet for iPhone */
 
 /* {{{ General */
@@ -5,11 +7,31 @@
 body {
     margin: 0;
     padding: 10px;
-    font-size: medium;
+    font-size: {$STYLE['fontsize']};
+EOSTYLE;
+if (!empty($STYLE['fontfamily'])) {
+    echo "\n    font-family: {$STYLE['fontfamily']};";
+}
+echo <<<EOSTYLE
+
     line-height: 140%;
     color: #000;
     background-color: #fafafa;
     -webkit-text-size-adjust: none;
+}
+
+EOSTYLE;
+if (!empty($STYLE['fontfamily_bold'])) {
+    echo <<<EOSTYLE
+b, strong {
+    font-family: {$STYLE['fontfamily_bold']};
+}
+
+EOSTYLE;
+}
+echo <<<EOSTYLE
+input,option,select,textarea{
+	font-size:{$STYLE['fontsize']};
 }
 
 body > *:first-child {
@@ -64,10 +86,10 @@ a#backButton {
     border-width: 0 8px 0 14px;
     /* background: #333; border-radius: 5px; min-width:46px; text-align:center */
     background: none;
-    -webkit-border-image: url(../iui/backButton.png?14011419) 0 8 0 14;
-    border-image: url(../iui/backButton.png?14011419) 0 8 0 14 fill;
-    -webkit-border-image: -webkit-image-set(url(../iui/backButton.png?14011419) 1x, url(../iui/backButton@2x.png?14011419) 2x, url(../iui/backButton@3x.png?14011419) 3x) 0 8 0 14;
-    border-image: image-set(url(../iui/backButton.png?14011419) 1x, url(../iui/backButton@2x.png?14011419) 2x, url(../iui/backButton@3x.png?14011419) 3x) 0 8 0 14;
+    -webkit-border-image: url(iui/backButton.png?14011419) 0 8 0 14;
+    border-image: url(iui/backButton.png?14011419) 0 8 0 14 fill;
+    -webkit-border-image: -webkit-image-set(url(iui/backButton.png?14011419) 1x, url(iui/backButton@2x.png?14011419) 2x, url(iui/backButton@3x.png?14011419) 3x) 0 8 0 14;
+    border-image: image-set(url(iui/backButton.png?14011419) 1x, url(iui/backButton@2x.png?14011419) 2x, url(iui/backButton@3x.png?14011419) 3x) 0 8 0 14;
 }
 
 div#toolbar_header {
@@ -149,7 +171,6 @@ div.pager a[href]:not(.nobutton),
 div.toolbar a[href]:not(.nobutton) {
     display: inline-block;
     min-width: 12px; /* 15 * 2 - (8 + 1) * 2 */
-    height: 22px; /* 15 * 2 - (3 + 1) * 2 */
     margin: 4px 2px;
     padding: 3px 8px;
     text-align: center;
@@ -157,7 +178,7 @@ div.toolbar a[href]:not(.nobutton) {
     line-height: 150%;
     text-decoration: none;
     color: #000000;
-    background: #ffffff url('../img/iphone/btn-bg.png') repeat-x left bottom;
+    background: #ffffff url('img/iphone/btn-bg.png') repeat-x left bottom;
     border: #505050 solid 1px;
     -webkit-border-radius: 15px;
     border-radius: 15px;
@@ -240,7 +261,7 @@ div#spm > img#spm-closer {
 span.thread_title {
     text-align: left;
     font-weight: bold;
-    font-size: 16px;
+    font-size: {$STYLE['read_fontsize']};
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -252,8 +273,8 @@ span.thread_title {
 td#thread_title {
     text-align: left;
     font-weight: bold;
-    font-size: 14px;
-    line-height: 14px;
+    font-size: calc({$STYLE['read_fontsize']} - 2px);
+    line-height: 120%;
 }
 
 td#thread_title > div {
@@ -312,6 +333,7 @@ div.res.aborned {
 div.res > div.message {
     margin: 0;
     padding: 5px 10px;
+    font-size: {$STYLE['read_fontsize']};
     line-height: 140%;
     word-break: break-all;
 }
@@ -319,6 +341,7 @@ div.res > div.message {
 div.res > div.reslist {
     margin: 0;
     padding: 5px 10px;
+    font-size: {$STYLE['read_fontsize']};
     line-height: 140%;
     word-break: break-all;
 }
@@ -326,6 +349,7 @@ div.res > div.reslist {
 div.res > div.res-header {
     margin: 0;
     padding: 5px;
+    font-size: {$STYLE['read_fontsize']};
     line-height: 120%;
     color: #1144AA;
     display: inline-block;
@@ -452,7 +476,7 @@ ul.subject > li > a {
     margin: 0;
     padding: 8px 10px;
     word-break: normal;
-    font-size: medium;
+    font-size: {$STYLE['sb_fontsize']};
     text-decoration: none;
     color: #000000;
     background-color: #ffffff;
@@ -489,7 +513,7 @@ ul.subject > li > a > span.info {
 
 ul.subject > li > a > span.title {
     word-break: break-all;
-    font-size: 15px;
+    font-size: calc({$STYLE['sb_fontsize']} - 1px);
     line-height: 127%;
     font-weight: bold;
 }
@@ -497,13 +521,13 @@ ul.subject > li > a > span.title {
 ul.subject > li > a > span.ita {
     white-space: nowrap;
     color: #666;
-    font-size: 12px;
+    font-size: calc({$STYLE['sb_fontsize']} - 4px);
 }
 
 ul.subject > li > a > span.num {
     white-space: nowrap;
     color: #999999;
-    font-size: 14px;
+    font-size: calc({$STYLE['sb_fontsize']} - 2px);
 }
 
 ul.subject > li > a > span.unread {
@@ -525,7 +549,7 @@ ul.subject > li > a > span.unread.offline {
 ul.subject > li > a > span.count {
     white-space: nowrap;
     color: #999;
-    font-size: 14px;
+    font-size: calc({$STYLE['sb_fontsize']} - 2px);
 }
 
 ul.subject > li > a > span.count:before {
@@ -539,7 +563,7 @@ ul.subject > li > a > span.count:after {
 ul.subject > li > a > span.score {
     white-space: nowrap;
     color: #666;
-    font-size: 12px;
+    font-size: calc({$STYLE['sb_fontsize']} - 4px);
 }
 
 /* }}} */
@@ -610,7 +634,7 @@ ul.subject > li.info-pop {
     color: #ffffff;
     font-size: 16px !important;
     font-weight: bold;
-    line-heihgt: 100%;
+    line-height: 100%;
 }
 
 ul.subject > li.info-pop > div.info-pop-buttons {
@@ -1063,13 +1087,23 @@ div.ntoolbar .disabled a:visited {
 
 /* }}} */
 
+
+EOSTYLE;
+
+// ƒXƒ^ƒCƒ‹‚Ìã‘‚«
+if (isset($MYSTYLE) && is_array($MYSTYLE)) {
+    if (isset($MYSTYLE['iphone'])) {
+        disp_mystyle('iphone');
+    }
+}
+
 /*
  * Local Variables:
- * mode: css
+ * mode: php
  * coding: cp932
  * tab-width: 4
  * c-basic-offset: 4
  * indent-tabs-mode: t
  * End:
  */
-/* vim: set syn=css fenc=cp932 ai noet ts=4 sw=4 sts=4 fdm=marker: */
+// vim: set syn=php fenc=cp932 ai noet ts=4 sw=4 sts=4 fdm=marker:

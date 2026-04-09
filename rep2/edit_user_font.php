@@ -36,13 +36,38 @@ $fontconfig_sizes = array('6px', '8px', '9px', '10px', '11px', '12px', '13px', '
 $fontconfig_checkboxs = array('enabled', 'aa_textar_webfont');
 
 $detected_type = p2_fontconfig_detect_agent();
+
+// PC or スマホ
+$css = "style";
+$os_selector_html = '';
+if ($_conf['ktai']) {
+    $css = "iphone";
+    $os_selector_html = <<<EOS
+<div id="mobile_os_selector" style="margin: 1em 0;">
+    <label for="config_selector">表示設定の切り替え: </label>
+    <select id="config_selector" onchange="switchConfig(this.value);" style="font-weight: bold;">
+    <option value="skin">スキンの設定</option>
+EOS;
+    foreach ($fontconfig_types as $tname => $ttitle) {
+        $selected = ($tname == $detected_type) ? ' selected' : '';
+        $os_selector_html .= '<option value="' . $tname . '"' . $selected . '>' . $ttitle . '</option>';
+    }
+    $os_selector_html .= <<<EOS
+    </select>
+</div>
+EOS;
+}
+
 $controllerObject = (object)array(
+    'accept_charset' => $_conf['accept_charset'],
+    'detect_hint_input_ht' => $_conf['detect_hint_input_ht'],
     'fontconfig_types' => $fontconfig_types,
     'fontconfig_params' => $fontconfig_params,
     'skindata' => p2_fontconfig_load_skin_setting($fontconfig_params),
     'detected_os' => $fontconfig_types[$detected_type],
-    'accept_charset' => $_conf['accept_charset'],
-    'detect_hint_input_ht' => $_conf['detect_hint_input_ht'],
+    'detected_type_id' => $detected_type,
+    'os_selector_html' => $os_selector_html,
+    'css' => $css,
 );
 
 if (file_exists($_conf['expack.skin.fontconfig_path'])) {
@@ -127,6 +152,15 @@ foreach ($fontconfig_params as $pname) {
                     }
                 }
             }
+
+            // スマホ・タブレットの場合は未使用のパラメータを無効化する
+            $mobile_types = array('android_phone', 'android_tablet', 'iphone', 'ipad');
+            $unused_on_mobile = array('menu_fontsize', 'respop_fontsize', 'infowin_fontsize', 'form_fontsize');
+            if (in_array($tname, $mobile_types) && in_array($pname, $unused_on_mobile)) {
+                $elements[$newElemName]->attributes['disabled'] = 'disabled';
+                $value = ''; // POST送信されなくなるので、現在の設定も強制的にクリアする
+            }
+
             if ($value !== '') {
                 $updated_fontconfig[$tname][$pname] = $value;
             }

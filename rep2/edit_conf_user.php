@@ -1099,7 +1099,17 @@ EOP;
 </form>
 <hr>
 <div class="center">
+EOP;
+    if ($_conf['iphone']) {
+        echo <<<EOP
+<a href="javascript:history.back();" class="button">ñﬂÇÈ</a>
+EOP;
+    } else {
+        echo <<<EOP
 <a href="editpref.php{$_conf['k_at_q']}"{$_conf['k_accesskey_at']['up']}>{$_conf['k_accesskey_st']['up']}ê›íËï“èW</a>
+EOP;
+    }
+    echo <<<EOP
 {$_conf['k_to_index_ht']}
 </div>
 EOP;

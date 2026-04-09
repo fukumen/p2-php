@@ -340,13 +340,23 @@ EOP;
 
 // ågë—Ç»ÇÁ
 if ($_conf['ktai']) {
-    echo <<<EOP
+    if ($_conf['iphone']) {
+        echo <<<EOP
+<hr>
+<div class="center">
+<a href="javascript:history.back();" class="button">ñﬂÇÈ</a>
+{$_conf['k_to_index_ht']}
+</div>
+EOP;
+    } else {
+        echo <<<EOP
 <hr>
 <div class="center">
 <a href="editpref.php{$_conf['k_at_q']}"{$_conf['k_accesskey_at']['up']}>{$_conf['k_accesskey_st']['up']}ê›íËï“èW</a>
 {$_conf['k_to_index_ht']}
 </div>
 EOP;
+    }
 }
 
 echo '</body></html>';

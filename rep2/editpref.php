@@ -254,6 +254,7 @@ $highlight_id_txt   = 'p2_highlight_id.txt';
 echo '<div>';
 echo <<<EOP
 <a href="edit_conf_user.php{$_conf['k_at_q']}" class="button">ユーザ設定編集</a>
+<a href="edit_user_font.php{$_conf['k_at_q']}" class="button">フォント設定編集</a>
 EOP;
 if (!$_conf['ktai'] && $_conf['expack.skin.enabled']) {
     $skin_options = array('conf_user_style' => '標準');
@@ -279,7 +280,6 @@ if (!$_conf['ktai'] && $_conf['expack.skin.enabled']) {
                                     p2h($_title));
     }
     echo <<<EOP
- ｜ <a href="edit_user_font.php">フォント設定編集</a>
  ｜ スキン:<form class="inline-form" method="get" action="{$_SERVER['SCRIPT_NAME']}"
  onsubmit="changeSkinAll(this.skin.options[this.skin.selectedIndex].value, '{$_conf['p2_version_id']}'); return false;">
 <select name="skin">{$skin_options_ht}</select><input type="submit" value="変更">

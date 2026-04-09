@@ -16,6 +16,7 @@ if (!isset($STYLE['conf_b_width'])) { $STYLE['conf_b_width'] = $STYLE['respop_b_
 if (!isset($STYLE['conf_b_color'])) { $STYLE['conf_b_color'] = $STYLE['respop_b_color']; }
 
 $conf_border = "{$STYLE['conf_b_style']} {$STYLE['conf_b_width']} {$STYLE['conf_b_color']}";
+$conf_infowin_fontsize = $_conf['ktai'] ? $STYLE['fontsize'] : $STYLE['infowin_fontsize'];
 
 $ss = <<<EOSTYLE
 
@@ -31,7 +32,7 @@ table.edit_conf_user, table.edit_font, fieldset {
 
 table.edit_conf_user th, table.edit_conf_user td, table.edit_font th, table.edit_font td {
 	background: {$STYLE['bgcolor']} {$STYLE['background']};
-	font-size: {$STYLE['infowin_fontsize']};
+	font-size: {$conf_infowin_fontsize};
 	padding: 4px;
 	margin: 4px;
 	border: {$STYLE['conf_b_style']} 0px;

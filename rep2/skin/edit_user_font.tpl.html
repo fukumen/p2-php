@@ -7,7 +7,7 @@
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<title>フォント設定編集</title>
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-	<link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={skin:h}">
+	<link rel="stylesheet" type="text/css" href="css.php?css={css:h}&amp;skin={skin:h}">
 	<link rel="stylesheet" type="text/css" href="css.php?css=edit_conf_user&amp;skin={skin:h}">
 	<style type="text/css">
 	table.edit_font { margin: 6px 0px; }
@@ -19,6 +19,24 @@
 	td.label { white-space: nowrap; text-align: right; }
 	</style>
 	<script type="text/javascript" src="js/basic.js?{p2vid:h}"></script>
+	<script type="text/javascript">
+	function switchConfig(id) {
+		var blocks = document.querySelectorAll('.fieldblock');
+		for (var i = 0; i < blocks.length; i++) {
+			blocks[i].style.display = 'none';
+		}
+		var target = document.getElementById('field-' + id);
+		if (target) {
+			target.style.display = 'block';
+		}
+	}
+	window.addEventListener('DOMContentLoaded', function() {
+		var selector = document.getElementById('config_selector');
+		if (selector) {
+			switchConfig(selector.value);
+		}
+	});
+	</script>
 </head>
 <body onload="setWinTitle();">
 <p id="pan_menu"><a href="editpref.php">設定管理</a> &gt; フォント設定編集</p>
@@ -29,6 +47,7 @@
 	<li>スキン設定に表示されているアクティブモナー関係の値は、実際にはスキンではなくユーザー設定の値(expack.am.fontfamily, expack.am.textar_webfont, expack.am.fontsize, expack.am.fontsize_i)です。</li>
 	<li>太字ウェイトおよび太字スタイルは太字フォントが指定さている場合のみ有効です。</li>
 	<li>iPadのSafariは「デスクトップ用Webサイトを表示」がデフォルトでONになっておりmacOSと判定されます。OFFにするとiPadと判定されます。</li>
+	<li>スマホ用画面で使用されていない一部の文字サイズ（板メニュー、フォーム、ポップアップ、インフォ）は設定できません。</li>
 </ul>
 
 <form method="post" action="edit_user_font.php" accept-charset="{accept_charset}">
@@ -43,7 +62,8 @@
 <div style="margin: 1em 0; padding: 0.5em; border: 1px solid #ccc; background-color: #fdfdfd; border-radius: 4px;">
     現在のOS: <b>{detected_os}</b>
 </div>
-<div class="fieldblock">
+{os_selector_html:h}
+<div class="fieldblock" id="field-skin">
 <fieldset flexy:ignore="yes">
 	<legend><b>スキンの設定 (編集できません)</b></legend>
 	<table class="edit_font" cellspacing="0">
@@ -99,7 +119,7 @@
 		</tr>
 	</table>
 </fieldset>
-</div><div class="fieldblock" flexy:foreach="fontconfig_types,type,title">
+</div><div class="fieldblock" id="field-{type}" flexy:foreach="fontconfig_types,type,title">
 <fieldset>
 	<legend><b>{title}</b></legend>
 	<table class="edit_font" cellspacing="0">

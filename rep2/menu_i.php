@@ -141,9 +141,9 @@ if (isset($hashes) && is_array($hashes) && count($hashes)) {
 
 <div class="toolbar">
     <h1 id="pageTitle"></h1>
-    <a id="backButton" class="button" style="z-index:2" href="#"></a>
-    <a class="button leftButton" href="#boardSearch">”Â</a>
-    <a class="button" href="#threadSearch">½Ú</a>
+    <a id="backButton" class="button" style="z-index:2; padding: 1px 3.5px 0 3.5px;" href="#"></a>
+    <a class="button leftButton" style="padding: 1px 10px 0 10px;" href="#boardSearch">”Â</a>
+    <a class="button" href="#threadSearch">ƒXƒŒ</a>
 </div>
 
 <?php
