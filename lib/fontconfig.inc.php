@@ -154,7 +154,7 @@ function p2_fontconfig_apply_custom()
 
         // 現在のOSのフォント設定が有効ならスタイルを更新
         if ($current_fontconfig[$type]['enabled']) {
-            $skin_uniq = P2_VERSION_ID . sprintf('.%u', crc32($fontconfig_data));
+            $skin_uniq = $skin_uniq . sprintf('.%u', crc32($fontconfig_data));
 
             foreach ($current_fontconfig[$type] as $key => $value) {
                 if ($value === '' || $key === 'enabled') {

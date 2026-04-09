@@ -386,7 +386,11 @@ if (!file_exists($skin)) {
     $skin_name = 'conf_user_style';
     $skin = P2_CONFIG_DIR . '/conf_user_style.inc.php';
 }
-$skin_en = rawurlencode($skin_name) . '&amp;_=' . P2_VERSION_ID;
+$skin_version = P2_VERSION_ID;
+if (strpos($skin, P2_USER_SKIN_DIR . '/') === 0 && file_exists($skin)) {
+    $skin_version .= '.' . filemtime($skin);
+}
+$skin_en = rawurlencode($skin_name) . '&amp;_=' . $skin_version;
 if ($_conf['view_forced_by_query']) {
     $skin_en .= $_conf['k_at_a'];
 }
@@ -401,7 +405,7 @@ if ($skin != P2_CONFIG_DIR . '/conf_user_style.inc.php') {
 // }}}
 // {{{ ƒfƒUƒCƒ“Ý’è‚Ì’²®ˆ—
 
-$skin_uniq = P2_VERSION_ID;
+$skin_uniq = $skin_version;
 
 foreach ($STYLE as $K => $V) {
     if ($V === null || $V === '') {
