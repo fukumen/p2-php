@@ -85,11 +85,25 @@ if (array_key_exists('live', $_GET) && $_GET['live']) {
 // 実況中の表示切詰め処理
 if ($_conf['live.msg']
 && (array_key_exists('live', $_GET) && $_GET['live'])) {
+	$original_msg = $msg;
 	$msg = mb_convert_kana($msg, 'rnas');								// 全角の英数、記号、スペースを半角に
 	if (!preg_match ("(tp:/|ps:/|res/)", $msg)) {
 		$msg = mb_ereg_replace("([\\s　]*<br>[\\s　]*)", " ", $msg);	// 全改行を消去し半角スペースに。内容に外部リンクや板別勢い一覧を含む場合は対象外
 	}
 	$msg = mb_ereg_replace("(\s{2,})", " ", $msg);						// 連続スペースを1つに
+
+	// 切詰めによって内容が変化した場合のみ、切り替え用のデータを保持する
+	if ($original_msg !== $msg) {
+		$escaped_original = htmlspecialchars($original_msg, ENT_QUOTES, 'Shift_JIS');
+		$escaped_compact = htmlspecialchars($msg, ENT_QUOTES, 'Shift_JIS');
+		if ($_conf['live.msg'] == 2) {
+			$msg_class = str_replace(' ActiveMona', '', $msg_class);
+		}
+		$is_aa = (strpos($msg_class, 'ActiveMona') !== false);
+		$initial_display = $is_aa ? $original_msg : $msg;
+
+		$msg = "<span data-original-html=\"{$escaped_original}\" data-compact-html=\"{$escaped_compact}\">{$initial_display}</span>";
+	}
 }
 
 // +live スレッド内容表示切替

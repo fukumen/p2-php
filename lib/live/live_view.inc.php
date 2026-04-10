@@ -72,7 +72,7 @@ if (array_key_exists('live', $_GET) && $_GET['live']) {
 }
 
 // 内容
-$tores .= "<td class=\"live_res\" id=\"{$msg_id}\" class=\"{$msg_class}\"{$res_dblclc} width=\"\" style=\"color:{$STYLE['read_color']}; font-size: {$STYLE['read_fontsize']}; word-wrap: break-word;\">{$msg}　";
+$tores .= "<td class=\"live_res {$msg_class}\" id=\"{$msg_id}\" {$res_dblclc} width=\"\" style=\"color:{$STYLE['read_color']}; font-size: {$STYLE['read_fontsize']}; word-wrap: break-word;\">{$msg}　";
 
 if ($_conf['backlink_block'] > 0) {
     // 被参照ブロック表示用にonclickを設定

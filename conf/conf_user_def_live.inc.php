@@ -50,7 +50,7 @@ $conf_user_rad['live.mail_sage'] = array('1' => 'する', '0' => 'しない');
 
 // 全ての改行とスペースの削除
 $conf_user_def['live.msg'] = 1; // (1)
-$conf_user_rad['live.msg'] = array('1' => 'する', '0' => 'しない');
+$conf_user_sel['live.msg'] = array('0' => '削除しない', '1' => '削除する、但しAAのときは削除しない', '2' => '削除する');
 
 // [これにレス] の方法
 $conf_user_def['live.res_button'] = 0; // (0)

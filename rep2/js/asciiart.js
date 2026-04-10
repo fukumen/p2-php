@@ -65,10 +65,18 @@ function activeMona(blockId)
 	if (!amTargetObj) {
 		return;
 	}
+
+	var span = amTargetObj.getElementsByTagName('span')[0];
 	if (amTargetObj.className.search(/\bActiveMona\b/) != -1) {
 		amTargetObj.className = amTargetObj.className.replace(/ ?ActiveMona/, '');
+		if (span && span.hasAttribute('data-compact-html')) {
+			span.innerHTML = span.getAttribute('data-compact-html');
+		}
 	} else {
 		amTargetObj.className += ' ActiveMona';
+		if (span && span.hasAttribute('data-original-html')) {
+			span.innerHTML = span.getAttribute('data-original-html');
+		}
 	}
 }
 
