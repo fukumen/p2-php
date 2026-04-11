@@ -81,6 +81,22 @@ ul.tabbernav li.tabberactive a:hover {
 	border-top:0;
 }
 
+table.edit_font { margin: 6px 0px; }
+div.fieldblock { float: left; }
+fieldset { margin: 0px 6px 6px 0px; padding: 0px 6px; }
+legend {
+	margin: 4px 0px; padding: 4px 8px; overflow: hidden;
+	border: {$conf_border};
+	color: {$STYLE['sb_tool_color']};
+	background: {$STYLE['sb_tool_bgcolor']} {$STYLE['sb_tool_background']};
+}
+legend, th { text-align: left; font-size: {$STYLE['fontsize']}; }
+tr.group td { text-align: center; }
+td.label { white-space: nowrap; text-align: right; }
+div.detected_os {
+	margin: 4px 0px; padding: 4px 8px; overflow: hidden;
+	border: {$conf_border};
+}
 EOSTYLE;
 
 echo $ss;

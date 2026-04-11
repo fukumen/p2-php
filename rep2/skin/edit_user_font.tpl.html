@@ -7,17 +7,7 @@
 	<meta http-equiv="Content-Script-Type" content="text/javascript">
 	<title>フォント設定編集</title>
 	<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-	<link rel="stylesheet" type="text/css" href="css.php?css={css:h}&amp;skin={skin:h}">
-	<link rel="stylesheet" type="text/css" href="css.php?css=edit_conf_user&amp;skin={skin:h}">
-	<style type="text/css">
-	table.edit_font { margin: 6px 0px; }
-	div.fieldblock { float: left; }
-	fieldset { margin: 0px 6px 6px 0px; padding: 0px 6px; }
-	legend { margin: 0; padding: 4px 8px; height: 16px; overflow: hidden; border: solid 1px #ccc; background-color: #efefef; }
-	legend, th { text-align: left; font-size: {STYLE[fontsize]:h}; }
-	tr.group td { text-align: center; }
-	td.label { white-space: nowrap; text-align: right; }
-	</style>
+{css:h}
 	<script type="text/javascript" src="js/basic.js?{p2vid:h}"></script>
 	<script type="text/javascript">
 	function switchConfig(id) {
@@ -59,7 +49,7 @@
 		<input type="submit" name="clear" value="デフォルトに戻す" flexy:ignore="yes">
 	</td></tr>
 </table>
-<div style="margin: 1em 0; padding: 0.5em; border: 1px solid #ccc; background-color: #fdfdfd; border-radius: 4px;">
+<div class="detected_os">
     現在のOS: <b>{detected_os}</b>
 </div>
 {os_selector_html:h}

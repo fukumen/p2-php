@@ -38,10 +38,24 @@ $fontconfig_checkboxs = array('enabled', 'aa_textar_webfont');
 $detected_type = p2_fontconfig_detect_agent();
 
 // PC or スマホ
-$css = "style";
+$css = <<< EOS
+	<link rel="stylesheet" type="text/css" media="screen" href="css.php?css=style&amp;skin={$skin_en}">
+	<link rel="stylesheet" type="text/css" media="screen" href="css.php?css=edit_conf_user&amp;skin={$skin_en}">
+EOS;
 $os_selector_html = '';
 if ($_conf['ktai']) {
-    $css = "iphone";
+    $css = <<< EOS
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <link rel="stylesheet" type="text/css" media="screen" href="css.php?css=iphone&amp;skin={$skin_en}">
+    <link rel="stylesheet" type="text/css" media="screen" href="css.php?css=iphone_dark&amp;skin={$skin_en}.{$_conf['mobile_dark_mode']}">
+    <style type="text/css">
+        th { text-align: left; padding-top: 0.5em; }
+        td { border: solid 1px #999; }
+        .detected_os {
+            border: solid 1px #999;
+            margin: 0.5em 0;
+        }    </style>
+    EOS;
     $os_selector_html = <<<EOS
 <div id="mobile_os_selector" style="margin: 1em 0;">
     <label for="config_selector">表示設定の切り替え: </label>

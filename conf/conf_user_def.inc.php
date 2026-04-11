@@ -665,6 +665,14 @@ $conf_user_rad['http_post_method'] = array(
     '1' => 'HTTP_Request2コンパチ'
 );
 
+// ダークモード
+$conf_user_def['mobile_dark_mode'] = 0;  // (0)
+$conf_user_rad['mobile_dark_mode'] = array(
+    '0' => '自動',
+    '1' => '昼',
+    '2' => '夜'
+);
+
 // }}}
 // {{{ 拡張パックとiPhone
 

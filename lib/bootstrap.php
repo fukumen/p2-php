@@ -473,6 +473,7 @@ EOS;
 {$_conf['touch_icon_ht']}
 <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.min.css?{$_conf['p2_version_id']}">
 <link rel="stylesheet" type="text/css" media="screen" href="css.php?css=iphone&amp;skin={$skin_en}">
+<link rel="stylesheet" type="text/css" media="screen" href="css.php?css=iphone_dark&amp;skin={$skin_en}.{$_conf['mobile_dark_mode']}">
 <script type="text/javascript" src="js/jquery-{$_conf['jquery_version']}.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js?{$_conf['p2_version_id']}"></script>
 <script type="text/javascript" src="js/iphone.js?{$_conf['p2_version_id']}"></script>
@@ -485,6 +486,7 @@ EOS;
     $_conf['extra_headers_ht'] .= <<<EOS
 <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.min.css?{$_conf['p2_version_id']}">
 <link rel="stylesheet" type="text/css" media="screen" href="css.php?css=iphone&amp;skin={$skin_en}">
+<link rel="stylesheet" type="text/css" media="screen" href="css.php?css=iphone_dark&amp;skin={$skin_en}.{$_conf['mobile_dark_mode']}">
 <script type="text/javascript" src="js/jquery-{$_conf['jquery_version']}.min.js"></script>
 <script type="text/javascript" src="js/bootstrap.min.js?{$_conf['p2_version_id']}"></script>
 <script type="text/javascript" src="js/iphone.js?{$_conf['p2_version_id']}"></script>

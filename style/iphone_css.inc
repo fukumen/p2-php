@@ -49,16 +49,32 @@ div, h1, h2, h3, h4, h5, h6, li, p {
     word-wrap: break-word;
 }
 
-h1, h2, h3, h4, h5, h6, p, form, fieldset {
+h1, h2, h3, h4, h5, h6, p, form {
     margin: 8px 0;
+}
+
+fieldset {
+    margin: 1em 0;
+    padding: 0.5em 10px 10px 10px;
+    border: 1px solid #444 !important;
+}
+
+legend {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+    padding: 0 5px;
+    width: auto;
+    margin-bottom: 0;
+    border: none;
 }
 
 a {
     word-break: break-all;
 }
 
-a:link {
-    color: #0000ff;
+a:link, a:visited {
+    color: #000;
 }
 
 /* ¶ã‚ÌTOPƒ{ƒ^ƒ“ */
@@ -98,10 +114,6 @@ div#toolbar_header {
     height: 45px;
     box-sizing: border-box;
     -webkit-box-sizing: border-box;
-}
-
-a:visited {
-    color: #0080ff;
 }
 
 a img {
@@ -482,25 +494,16 @@ ul.subject > li > a {
     background-color: #ffffff;
 }
 
-ul.subject > li > a:link {
+ul.subject > li > a:link, ul.subject > li > a:visited {
     color: #000000;
-    background-color: #ffffff;
-}
-
-ul.subject > li > a:visited {
-    color: #666666;
     background-color: #ffffff;
 }
 
 ul.subject > li > a:active {
 }
 
-ul.subject > li > a:link > span.new {
+ul.subject > li > a:link > span.new, ul.subject > li > a:visited > span.new {
     color: #8C99B4;
-}
-
-ul.subject > li > a:visited > span.new {
-    color: #8090B0;
 }
 
 ul.subject > li > a:active > span.new {
