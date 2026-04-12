@@ -75,6 +75,7 @@ a {
 
 a:link, a:visited {
     color: #000;
+    text-decoration: underline;
 }
 
 /* ç∂è„ÇÃTOPÉ{É^Éì */

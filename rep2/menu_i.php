@@ -40,6 +40,37 @@ if (isset($_POST['word'])) {
 }
 
 // }}}
+// {{{ ビルド情報
+
+$ver_str = array();
+foreach (array('VER_REPO_TYPE', 'VER_REPO_HASH', 'VER_REPO_LOG', 'VER_REP2_HASH', 'VER_REP2_LOG', 'VER_RUN_ID', 'VER_RUN_NUMBER') as $key) {
+    if (($val = getenv($key)) !== false) {
+        $ver_str[$key] = $val;
+    }
+}
+if (empty($ver_str['VER_REPO_TYPE'])) {
+    $ver_str['VER_REPO_TYPE'] = 'docker-rep2';
+}
+
+$current_rep2_hash_en = '';
+$fukumen_url = "https://github.com/fukumen/p2-php";
+$fukumen_url_r = P2Util::throughIme($fukumen_url);
+
+if (count($ver_str) >= 6) {
+    $ver_str['VER_REP2_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REP2_LOG']), 'CP932', 'UTF-8');
+    $ver_str['VER_REPO_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REPO_LOG']), 'CP932', 'UTF-8');
+    $current_rep2_hash_en = rawurlencode($ver_str['VER_REP2_HASH']);
+    $htm['ver_str'] = <<<EOT
+    <li class="group">ビルド情報</li>
+    <li><div style="word-break:break-all;">p2-php: {$ver_str['VER_REP2_LOG']}&nbsp;{$ver_str['VER_REP2_HASH']}</div></li>
+    <li><div style="word-break:break-all;">{$ver_str['VER_REPO_TYPE']}: {$ver_str['VER_REPO_LOG']}&nbsp;{$ver_str['VER_REPO_HASH']}</div></li>
+    <li><div style="word-break:break-all;">github action: run_id:{$ver_str['VER_RUN_ID']}&nbsp;run_number:{$ver_str['VER_RUN_NUMBER']}</div></li>
+EOT;
+} else {
+    $htm['ver_str'] = '';
+}
+
+// }}}
 // {{{ HTML出力
 // {{{ ヘッダ
 ?>
@@ -52,7 +83,51 @@ if (isset($_POST['word'])) {
     <title>rep2</title>
     <link rel="stylesheet" type="text/css" href="iui/iui.css?<?php echo $_conf['p2_version_id']; ?>" />
     <link rel="stylesheet" type="text/css" href="css/menu_i.css?<?php echo $_conf['p2_version_id']; ?>" />
-    <link rel="stylesheet" type="text/css" href="css.php?css=iphone_dark&amp;skin=<?php echo $skin_en ?? ''; ?>" />
+    <style type="text/css">
+        #donguri_content a:link,
+        #donguri_content a:visited {
+            color: #000;
+        }
+<?php
+    if ($_conf['mobile_dark_mode'] != 1) {
+        $dark_prefix = ($_conf['mobile_dark_mode'] == 0) ? "@media (prefers-color-scheme: dark) {\n" : "";
+        $dark_suffix = ($_conf['mobile_dark_mode'] == 0) ? "}\n" : "";
+        echo <<<EODARK
+        {$dark_prefix}
+        body { background: #121212 !important; color: #e0e0e0 !important; }
+        body > ul > li { border-bottom: 1px solid #333 !important; }
+        body > ul > li.group {
+            background: #222 !important;
+            color: #bbb !important;
+            border-top: 1px solid #444 !important;
+            border-bottom: 1px solid #111 !important;
+            text-shadow: none !important;
+        }
+        body > .panel { background: #1a1a1a !important; }
+        .panel > fieldset { background: #2c2c2c !important; border-color: #444 !important; }
+        .panel > h2 { color: #aaa !important; text-shadow: none !important; }
+        
+        #donguri_content a:link,
+        #donguri_content a:visited {
+            color: #e0e0e0 !important;
+        }
+        
+        /* Links in List */
+        body > ul > li > a:link,
+        body > ul > li > a:visited {
+            color: #e0e0e0 !important;
+        }
+        
+        /* Toolbar & Buttons */
+        body > .toolbar { background: #333 !important; border-bottom: 1px solid #2d3642 !important; }
+        .toolbar > h1 { color: #FFFFFF !important; text-shadow: rgba(0, 0, 0, 0.4) 0px -1px 0 !important; }
+        .button { background: #444 !important; color: #FFFFFF !important; border: 1px solid #555 !important; border-radius: 5px !important; }
+        .button:active { background: #666 !important; }
+        {$dark_suffix}
+EODARK;
+    }
+?>
+    </style>
     <?php echo $_conf['touch_icon_ht'] ?? ''; ?>
     <script type="text/javascript" src="iui/iui.js?<?php echo $_conf['p2_version_id']; ?>"></script>
     <script type="text/javascript" src="js/json2.js?<?php echo $_conf['p2_version_id']; ?>"></script>
@@ -189,6 +264,7 @@ if (isset($hashes) && is_array($hashes) && count($hashes)) {
     <li><a href="editpref.php<?php echo $_conf['k_at_q']; ?>" target="_self">設定管理</a></li>
     <li><a href="setting.php<?php echo $_conf['k_at_q']; ?>" target="_self">ログイン管理</a></li>
     <li><a href="#login_info">ログイン情報</a></li>
+    <li><a href="#rep2_info">rep2情報</a></li>
 </ul>
 
 <?php
@@ -341,6 +417,14 @@ EOP;
 }
 ?>
 </div>
+
+<ul id="rep2_info" title="rep2情報">
+    <li class="group">リンク</li>
+    <li><a href="<?php echo $fukumen_url_r; ?>"<?php echo $_conf['ext_win_target_at']; ?>><?php echo $fukumen_url; ?></a></li>
+    <li><a href="viewmd.php?file=README.md" target="_blank">README.md</a></li>
+    <li><a href="viewcommit.php?hash=<?php echo $current_rep2_hash_en; ?>" target="_blank">最新のコミットを確認する</a></li>
+<?php echo $htm['ver_str']; ?>
+</ul>
 
 <?php
 // }}}
