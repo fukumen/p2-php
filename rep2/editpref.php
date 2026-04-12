@@ -296,9 +296,10 @@ if (!$_conf['ktai']) {
     // {{{ PC - NGワード編集
     echo "<tr><td>\n\n";
 
+    $ng_url = P2Util::throughIme('http://akid.s17.xrea.com/p2puki/pukiwiki.php?%5B%5BNG%A5%EF%A1%BC%A5%C9%A4%CE%C0%DF%C4%EA%CA%FD%CB%A1%5D%5D');
     echo <<<EOP
 <fieldset>
-<legend><a href="http://akid.s17.xrea.com/p2puki/pukiwiki.php?%5B%5BNG%A5%EF%A1%BC%A5%C9%A4%CE%C0%DF%C4%EA%CA%FD%CB%A1%5D%5D" target="read">NGワード</a>編集</legend>
+<legend><a href="{$ng_url}"{$_conf['ext_win_target_at']}>NGワード</a>編集</legend>
 EOP;
     printEditFileForm($ng_name_txt, '名前');
     printEditFileForm($ng_mail_txt, 'メール');

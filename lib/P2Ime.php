@@ -72,7 +72,7 @@ class P2Ime
         if ($type === null) {
             $type = $_conf['through_ime'];
             // Cookie‚ª–³Œø (URI‚ÉƒZƒbƒVƒ‡ƒ“ID‚ðŠÜ‚Þ) ‚Ì‚Æ‚«‚Í‹­§
-            if (!$type && !$_conf['use_cookies']) {
+            if ((!$type || $type === 'noreferrer') && !$_conf['use_cookies']) {
                 $type = 'ex';
             }
         }
@@ -164,6 +164,10 @@ class P2Ime
             $this->_gateUrl = '//jump.x0.to/';
             break;
         // }}}
+        case 'noreferrer':
+            $this->_method = '_passThrough';
+            $this->_gateUrl = null;
+            break;
         default:
             $this->_method = '_passThrough';
             $this->_gateUrl = null;

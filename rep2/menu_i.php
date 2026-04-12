@@ -362,7 +362,7 @@ EOP;
 
 <div id="tgrep_info" class="panel" title="tGrepについて">
 <ul>
-    <li>rep2 機能拡張パックのスレッド検索は tGrep (<a href="http://page2.xrea.jp/tgrep/" target="_blank">http://page2.xrea.jp/tgrep/</a>) を利用しています。</li>
+    <li>rep2 機能拡張パックのスレッド検索は tGrep (<a href="<?= P2Util::throughIme('http://page2.xrea.jp/tgrep/') ?>"<?= $_conf['ext_win_target_at'] ?>>http://page2.xrea.jp/tgrep/</a>) を利用しています。</li>
     <li>iPhoneではメニュー右上の「ｽﾚ」ボタンをタップして現れるダイアログから検索します。</li>
     <li>キーワードはスペース区切りで3つまで指定でき、すべてを含むものが抽出されます。</li>
     <li>2つ目以降のキーワードで頭に - (半角マイナス) をつけると、それを含まないものが抽出されます。</li>

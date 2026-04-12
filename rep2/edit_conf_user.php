@@ -260,10 +260,10 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 } else {
     $conflist = array(
         'be',
-        array('be_2ch_mail', 'be.2ch.netの登録メールアドレス', P2_EDIT_CONF_USER_LONGTEXT),
-        array('be_2ch_password', '<a href="http://be.2ch.net/" target="_blank">be.2ch.net</a>のパスワード(認証コードは使えなくなりました)', P2_EDIT_CONF_USER_PASSWORD),
-        array('be_2ch_DMDM', '<a href="http://be.2ch.net/" target="_blank">be.2ch.net</a>のDMDM(手動設定する場合のみ入力)', P2_EDIT_CONF_USER_LONGTEXT),
-        array('be_2ch_MDMD', '<a href="http://be.2ch.net/" target="_blank">be.2ch.net</a>のMDMD(手動設定する場合のみ入力)', P2_EDIT_CONF_USER_LONGTEXT),
+        array('be_2ch_mail', 'be.'. $_conf['2ch_domain'] . 'の登録メールアドレス', P2_EDIT_CONF_USER_LONGTEXT),
+        array('be_2ch_password', '<a href="' . P2Util::throughIme('https://be.'. $_conf['2ch_domain'] . '/') . '"' . $_conf['ext_win_target_at'] . '>be.'. $_conf['2ch_domain'] . '</a>のパスワード(認証コードは使えなくなりました)', P2_EDIT_CONF_USER_PASSWORD),
+        array('be_2ch_DMDM', '<a href="' . P2Util::throughIme('https://be.'. $_conf['2ch_domain'] . '/') . '"' . $_conf['ext_win_target_at'] . '>be.'. $_conf['2ch_domain'] . '</a>のDMDM(手動設定する場合のみ入力)', P2_EDIT_CONF_USER_LONGTEXT),
+        array('be_2ch_MDMD', '<a href="' . P2Util::throughIme('https://be.'. $_conf['2ch_domain'] . '/') . '"' . $_conf['ext_win_target_at'] . '>be.'. $_conf['2ch_domain'] . '</a>のMDMD(手動設定する場合のみ入力)', P2_EDIT_CONF_USER_LONGTEXT),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }
@@ -284,8 +284,8 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 板リストをオンラインURLから自動で読み込む。
 指定先は menu.html 形式、2channel.brd 形式のどちらでもよい。
 <!-- 必要なければ、空白に。 --><br>
-2ch基本 <a href="https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html" target="_blank">https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html</a><br>
-2ch + 外部BBS <a href="http://azlucky.s25.xrea.com/2chboard/bbsmenu.html" target="_blank">http://azlucky.s25.xrea.com/2chboard/bbsmenu.html</a>',
+2ch基本 <a href="' . P2Util::throughIme('https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html') . '"' . $_conf['ext_win_target_at'] . '>https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html</a><br>
+2ch + 外部BBS <a href="' . P2Util::throughIme('http://azlucky.s25.xrea.com/2chboard/bbsmenu.html') . '"' . $_conf['ext_win_target_at'] . '>http://azlucky.s25.xrea.com/2chboard/bbsmenu.html</a>',
             P2_EDIT_CONF_USER_LONGTEXT),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);

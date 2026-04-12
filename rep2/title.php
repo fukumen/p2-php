@@ -332,6 +332,7 @@ function checkUpdatan2($repo_type, $run_id)
                             $rep2_date = $dt->format('Y-m-d H:i');
                         }
                     }
+                    $github_url = P2Util::throughIme('https://github.com/' . $github_repo . '/actions/runs/' . $latest_run_id);
                     return <<<EOP
 <br>
 <div class="kakomi">
@@ -340,7 +341,7 @@ function checkUpdatan2($repo_type, $run_id)
         <tbody>
             <tr><th>p2-php:</th><td>{$rep2_date}&nbsp;{$rep2_msg}&nbsp;{$rep2_hash}</td></tr>
             <tr><th>{$repo_type}:</th><td>{$docker_date}&nbsp;{$docker_msg}&nbsp;{$docker_hash}</td></tr>
-            <tr><th>github action:</th><td>run_id:<a href="https://github.com/{$github_repo}/actions/runs/{$latest_run_id}">{$latest_run_id}</td></tr>
+            <tr><th>github action:</th><td>run_id:<a href="{$github_url}"{$_conf['ext_win_target_at']}>{$latest_run_id}</a></td></tr>
         </tbody>
     </table>
 </div>

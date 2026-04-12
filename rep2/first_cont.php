@@ -34,6 +34,8 @@ EOP;
 
 $bookmarkletUrl = "javascript:location='" . rtrim(dirname(P2Util::getMyUrl()), '/') . "/" . $_conf['read_php'] . "?url='+escape(location);";
 
+$bookmarklet_url = P2Util::throughIme('http://akid.s17.xrea.com/p2puki/pukiwiki.php?Bookmarklet');
+
 // }}}
 // {{{ HTMLプリント
 
@@ -55,7 +57,7 @@ echo <<<EOP
     {$htm['urlform']}
     <hr>
     <ul>
-        <li><a href="http://akid.s17.xrea.com/p2puki/pukiwiki.php?Bookmarklet" target="_blank">ブックマークレット</a> 「<a href="$bookmarkletUrl">p2で読む</a>」</li>
+        <li><a href="{$bookmarklet_url}"{$_conf['ext_win_target_at']}>ブックマークレット</a> 「<a href="$bookmarkletUrl">p2で読む</a>」</li>
     </ul>
 </div>
 </body>

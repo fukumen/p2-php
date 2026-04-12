@@ -369,12 +369,13 @@ EOP;
 EOP;
 }
 
+$find_url = P2Util::throughIme('http://find.' . $_conf['2ch_domain'] . '/');
 echo <<<EOP
     　<a href="{$_conf['subject_php']}?spmode=palace{$norefresh_q}" title="DATしたスレ用のお気に入り">スレの殿堂</a><br>
     　<a href="setting.php">ログイン管理</a><br>
     　<a href="editpref.php">設定管理</a><br>
     　<a href="import.php" onclick="return OpenSubWin('import.php', 600, 380, 0, 0);">datのインポート</a><br>
-    　<a href="http://find.{$_conf['2ch_domain']}/" target="_blank" title="５ちゃんねるスレタイ検索">find.{$_conf['2ch_domain']}</a>
+    　<a href="{$find_url}"{$_conf['ext_win_target_at']} title="５ちゃんねるスレタイ検索">find.{$_conf['2ch_domain']}</a>
     </div>
 </div>\n
 EOP;

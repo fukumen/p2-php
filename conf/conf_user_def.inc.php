@@ -514,9 +514,10 @@ $conf_user_rad['res_popup_reload'] = array('1' => 'する', '0' => 'しない');
 
 // 外部URLジャンプする際に通すゲート
 // 「直接」でもCookieが使えない端末では gate.php を通す
-$conf_user_def['through_ime'] = "exm"; // ("exm")
+$conf_user_def['through_ime'] = "noreferrer"; // ("noreferrer")
 $conf_user_sel['through_ime'] = array(
     ''       => '直接',
+    'noreferrer'=> '直接 (noopener noreferrer)',
     'p2'     => 'p2 ime (自動転送)',
     'p2m'    => 'p2 ime (手動転送)',
     'p2pm'   => 'p2 ime (pのみ手動転送)',

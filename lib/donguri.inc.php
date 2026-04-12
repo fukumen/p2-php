@@ -421,11 +421,11 @@ class Donguri {
             $txt .= $delimiter . '不正などんぐり';
             $txt .= $login_link;
         } elseif ($data['status'] == 3) {
-            $txt = '[<a href="dongurictl.php?mode=get_donguri" target="_blank">どんぐり基地</a>]';
+            $txt = '[<a href="dongurictl.php?mode=get_donguri"' . $_conf['ext_win_target_at'] . '>どんぐり基地</a>]';
             $txt .= $delimiter . $data['name'] . $delimiter . $data['job'] . $delimiter . "ID:" . $data['id'];
             $txt .= $login_link;
         } elseif ($data['status'] == 4) {
-            $txt = '[<a href="https://donguri.' . $_conf['2ch_domain'] . '/" target="_blank">どんぐり基地</a>]';
+            $txt = '[<a href="' . P2Util::throughIme('https://donguri.' . $_conf['2ch_domain'] . '/') . '"' . $_conf['ext_win_target_at'] . '>どんぐり基地</a>]';
             $txt .= $delimiter . $data['name'] . $delimiter . $data['job'] . $delimiter . "ID:". $data['id'];
             $txt .= $delimiter . '[<a href="javascript:void(0);" onclick="return logoutDonguri(' . $is_iphone . ');">ログアウト</a>]';
         } else {

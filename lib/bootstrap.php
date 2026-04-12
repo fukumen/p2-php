@@ -309,6 +309,9 @@ if (isset($_REQUEST['b'])) {
 // {{{ ƒ†[ƒU[İ’è‚Ì’²®ˆ—
 
 $_conf['ext_win_target_at'] = ($_conf['ext_win_target']) ? " target=\"{$_conf['ext_win_target']}\"" : '';
+if ($_conf['through_ime'] === 'noreferrer') {
+    $_conf['ext_win_target_at'] .= ' rel="noopener noreferrer"';
+}
 $_conf['bbs_win_target_at'] = ($_conf['bbs_win_target']) ? " target=\"{$_conf['bbs_win_target']}\"" : '';
 
 if ($_conf['get_new_res']) {
