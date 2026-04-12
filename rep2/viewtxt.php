@@ -22,7 +22,7 @@ $encode = 'Shift_JIS';
 // 前処理
 //=========================================================
 // 読み込めるファイルを限定する
-$readable_files = array('doc/README.txt', 'doc/README-EX.txt', 'doc/ChangeLog.txt', 'doc/README-774.txt');
+$readable_files = array('doc/README.txt', 'doc/README-EX.txt', 'doc/ChangeLog.txt', 'doc/README-774.txt', 'LICENSE.txt');
 
 if ($readable_files && $file && (!in_array($file, $readable_files))) {
     $files_st = '「' . implode('」と「', $readable_files) . '」';

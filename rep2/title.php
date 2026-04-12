@@ -24,6 +24,9 @@ $expack_hist_url_r = P2Util::throughIme($_conf['expack.history_url']);
 $rsk_expack_url = "http://rsky.github.io/p2-php/";
 $rsk_expack_url_r = P2Util::throughIme($rsk_expack_url);
 
+$fukumen_url = "https://github.com/fukumen/p2-php";
+$fukumen_url_r = P2Util::throughIme($fukumen_url);
+
 // {{{ データ保存ディレクトリのパーミッションの注意を喚起する
 
 P2Util::checkDirWritable($_conf['dat_dir']);
@@ -58,9 +61,9 @@ if ($array = P2Util::readIdPw2ch()) {
 //=========================================================
 // 最新版チェック
 $newversion_found = '';
-if (!empty($_conf['updatan_haahaa'])) {
-    $newversion_found = checkUpdatan();
-}
+//if (!empty($_conf['updatan_haahaa'])) {
+//    $newversion_found = checkUpdatan();
+//}
 
 //=========================================================
 // github actionの情報表示
@@ -75,6 +78,7 @@ if (empty($ver_str['VER_REPO_TYPE'])) {
     $ver_str['VER_REPO_TYPE'] = 'docker-rep2';
 }
 
+$current_rep2_hash_en = '';
 if (count($ver_str) >= 6) {
     $newversion_found2 = '';
     if (!empty($_conf['updatan_haahaa'])) {
@@ -83,6 +87,7 @@ if (count($ver_str) >= 6) {
 
     $ver_str['VER_REP2_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REP2_LOG']), 'CP932', 'UTF-8');
     $ver_str['VER_REPO_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REPO_LOG']), 'CP932', 'UTF-8');
+    $current_rep2_hash_en = rawurlencode($ver_str['VER_REP2_HASH']);
     $htm['ver_str'] = <<<EOT
 <table border="0" cellspacing="0" cellpadding="1">
     <caption>ビルド情報</caption>
@@ -208,24 +213,36 @@ echo <<<EOP
 <br>
 <div class="container">
     {$newversion_found}
-    <table border="0" cellspacing="0" cellpadding="0"><tr><td>
-        <img src="img/rep2.gif?140123" alt="rep2" width="120" height="63">
-    </td><td style="padding-left:30px;">
-    <p>{$_conf['p2name']} ver.{$_conf['p2version']} +live<br>
-    <a href="{$expack_url_r}"{$_conf['ext_win_target_at']}>{$_conf['expack.web_url']}</a><br>
-    <a href="{$rsk_expack_url_r}"{$_conf['ext_win_target_at']}>{$rsk_expack_url}</a><br>
-    <a href="{$p2web_url_r}"{$_conf['ext_win_target_at']}>{$_conf['p2web_url']}</a></p>
-    <ul>
-        <li><a href="viewtxt.php?file=doc/README.txt">README.txt</a></li>
-        <li><a href="viewtxt.php?file=doc/README-EX.txt">README-EX.txt</a></li>
-        <li><a href="viewtxt.php?file=doc/README-774.txt">README-774.txt</a></li>
-        <li><a href="img/how_to_use.png">ごく簡単な操作法</a></li>
-        <li><a href="{$expack_hist_url_r}"{$_conf['ext_win_target_at']}>拡張パック 更新記録</a></li>
-        <!-- <li><a href="viewtxt.php?file=doc/ChangeLog.txt">ChangeLog（rep2 更新記録）</a></li> -->
-    </ul>
-    {$htm['ver_str']}
-
-    </td></tr></table>
+    <div style="display: flex; gap: 30px; align-items: flex-start;">
+        <div>
+            <img src="img/rep2.gif?140123" alt="rep2" width="120" height="63" style="background-color: #eee; padding: 10px; border-radius: 4px;">
+        </div>
+        <div>
+            <p>
+            {$_conf['p2name']} ver.{$_conf['p2version']} +live<br>
+            <a href="{$expack_url_r}"{$_conf['ext_win_target_at']}>{$_conf['expack.web_url']}</a><br>
+            <a href="{$rsk_expack_url_r}"{$_conf['ext_win_target_at']}>{$rsk_expack_url}</a><br>
+            <a href="{$p2web_url_r}"{$_conf['ext_win_target_at']}>{$_conf['p2web_url']}</a></p>
+            <ul>
+                <li><a href="viewtxt.php?file=doc/README.txt">README.txt</a></li>
+                <li><a href="viewtxt.php?file=doc/README-EX.txt">README-EX.txt</a></li>
+                <li><a href="viewtxt.php?file=doc/README-774.txt">README-774.txt</a></li>
+                <li><a href="img/how_to_use.png">ごく簡単な操作法</a></li>
+                <li><a href="{$expack_hist_url_r}"{$_conf['ext_win_target_at']}>拡張パック 更新記録</a></li>
+                <!-- <li><a href="viewtxt.php?file=doc/ChangeLog.txt">ChangeLog（rep2 更新記録）</a></li> -->
+            </ul>
+        </div>
+        <div>
+            <p>
+            <a href="{$fukumen_url_r}"{$_conf['ext_win_target_at']}>{$fukumen_url}</a><br>
+            </p>
+            <ul>
+                <li><a href="viewmd.php?file=README.md">README.md</a></li>
+                <li><a href="viewcommit.php?hash={$current_rep2_hash_en}">最新のコミットを確認する</a></li>
+            </ul>
+            {$htm['ver_str']}
+        </div>
+    </div>
     {$htm['auth_user']}
     {$htm['ktai_url']}
     {$htm['last_login']}
