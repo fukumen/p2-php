@@ -128,20 +128,26 @@ see also [doc/ImageCache2/README.txt](doc/ImageCache2/README.txt), [doc/ImageCac
 
 ### 準備
 
-1. SQLite以外のデータベースを使う場合はデータベースサーバーを立ち上げておく。  
+1. MySQLやPostgreSQLを使う場合はデータベースサーバーを立ち上げておく（SQLiteを使う場合は不要です）。
 
 2. conf/conf_admin_ex.inc.phpでImageCache2を有効にする。
   <pre>$_conf['expack.ic2.enabled'] = 3;</pre>
 
 3. conf/conf_ic2.inc.phpで[DSN](http://pear.php.net/manual/ja/package.database.db.intro-dsn.php)を設定する。
-  <pre>$_conf['expack.ic2.general.dsn'] = 'mysql://username:password@localhost:3306/database';</pre>
+  <pre>
+  // SQLiteの場合
+  $_conf['expack.ic2.general.dsn'] = 'sqlite:' . $_conf['db_dir'] . '/imgcache.sqlite';
+  
+  // MySQLの場合
+  $_conf['expack.ic2.general.dsn'] = 'mysql://username:password@localhost:3306/database';
+  </pre>
 
 4. setupスクリプトを実行する。
   <pre>php scripts/ic2.php setup</pre>
 
 ### 注意
 
-* PHP 5.4ではSQLite2がサポートされなくなったので、ImageCache2を使いたいときはMySQLかPostgreSQLが必要です。
+* PHP 5.4以降では古いSQLite2がサポートされなくなりました。現在はSQLite3、MySQL、またはPostgreSQLが利用可能です。
 * ホストに`localhost`を指定して接続できないときは、代わりに`127.0.0.1`にしてみてください。
 
 ## 設定を変えたい
@@ -178,6 +184,10 @@ Webブラウザから変更できない項目は [conf/conf_admin.inc.php](https
     php -d detect_unicode=0 composer.phar self-update
     php -d detect_unicode=0 composer.phar update
 
+## 小技
+
+* スマホモードでスレッドの一覧を表示中に横方向にスライドするとリンクスライドが表示されます。拡張パックで追加されたらしい
+
 ## Authors & Contributors
 
 * **aki** *(original)* http://akid.s17.xrea.com/
@@ -189,6 +199,8 @@ Webブラウザから変更できない項目は [conf/conf_admin.inc.php](https
 * **open774** https://github.com/open774/p2-php
 * **killer4989** https://github.com/killer4989/p2-php
 * **dgg712** https://github.com/dgg712/p2-php
+* **mikoim** https://github.com/mikoim/p2-php
+* **fukumen** https://github.com/fukumen/p2-php
 * **2ch p2/rep2スレの>>1-1000**
 
 ## License
