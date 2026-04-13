@@ -6,6 +6,18 @@
 
 echo <<<EOSTYLE
 
+.rep2_logo_svg {
+    display: inline-block;
+    width: 120px;
+    height: 63px;
+    color: {$STYLE['textcolor']};
+    opacity: 0.4;
+}
+.rep2_logo_svg svg {
+    width: 100%;
+    height: 100%;
+}
+
 table caption {
     text-align: left;
     font-size: {$STYLE['fontsize']};
