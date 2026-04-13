@@ -1269,6 +1269,18 @@ abstract class ShowThread
     abstract public function idFilter($idstr, $id);
 
     // }}}
+    // {{{ watchoiFilter()
+
+    /**
+     * ワッチョイフィルタリングリンク変換
+     *
+     * @param   string  $watchoi_str    ワッチョイ全体文字列 (例: (ﾜｯﾁｮｲW W4E5-abcd))
+     * @param   string  $watchoi_id     ワッチョイ識別子 (例: W4E5-abcd)
+     * @return  string
+     */
+    abstract public function watchoiFilter($watchoi_str, $watchoi_id);
+
+    // }}}
     // {{{ _idFilterCallback()
 
     /**

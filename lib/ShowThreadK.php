@@ -560,6 +560,17 @@ EOP;
     }
 
     // }}}
+    // {{{ watchoiFilter()
+
+    /**
+     * @see ShowThread
+     */
+    public function watchoiFilter($watchoi_str, $watchoi_id)
+    {
+        return $watchoi_str;
+    }
+
+    // }}}
     // {{{ _linkToWikipeida()
 
     /**

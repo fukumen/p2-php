@@ -21,6 +21,8 @@ class ThreadRead extends Thread {
     public $idp; // レス番号をキー、IDの前の文字列 ("ID:", " " 等) を値とする連想配列
     public $ids; // レス番号をキー、IDを値とする連想配列
     public $idcount; // IDをキー、出現回数を値とする連想配列
+    public $watchois;     // レス番号をキー、ワッチョイ識別子を値とする配列
+    public $watchoicount; // ワッチョイ識別子をキー、出現回数を値とする連想配列
     public $getdat_error_msg_ht; // dat取得に失敗した時に表示されるメッセージ（HTML）
     public $old_host; // ホスト移転検出時、移転前のホストを保持する
     private $getdat_error_body; // dat取得に失敗した時に203で取得できたBODY
@@ -1186,6 +1188,9 @@ class ThreadRead extends Thread {
         if ($_conf['flex_idpopup'] || $_conf['ngaborn_chain'] || $_conf['ngaborn_frequent'] || ($_conf['ktai'] && ($_conf['mobile.clip_unique_id'] || $_conf['mobile.underline_id']))) {
             $this->_setIdCount ();
         }
+        if ($_conf['flex_idpopup'] && (!$_conf['ktai'] || $_conf['iphone'])) {
+            $this->_setWatchoiCount();
+        }
 
         return true;
     }
@@ -1217,6 +1222,34 @@ class ThreadRead extends Thread {
         $this->idp = $idp;
         $this->ids = $ids;
         $this->idcount = array_count_values (array_filter ($ids, 'is_string'));
+    }
+
+    // }}}
+    // {{{ _setWatchoiCount()
+
+    /**
+     * 一つのスレ内でのワッチョイ識別子の出現数をセットする
+     */
+    protected function _setWatchoiCount() {
+        if (!$this->datlines) {
+            return;
+        }
+
+        $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+        $i = 0;
+        $wids = array_fill(1, $this->rescount, null);
+
+        foreach ($this->datlines as $l) {
+            $lar = explode('<>', $l);
+            $i++;
+            $name_raw = strip_tags($lar[0]);
+            if (preg_match($pattern, $name_raw, $m)) {
+                $wids[$i] = $m[1];
+            }
+        }
+
+        $this->watchois     = $wids;
+        $this->watchoicount = array_count_values(array_filter($wids, 'is_string'));
     }
 
     // }}}

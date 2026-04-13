@@ -342,7 +342,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('iframe_popup_event', 'HTMLポップアップをする場合のイベント'),
         array('iframe_popup_type', 'HTMLポップアップの種類'),
 //        array('iframe_popup_delay', 'HTMLポップアップの表示遅延時間 (秒)'),
-        array('flex_idpopup', 'ID:xxxxxxxxをIDフィルタリングのリンクに変換'),
+        array('flex_idpopup', 'IDとワッチョイをフィルタリングのリンクに変換'),
         array('ext_win_target', '外部サイト等へジャンプする時に開くウィンドウのターゲット名<br>(空なら同じウインドウ、_blank で新しいウインドウ)'),
         array('bbs_win_target', 'rep2対応BBSサイト内でジャンプする時に開くウィンドウのターゲット名<br>(空なら同じウインドウ、_blank で新しいウインドウ)'),
         array('bottom_res_form', 'スレッド下部に書き込みフォームを表示'),

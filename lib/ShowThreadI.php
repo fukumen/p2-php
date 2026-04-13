@@ -415,6 +415,17 @@ EOP;
      */
     public function transName($name)
     {
+        global $_conf;
+
+        // ワッチョイをフィルタリングリンクに変換
+        if ($_conf['flex_idpopup'] == 1 && isset($this->thread->watchoicount)) {
+            $pattern_watchoi = '#.*\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+            if (preg_match($pattern_watchoi, $name, $wm)) {
+                $watchoi_full = substr($wm[0], strrpos($wm[0], '('));
+                $name = substr_replace($name, $this->watchoiFilter($watchoi_full, $wm[1]), strrpos($name, $watchoi_full), strlen($watchoi_full));
+            }
+        }
+
         $name = strtr($name, array('<b>' => '', '</b>' => ''));
 
         // トリップやホスト付きなら分解する
@@ -705,6 +716,47 @@ EOP;
         }
 
         return "{$idstr}{$num_ht}";
+    }
+
+    // }}}
+    // {{{ watchoiFilter()
+
+    /**
+     * ワッチョイフィルタリングリンク変換
+     *
+     * @param   string  $watchoi_str    ワッチョイ全体文字列
+     * @param   string  $watchoi_id     ワッチョイ識別子
+     * @return  string
+     */
+    public function watchoiFilter($watchoi_str, $watchoi_id)
+    {
+        global $_conf;
+
+        if (!isset($this->thread->watchoicount[$watchoi_id]) || $this->thread->watchoicount[$watchoi_id] <= 1) {
+            return $watchoi_str;
+        }
+
+        $count = $this->thread->watchoicount[$watchoi_id];
+
+        $filter_url = $_conf['read_php'] . '?' . http_build_query(array(
+            'host'    => $this->thread->host,
+            'bbs'     => $this->thread->bbs,
+            'key'     => $this->thread->key,
+            'ls'      => 'all',
+            'offline' => '1',
+            'idpopup' => '1',
+            'rf'      => array(
+                'field'   => ResFilter::FIELD_NAME,
+                'method'  => ResFilter::METHOD_JUST,
+                'match'   => ResFilter::MATCH_ON,
+                'include' => ResFilter::INCLUDE_NONE,
+                'word'    => $watchoi_id,
+            ),
+        ), '', '&amp;') . $_conf['k_at_a'];
+
+        $num_ht = "(<a href=\"{$filter_url}\"{$this->target_at}>{$count}</a>)";
+
+        return "{$watchoi_str}{$num_ht}";
     }
 
     // }}}
