@@ -88,9 +88,11 @@ if ($table->find()) {
     switch ($mode) {
         case 'errlog':
             $flexy->setData('data_renderer_errlog', true);
+            $flexy->setData('data_renderer_blacklist', false);
             $flexy->setData('data', ic2_dump_table_errlog($table));
             break;
         case 'blacklist':
+            $flexy->setData('data_renderer_errlog', false);
             $flexy->setData('data_renderer_blacklist', true);
             $flexy->setData('data', ic2_dump_table_blacklist($table));
             break;

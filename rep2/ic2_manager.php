@@ -215,6 +215,8 @@ if (isset($_POST['action'])) {
 
     if (isset($removed_files)) {
         $flexy->setData('removedFiles', $removed_files);
+    } else {
+        $flexy->setData('removedFiles', array());
     }
 }
 
