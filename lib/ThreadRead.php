@@ -1188,9 +1188,7 @@ class ThreadRead extends Thread {
         if ($_conf['flex_idpopup'] || $_conf['ngaborn_chain'] || $_conf['ngaborn_frequent'] || ($_conf['ktai'] && ($_conf['mobile.clip_unique_id'] || $_conf['mobile.underline_id']))) {
             $this->_setIdCount ();
         }
-        if ($_conf['flex_idpopup'] && (!$_conf['ktai'] || $_conf['iphone'])) {
-            $this->_setWatchoiCount();
-        }
+        $this->_setWatchoiCount();
 
         return true;
     }

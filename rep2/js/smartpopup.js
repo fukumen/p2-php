@@ -61,14 +61,25 @@ SPM.init = function (aThread) {
 		var abnId = threadId + '_ab';
 		var ngId = threadId + '_ng';
 		var highlightId = threadId + '_highlight';
+		var watchoiItems = [];
+
 		spm.appendItem('あぼーんする', [aThread, 'info_sp.php', 'mode=aborn_res']);
 		spm.appendItem('あぼーんワード', null, abnId);
 		spm.appendItem('NGワード', null, ngId);
 		spm.appendItem('ハイライトワード', null, highlightId);
+
 		// サブメニュー生成
-		var spmAborn = SPM.createNgAbornSubMenu(abnId, aThread, 'aborn');
-		var spmNg = SPM.createNgAbornSubMenu(ngId, aThread, 'ng');
-		var spmHighlight = SPM.createNgAbornSubMenu(highlightId, aThread, 'highlight');
+		var spmAborn = SPM.createNgAbornSubMenu(abnId, aThread, 'aborn', watchoiItems);
+		var spmNg = SPM.createNgAbornSubMenu(ngId, aThread, 'ng', watchoiItems);
+		var spmHighlight = SPM.createNgAbornSubMenu(highlightId, aThread, 'highlight', watchoiItems);
+
+		// ワッチョイの表示・非表示を切り替えるメソッドを thread オブジェクトに追加
+		aThread.setWatchoiVisible = function (visible) {
+			var display = visible ? 'block' : 'none';
+			for (var i = 0; i < watchoiItems.length; i++) {
+				watchoiItems[i].style.display = display;
+			}
+		};
 	} else {
 		var spmAborn = false, spmNg = false, spmHighlight = false;
 	}
@@ -145,8 +156,8 @@ SPM.init = function (aThread) {
 	}
 
 	// 表示・非表示メソッドを設定
-	aThread.show = (function(resnum, resid, event, resdate){
-		SPM.show(aThread, resnum, resid, event, resdate);
+	aThread.show = (function(resnum, resid, event, resdate, hasWatchoi){
+		SPM.show(aThread, resnum, resid, event, resdate, hasWatchoi);
 	});
 	aThread.hide = (function(event){
 		SPM.hide(aThread, event);
@@ -158,7 +169,7 @@ SPM.init = function (aThread) {
 /**
  * スマートポップアップメニューをポップアップ表示する
  */
-SPM.show = function (aThread, resnum, resid, event, resdate) {
+SPM.show = function (aThread, resnum, resid, event, resdate, hasWatchoi) {
 	event = event || window.event;
 	if (spmResNum != resnum || spmBlockID != resid) {
 		SPM.hideImmediately(aThread, event);
@@ -171,6 +182,12 @@ SPM.show = function (aThread, resnum, resid, event, resdate) {
 	} else if (document.selection) {
 		spmSelected = document.selection.createRange().text;
 	}
+
+	// ワッチョイの表示/非表示を切り替え
+	if (aThread.setWatchoiVisible) {
+		aThread.setWatchoiVisible(hasWatchoi);
+	}
+
 	showResPopUp(aThread.objName + '_spm' ,event);
 	return false;
 };
@@ -268,7 +285,7 @@ SPM.createMenuItem = function (txt) {
 /**
  * あぼーん/NGサブメニューを生成する
  */
-SPM.createNgAbornSubMenu = function (menuId, aThread, mode) {
+SPM.createNgAbornSubMenu = function (menuId, aThread, mode, watchoiItems) {
 	var amenu = document.createElement('div');
 	amenu.id = menuId;
 	amenu.className = 'spm';
@@ -281,6 +298,14 @@ SPM.createNgAbornSubMenu = function (menuId, aThread, mode) {
 	amenu.appendItem('メール', [aThread, 'info_sp.php', 'mode=' + mode + '_mail']);
 	amenu.appendItem('本文', [aThread, 'info_sp.php', 'mode=' + mode + '_msg']);
 	amenu.appendItem('ID', [aThread, 'info_sp.php', 'mode=' + mode + '_id']);
+
+	var watchoiItem = SPM.createMenuItem('ワッチョイ', [aThread, 'info_sp.php', 'mode=' + mode + '_watchoi']);
+	if (watchoiItems) {
+		watchoiItems.push(watchoiItem);
+	}
+	amenu.appendChild(watchoiItem);
+
+	amenu.appendItem('BE', [aThread, 'info_sp.php', 'mode=' + mode + '_be']);
 
 	return amenu;
 };

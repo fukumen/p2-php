@@ -113,7 +113,7 @@ EOMSG;
         }
 
         // NGÉlÅ[ÉÄïœä∑
-        if ($ng_type & self::NG_NAME) {
+        if ($ng_type & (self::NG_NAME | self::NG_WATCHOI)) {
             $name = <<<EONAME
 <span class="ngword" onclick="show_ng_message('ngn{$ngaborns_head_hits}', this);">{$name}</span>
 EONAME;
@@ -153,7 +153,8 @@ EOP;
         // SPM
         if ($_conf['expack.spm.enabled']) {
             $js_date = $raw_date ? "'$raw_date'" : 'null';
-            $spmeh = " onmouseover=\"{$this->spmObjName}.show({$i},'{$msg_id}',event,{$js_date})\"";
+            $has_watchoi = isset($this->thread->watchois[$i]) ? 'true' : 'false';
+            $spmeh = " onmouseover=\"{$this->spmObjName}.show({$i},'{$msg_id}',event,{$js_date},{$has_watchoi})\"";
             $spmeh .= " onmouseout=\"{$this->spmObjName}.hide(event)\"";
         } else {
             $spmeh = '';

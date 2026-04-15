@@ -238,10 +238,12 @@ $aborn_name_txt     = 'p2_aborn_name.txt';
 $aborn_mail_txt     = 'p2_aborn_mail.txt';
 $aborn_msg_txt      = 'p2_aborn_msg.txt';
 $aborn_id_txt       = 'p2_aborn_id.txt';
+$aborn_watchoi_txt  = 'p2_aborn_watchoi.txt';
 $ng_name_txt        = 'p2_ng_name.txt';
 $ng_mail_txt        = 'p2_ng_mail.txt';
 $ng_msg_txt         = 'p2_ng_msg.txt';
 $ng_id_txt          = 'p2_ng_id.txt';
+$ng_watchoi_txt     = 'p2_ng_watchoi.txt';
 // +Wiki
 $aborn_be_txt       = 'p2_aborn_be.txt';
 $ng_be_txt          = 'p2_ng_be.txt';
@@ -250,6 +252,7 @@ $highlight_name_txt = 'p2_highlight_name.txt';
 $highlight_mail_txt = 'p2_highlight_mail.txt';
 $highlight_msg_txt  = 'p2_highlight_msg.txt';
 $highlight_id_txt   = 'p2_highlight_id.txt';
+$highlight_watchoi_txt = 'p2_highlight_watchoi.txt';
 
 echo '<div>';
 echo <<<EOP
@@ -305,6 +308,7 @@ EOP;
     printEditFileForm($ng_mail_txt, 'メール');
     printEditFileForm($ng_msg_txt, '本文');
     printEditFileForm($ng_id_txt, 'ID');
+    printEditFileForm($ng_watchoi_txt, 'ワッチョイ');
     // +Wiki
     printEditFileForm($ng_be_txt, 'ＢＥ');
     echo <<<EOP
@@ -323,11 +327,12 @@ EOP;
 <legend>あぼーんワード編集</legend>\n
 EOP;
     printEditFileForm($aborn_res_txt, 'レス');
+    printEditFileForm($aborn_thread_txt, 'スレッド');
     printEditFileForm($aborn_name_txt, '名前');
     printEditFileForm($aborn_mail_txt, 'メール');
     printEditFileForm($aborn_msg_txt, '本文');
     printEditFileForm($aborn_id_txt, 'ID');
-    printEditFileForm($aborn_thread_txt, 'スレッド');
+    printEditFileForm($aborn_watchoi_txt, 'ワッチョイ');
     // +Wiki
     printEditFileForm($aborn_be_txt, 'ＢＥ');
     echo <<<EOP
@@ -349,6 +354,7 @@ EOP;
 	printEditFileForm($highlight_mail_txt, 'メール');
 	printEditFileForm($highlight_msg_txt, '本文');
 	printEditFileForm($highlight_id_txt, 'ID');
+	printEditFileForm($highlight_watchoi_txt, 'ワッチョイ');
 	echo <<<EOP
 </fieldset>\n
 EOP;
@@ -444,32 +450,34 @@ EOP;
 if ($_conf['ktai']) {
     echo <<<EOP
 <hr>
-<p>ｱﾎﾞﾝ/NGﾜｰﾄﾞ編集</p>
+<p>アボン/NGワード編集</p>
 <form method="GET" action="edit_aborn_word.php">
 {$_conf['k_input_ht']}
 <select name="file">
-<option value="{$aborn_thread_txt}">ｱﾎﾞﾝ:ｽﾚ</option>
-<option value="{$aborn_name_txt}">ｱﾎﾞﾝ:名前</option>
-<option value="{$aborn_mail_txt}">ｱﾎﾞﾝ:ﾒｰﾙ</option>
-<option value="{$aborn_msg_txt}">ｱﾎﾞﾝ:本文</option>
-<option value="{$aborn_id_txt}">ｱﾎﾞﾝ:ID</option>
-<option value="{$aborn_be_txt}">ｱﾎﾞﾝ:BE</option>
+<option value="{$aborn_thread_txt}">アボン:スレ</option>
+<option value="{$aborn_name_txt}">アボン:名前</option>
+<option value="{$aborn_mail_txt}">アボン:メール</option>
+<option value="{$aborn_msg_txt}">アボン:本文</option>
+<option value="{$aborn_id_txt}">アボン:ID</option>
+<option value="{$aborn_watchoi_txt}">アボン:ワッチョイ</option>
+<option value="{$aborn_be_txt}">アボン:BE</option>
 <option value="{$ng_name_txt}">NG:名前</option>
-<option value="{$ng_mail_txt}">NG:ﾒｰﾙ</option>
+<option value="{$ng_mail_txt}">NG:メール</option>
 <option value="{$ng_msg_txt}">NG:本文</option>
 <option value="{$ng_id_txt}">NG:ID</option>
-<option value="{$ng_id_txt}">NG:BE</option>
+<option value="{$ng_watchoi_txt}">NG:ワッチョイ</option>
+<option value="{$ng_be_txt}">NG:BE</option>
 </select>
 <input type="submit" value="編集">
 </form>
 <form method="GET" action="editfile.php">
 {$_conf['k_input_ht']}
 <input type="hidden" name="file" value="{$aborn_res_txt}">
-<input type="submit" value="ｱﾎﾞﾝﾚｽ編集">
+<input type="submit" value="アボンレス編集">
 </form>
 <hr>
 EOP;
-    echo "<p>ﾎｽﾄの同期（2chの板移転に対応します）</p>\n";
+    echo "<p>ホストの同期（2chの板移転に対応します）</p>\n";
     echo getSyncFavoritesFormHt('all', 'すべて');
     foreach ($synctitles as $syncmode => $syncname) {
         echo getSyncFavoritesFormHt($syncmode, $syncname);
@@ -480,11 +488,11 @@ EOP;
     if ($_conf['expack.misc.multi_favs']) {
         echo <<<EOP
 <hr>
-<p>お気にｽﾚ･お気に板･RSSのｾｯﾄを選択</p>
+<p>お気にスレ･お気に板･RSSのセットを選択</p>
 <form action="editpref.php" method="post" accept-charset="{$_conf['accept_charset']}" target="_self">
 {$_conf['k_input_ht']}
 EOP;
-        echo getFavSetListFormHtK('m_favlist_set', 'お気にｽﾚ'), '<br>';
+        echo getFavSetListFormHtK('m_favlist_set', 'お気にスレ'), '<br>';
         echo getFavSetListFormHtK('m_favita_set', 'お気に板'), '<br>';
         echo getFavSetListFormHtK('m_rss_set', 'RSS'), '<br>';
         echo <<<EOP
@@ -633,7 +641,7 @@ function printEditFileForm($filename, $submit_value)
 
     // +Wiki
     if ($filename == 'p2_aborn_thread.txt' ||
-        preg_match('/^p2_(aborn|ng|highlight)_(name|mail|id|msg)\\.txt$/', $filename))
+        preg_match('/^p2_(aborn|ng|highlight)_(name|mail|id|msg|be|watchoi)\\.txt$/', $filename))
     {
         $edit_php = 'edit_aborn_word.php';
         $target = '_self';

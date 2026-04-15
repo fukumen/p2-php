@@ -27,7 +27,7 @@ if ($ng_type & self::HIGHLIGHT_MSG) {
 }
 
 // ハイライトネーム変換
-if ($ng_type & self::HIGHLIGHT_NAME) {
+if ($ng_type & (self::HIGHLIGHT_NAME | self::HIGHLIGHT_WATCHOI)) {
 	$name = preg_replace("(<b>|</b>)", "", $name);
 	$name = "</b><span style=\"{$live_highlight_style}\">$name</span><b>";
 }

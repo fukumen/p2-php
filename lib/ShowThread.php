@@ -73,6 +73,9 @@ abstract class ShowThread
 	const HIGHLIGHT_MSG = 2048;
 	const HIGHLIGHT_CHAIN = 4096;
 
+    const NG_WATCHOI = 8192;
+    const HIGHLIGHT_WATCHOI = 16384;
+
     // }}}
     // {{{ static properties
 
@@ -682,6 +685,7 @@ abstract class ShowThread
 
         $info = array();
         $type = self::NG_NONE;
+        $watchoi = isset($this->thread->watchois[$i]) ? $this->thread->watchois[$i] : null;
 
         // >>1 をあぼーんの対象外にする
         if ($_conf['ngaborn_exclude_one'] && $i == 1) {
@@ -794,6 +798,12 @@ abstract class ShowThread
             return $this->_markNgAborn($i, self::ABORN, true);
         }
 
+        // あぼーんワッチョイ
+        if ($watchoi && $this->ngAbornCheck('aborn_watchoi', $watchoi) !== false) {
+            $ngaborns_hits['aborn_watchoi']++;
+            return $this->_markNgAborn($i, self::ABORN, false);
+        }
+
         // }}}
 
         if ($nong) {
@@ -849,6 +859,12 @@ abstract class ShowThread
             $info[] = sprintf('NG%s:%s',
                               ($_conf['ktai']) ? 'ﾜｰﾄﾞ' : 'ワード',
                               p2h($a_ng_msg));
+        }
+
+        // NGワッチョイチェック
+        if ($watchoi && $this->ngAbornCheck('ng_watchoi', $watchoi) !== false) {
+            $ngaborns_hits['ng_watchoi']++;
+            $type |= $this->_markNgAborn($i, self::NG_WATCHOI, false);
         }
 
 		// +live ハイライトチェック

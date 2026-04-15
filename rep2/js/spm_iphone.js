@@ -24,7 +24,7 @@ var SPM = {
  * @param String date
  * @return void
  */
-SPM.show = (function(thread, no, id, evt, date)
+SPM.show = (function(thread, no, id, evt, date, hasWatchoi)
 {
 	// skOuterClickが発生しないようにする
 	evt.stopPropagation();
@@ -50,6 +50,17 @@ SPM.show = (function(thread, no, id, evt, date)
 				num.removeChild(num.childNodes[num.childNodes.length - 1]);
 			}
 			num.appendChild(document.createTextNode(no));
+		}
+	}
+
+	// ワッチョイの表示/非表示を切り替え
+	var selectTarget = document.getElementById('spm-select-target');
+	if (selectTarget) {
+		for (var i = 0; i < selectTarget.options.length; i++) {
+			if (selectTarget.options[i].value == 'watchoi') {
+				selectTarget.options[i].disabled = !hasWatchoi;
+				selectTarget.options[i].style.display = hasWatchoi ? 'block' : 'none';
+			}
 		}
 	}
 
@@ -134,6 +145,7 @@ SPM.doAction = (function()
 		case 'id':
 		case 'msg':
 		case 'be':
+		case 'watchoi':
 			uri += target;
 			break;
 		default:

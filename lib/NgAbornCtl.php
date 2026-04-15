@@ -12,6 +12,7 @@ $GLOBALS['ngaborns_hits'] = array(
     'aborn_id'      => 0,
     'aborn_msg'     => 0,
     'aborn_name'    => 0,
+    'aborn_watchoi' => 0,
     'aborn_res'     => 0,
     'aborn_thread'  => 0,
     'aborn_auto'    => 0,
@@ -22,11 +23,13 @@ $GLOBALS['ngaborns_hits'] = array(
     'ng_msg'        => 0,
     'ng_name'       => 0,
     'ng_auto'       => 0,
+    'ng_watchoi'    => 0,
 	'highlight_chain' => 0,
 	'highlight_id'    => 0,
 	'highlight_mail'  => 0,
 	'highlight_msg'   => 0,
 	'highlight_name'  => 0,
+    'highlight_watchoi' => 0,
 );
 
 // }}}
@@ -168,10 +171,12 @@ class NgAbornCtl {
         $ngaborns['aborn_mail'] = self::_readNgAbornFromFile('p2_aborn_mail.txt');
         $ngaborns['aborn_msg'] = self::_readNgAbornFromFile('p2_aborn_msg.txt');
         $ngaborns['aborn_id'] = self::_readNgAbornFromFile('p2_aborn_id.txt');
+        $ngaborns['aborn_watchoi'] = self::_readNgAbornFromFile('p2_aborn_watchoi.txt');
         $ngaborns['ng_name'] = self::_readNgAbornFromFile('p2_ng_name.txt');
         $ngaborns['ng_mail'] = self::_readNgAbornFromFile('p2_ng_mail.txt');
         $ngaborns['ng_msg'] = self::_readNgAbornFromFile('p2_ng_msg.txt');
         $ngaborns['ng_id'] = self::_readNgAbornFromFile('p2_ng_id.txt');
+        $ngaborns['ng_watchoi'] = self::_readNgAbornFromFile('p2_ng_watchoi.txt');
         // +Wiki
         $ngaborns['aborn_be'] = self::_readNgAbornFromFile('p2_aborn_be.txt');
         $ngaborns['ng_be'] = self::_readNgAbornFromFile('p2_ng_be.txt');
@@ -180,6 +185,7 @@ class NgAbornCtl {
 		$ngaborns['highlight_mail'] = self::_readNgAbornFromFile('p2_highlight_mail.txt');
 		$ngaborns['highlight_msg'] = self::_readNgAbornFromFile('p2_highlight_msg.txt');
 		$ngaborns['highlight_id'] = self::_readNgAbornFromFile('p2_highlight_id.txt');
+		$ngaborns['highlight_watchoi'] = self::_readNgAbornFromFile('p2_highlight_watchoi.txt');
 
         if ($_conf['ngaborn_auto']) {
            // Ž©“®NG

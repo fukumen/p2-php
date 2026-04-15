@@ -90,6 +90,13 @@ if ($popup == 1 || $_conf['expack.spm.ngaborn_confirm'] == 0) {
         // +Wiki:BEあぼーん
         } elseif (strstr($mode, '_be')) {
             $aborn_str = $aborn_be;
+        } elseif (strpos($mode, '_watchoi') !== false) {
+            $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+            if (preg_match($pattern, $resar[0], $m)) {
+                $aborn_str = $m[1];
+            } else {
+                $aborn_str = '';
+            }
         }
     }
     if (!is_string($ttitle_en)) {
@@ -294,6 +301,45 @@ switch ($mode) {
 		}
 		$edit_value = 'ハイライトワード編集：ID';
 		break;
+    case 'aborn_watchoi':
+        $title_st = 'p2 - あぼーんワード登録：ワッチョイ';
+        if ($popup == 2) {
+            $msg = 'あぼーんワード（ワッチョイ）に <b>' . $aborn_str . '</b> を登録しました。';
+        } else {
+            $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+            if (preg_match($pattern, $resar[0], $m)) {
+                $msg = 'あぼーんワード（ワッチョイ）に <b>' . $m[1] . '</b> を登録してよろしいですか？';
+                $aborn_str_en = UrlSafeBase64::encode($m[1]);
+            }
+        }
+        $edit_value = 'あぼーんワード編集：ワッチョイ';
+        break;
+    case 'ng_watchoi':
+        $title_st = 'p2 - NGワード登録：ワッチョイ';
+        if ($popup == 2) {
+            $msg = 'NGワード（ワッチョイ）に <b>' . $aborn_str . '</b> を登録しました。';
+        } else {
+            $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+            if (preg_match($pattern, $resar[0], $m)) {
+                $msg = 'NGワード（ワッチョイ）に <b>' . $m[1] . '</b> を登録してよろしいですか？';
+                $aborn_str_en = UrlSafeBase64::encode($m[1]);
+            }
+        }
+        $edit_value = 'NGワード編集：ワッチョイ';
+        break;
+    case 'highlight_watchoi':
+        $title_st = 'p2 - ハイライトワード登録：ワッチョイ';
+        if ($popup == 2) {
+            $msg = 'ハイライトワード（ワッチョイ）に <b>' . $aborn_str . '</b> を登録しました。';
+        } else {
+            $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+            if (preg_match($pattern, $resar[0], $m)) {
+                $msg = 'ハイライトワード（ワッチョイ）に <b>' . $m[1] . '</b> を登録してよろしいですか？';
+                $aborn_str_en = UrlSafeBase64::encode($m[1]);
+            }
+        }
+        $edit_value = 'ハイライトワード編集：ワッチョイ';
+        break;
     default:
         /*放置*/
 }

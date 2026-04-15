@@ -22,16 +22,19 @@ $writable_files = array(
     'p2_aborn_mail.txt'   => 'あぼーんメール',
     'p2_aborn_msg.txt'    => 'あぼーんメッセージ',
     'p2_aborn_id.txt'     => 'あぼーんID',
+    'p2_aborn_watchoi.txt' => 'あぼーんワッチョイ',
     'p2_ng_name.txt'      => 'NGネーム',
     'p2_ng_mail.txt'      => 'NGメール',
     'p2_ng_msg.txt'       => 'NGメッセージ',
     'p2_ng_id.txt'        => 'NGID',
+    'p2_ng_watchoi.txt'   => 'NGワッチョイ',
     'p2_aborn_be.txt'     => 'あぼーんBE',
     'p2_ng_be.txt'        => 'NGBE',
 	'p2_highlight_name.txt' => 'ハイライトネーム',
 	'p2_highlight_mail.txt' => 'ハイライトメール',
 	'p2_highlight_msg.txt'  => 'ハイライトメッセージ',
 	'p2_highlight_id.txt'   => 'ハイライトID',
+	'p2_highlight_watchoi.txt' => 'ハイライトワッチョイ',
 );
 
 if (!array_key_exists($filename, $writable_files)) {

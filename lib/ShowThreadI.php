@@ -301,7 +301,7 @@ EOMSG;
         }
 
         // NGネーム変換
-        if ($ng_type & self::NG_NAME) {
+        if ($ng_type & (self::NG_NAME | self::NG_WATCHOI)) {
             $name = <<<EONAME
 <s><font color="{$STYLE['mobile_read_ngword_color']}">{$name}</font></s>
 EONAME;
@@ -361,7 +361,8 @@ EOP;
         }
         if ($_conf['expack.spm.enabled']) {
             $js_date = $raw_date ? "'$raw_date'" : 'null';
-            $no_onclick = " onclick=\"{$this->spmObjName}.show({$i},'{$spm_msg_id}',event,{$js_date})\"";
+            $has_watchoi = isset($this->thread->watchois[$i]) ? 'true' : 'false';
+            $no_onclick = " onclick=\"{$this->spmObjName}.show({$i},'{$spm_msg_id}',event,{$js_date},{$has_watchoi})\"";
         }
 
         // 番号
@@ -601,7 +602,7 @@ var {$this->spmObjName} = {
     'rref_params': '{$_spm_rref_params}',
     'client':['{$_conf['b']}','{$_conf['client_type']}']
 };
-{$this->spmObjName}.show = (function(no,id,evt,date){SPM.show({$this->spmObjName},no,id,evt,date);});
+{$this->spmObjName}.show = (function(no,id,evt,date,hasWatchoi){SPM.show({$this->spmObjName},no,id,evt,date,hasWatchoi);});
 {$this->spmObjName}.hide = SPM.hide; // (function(evt){SPM.hide(evt);});
 //]]>
 </script>\n
@@ -653,8 +654,9 @@ EOP;
 <select id="spm-select-target" class=" form-control" style="width:40%;">
     <option value="name">名前</option>
     <option value="mail">メール</option>
-    <option value="id" selected>ID</option>
     <option value="msg">本文</option>
+    <option value="id" selected>ID</option>
+    <option value="watchoi">ワッチョイ</option>
     <option value="be">BE</option>
 </select><select id="spm-select-action"class=" form-control" style="width:60%;">
     <option value="aborn" selected>をあぼーん</option>

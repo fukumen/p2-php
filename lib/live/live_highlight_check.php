@@ -45,4 +45,10 @@ if ($a_highlight_msg !== false) {
 	$highlight_msgs = array_unique($this->_highlight_msgs);
 }
 
+// ハイライトワッチョイチェック
+if ($watchoi && $this->ngAbornCheck('highlight_watchoi', $watchoi) !== false) {
+	$ngaborns_hits['highlight_watchoi']++;
+	$type |= $this->_markHighlight($i, self::HIGHLIGHT_WATCHOI, false);
+}
+
 ?>
