@@ -582,6 +582,7 @@ EOP;
             '&rf[method]=' . ResFilter::METHOD_JUST .
             '&rf[match]=' . ResFilter::MATCH_ON .
             '&rf[include]=' . ResFilter::INCLUDE_REFERENCED;
+        $_spm_ngaborn_popup = ($_conf['expack.spm.ngaborn_confirm']) ? 1 : 2;
         $_spm_b = ($_conf['view_forced_by_query']) ? "&b={$_conf['b']}" : '';
 
         $code = <<<EOJS
@@ -600,6 +601,7 @@ var {$this->spmObjName} = {
     'ls':'{$_spm_ls}',
     'rnum_range': '{$_spm_rnum_range}',
     'rref_params': '{$_spm_rref_params}',
+    'ngaborn_popup': {$_spm_ngaborn_popup},
     'client':['{$_conf['b']}','{$_conf['client_type']}']
 };
 {$this->spmObjName}.show = (function(no,id,evt,date,hasWatchoi){SPM.show({$this->spmObjName},no,id,evt,date,hasWatchoi);});

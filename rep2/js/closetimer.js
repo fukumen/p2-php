@@ -27,7 +27,7 @@ function closeTimer() {		// スクリプトの本体
 			//document.forms[_swForm].elements[_swElem].value = "         " + nowtime + "         ";
 			ibtimer.value = "         " + nowtime + "         ";
 		}
-		setTimeout("closeTimer()", 100);
+		setTimeout(closeTimer, 100);
 	}
 }
 

@@ -423,6 +423,41 @@ div.resblock div.resblock_inner {
 	font-style: italic;
 }
 
+/* オーバーレイ・モーダル */
+#spm-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+#spm-modal {
+    width: 90%;
+    max-width: 500px;
+    height: auto;
+    min-height: 100px;
+    max-height: 90vh;
+    background-color: {$STYLE['read_bgcolor']};
+    border: 1px solid rgba(128, 128, 128, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#spm-modal iframe {
+    width: 100%;
+    height: 300px;
+    border: none;
+    display: block;
+}
+
 EOSTYLE;
 
 /*

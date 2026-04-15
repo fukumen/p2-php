@@ -8,6 +8,7 @@ var spmBlockID    = ''; // フォント変更で参照するID
 var spmSelected   = ''; // 選択文字列を一時的に保存
 var spmResDate    = null; // レス日付
 var spmFlexTarget = ''; // フィルタリング結果を開くウインドウ
+var spmReloadRes  = null;
 
 /**
  * コールバック関数コンテナ
@@ -347,6 +348,71 @@ SPM.createFilterSubMenu = function (menuId, aThread) {
  * ================================================== */
 
 /**
+ * ダイアログ（オーバーレイ）を表示する
+ */
+SPM.showDialog = function (url) {
+	var overlay = document.getElementById('spm-overlay');
+	if (!overlay) {
+		overlay = document.createElement('div');
+		overlay.id = 'spm-overlay';
+		overlay.innerHTML = '<div id="spm-modal"><iframe id="spm-iframe"></iframe></div>';
+		overlay.onclick = function(e) {
+			if (e.target === overlay) SPM.hideDialog();
+		};
+		document.body.appendChild(overlay);
+	}
+	var iframe = document.getElementById('spm-iframe');
+	iframe.onload = function() {
+		try {
+			// iframeの高さがscrollHeightに干渉しないよう、一旦最小化して中身の自然な高さを測る
+			iframe.style.height = '0px';
+			var doc = iframe.contentWindow.document;
+			var h = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+
+			if (h > 0) {
+				var maxH = Math.floor(window.innerHeight * 0.9);
+				if (h > maxH) h = maxH;
+				iframe.style.height = h + 'px';
+			} else {
+				iframe.style.height = '300px';
+			}
+		} catch (e) {
+			iframe.style.height = '300px';
+		}
+	};
+	iframe.src = url;
+	overlay.style.display = 'flex';
+};
+
+/**
+ * ダイアログを閉じる
+ */
+SPM.hideDialog = function () {
+	var overlay = document.getElementById('spm-overlay');
+	if (overlay) {
+		overlay.style.display = 'none';
+		document.getElementById('spm-iframe').src = 'about:blank';
+		if (spmReloadRes) {
+			var resnum = spmReloadRes;
+			spmReloadRes = null;
+			SPM.reload(resnum);
+		}
+	}
+};
+
+/**
+ * 親画面をリロードする（アンカー指定付き）
+ */
+SPM.reload = function (resnum) {
+	var url = location.href.split('#')[0];
+	if (resnum) {
+		url += '#r' + resnum;
+	}
+	location.replace(url);
+	location.reload();
+};
+
+/**
  * URIの処理をし、ポップアップウインドウを開く
  */
 SPM.openSubWin = function (aThread, inUrl, option) {
@@ -356,9 +422,6 @@ SPM.openSubWin = function (aThread, inUrl, option) {
 	var boolR = 0; // 自動リサイズ（off:0, on:1）
 	var popup = 1; // ポップアップウインドウか否か（no:0, yes:1, yes&タイマーで閉じる:2）
 	if (inUrl == 'info_sp.php') {
-		inWidth  = 480;
-		inHeight = 240;
-		boolS = 0;
 		if (aThread.spmOption[2] == 1) {
 			popup = 2; // あぼーん/NGワード登録の確認をしないとき
 		}
@@ -407,7 +470,11 @@ SPM.openSubWin = function (aThread, inUrl, option) {
 	if (option != '') {
 		inUrl += '&' + option;
 	}
-	OpenSubWin(inUrl, inWidth, inHeight, boolS, boolR);
+	if (inUrl.indexOf('info_sp.php') === 0) {
+		SPM.showDialog(inUrl);
+	} else {
+		OpenSubWin(inUrl, inWidth, inHeight, boolS, boolR);
+	}
 	return true;
 };
 

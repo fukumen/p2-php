@@ -34,6 +34,17 @@ if (isset($_GET['aborn_be'])) {
     $aborn_be = $_GET['aborn_be'];
 }
 
+// 必須パラメータのチェック
+if (empty($host) || empty($bbs) || empty($key)) {
+    p2die('スレッド（host, bbs, key）が指定されていません。');
+}
+if (empty($mode) || !preg_match('/^(aborn|ng|highlight)_/', $mode)) {
+    p2die('不正なモードが指定されました。');
+}
+if (empty($resnum)) {
+    p2die('対象となるレス番号（resnum）が指定されていません。');
+}
+
 $itaj = P2Util::getItaName($host, $bbs);
 if (!$itaj) {
     $itaj = $bbs;
@@ -46,11 +57,9 @@ $thread_url = "{$_conf['read_php']}?host={$host}&amp;bbs={$bbs}&amp;key={$key}{$
 if (!$_conf['ktai']) {
     $target_edit_at = ' target="editfile"';
     $target_read_at = ' target="read"';
-    $target_sb_at = ' target="sbject"';
 } else {
-    $target_edit_at = '';
-    $target_read_at = '';
-    $target_sb_at = '';
+    $target_edit_at = ' target="_blank"';
+    $target_read_at = ' target="_blank"';
 }
 
 
@@ -61,7 +70,7 @@ if (preg_match('/^(aborn|ng|highlight)_/', $mode)) {
     $path = $_conf['pref_dir'] . '/p2_' . $mode . '.txt';
 }
 
-if ($popup == 1 || $_conf['expack.spm.ngaborn_confirm'] == 0) {
+if (!isset($aborn_str) && isset($resnum)) {
     $_GET['popup'] = 2;
     $aThread = new ThreadRead();
     $aThread->setThreadPathInfo($host, $bbs, $key);
@@ -76,29 +85,29 @@ if ($popup == 1 || $_conf['expack.spm.ngaborn_confirm'] == 0) {
     }
     // +Wiki:BEあぼーん
     $aborn_be = preg_match('/BE:(\\d+)/', $resar[2], $idar) ? P2Util::calcBeId($idar[1]) : '';
-    if ($_conf['expack.spm.ngaborn_confirm'] == 0 && !isset($aborn_str)) {
-        if ($mode == 'aborn_res') {
-            $aborn_str = $host . '/' . $bbs . '/' . $key . '/' . $resnum;
-        } elseif (strpos($mode, '_name') !== false) {
-            $aborn_str = $resar[0];
-        } elseif (strpos($mode, '_mail') !== false) {
-            $aborn_str = $resar[1];
-        } elseif (strpos($mode, '_id') !== false) {
-            $aborn_str = $aborn_id;
-        } elseif (strpos($mode, '_msg') !== false) {
-            $popup = 1;
-        // +Wiki:BEあぼーん
-        } elseif (strstr($mode, '_be')) {
-            $aborn_str = $aborn_be;
-        } elseif (strpos($mode, '_watchoi') !== false) {
-            $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
-            if (preg_match($pattern, $resar[0], $m)) {
-                $aborn_str = $m[1];
-            } else {
-                $aborn_str = '';
-            }
+
+    if ($mode == 'aborn_res') {
+        $aborn_str = $host . '/' . $bbs . '/' . $key . '/' . $resnum;
+    } elseif (strpos($mode, '_name') !== false) {
+        $aborn_str = $resar[0];
+    } elseif (strpos($mode, '_mail') !== false) {
+        $aborn_str = $resar[1];
+    } elseif (strpos($mode, '_id') !== false) {
+        $aborn_str = $aborn_id;
+    } elseif (strpos($mode, '_msg') !== false) {
+        $popup = 1;
+    // +Wiki:BEあぼーん
+    } elseif (strstr($mode, '_be')) {
+        $aborn_str = $aborn_be;
+    } elseif (strpos($mode, '_watchoi') !== false) {
+        $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+        if (preg_match($pattern, $resar[0], $m)) {
+            $aborn_str = $m[1];
+        } else {
+            $aborn_str = '';
         }
     }
+
     if (!is_string($ttitle_en)) {
         $onear = $aThread->explodeDatLine($aThread->datlines[0]);
         $_GET['ttitle_en'] = $ttitle_en = UrlSafeBase64::encode($ttitle_name = $onear[4]);
@@ -137,10 +146,7 @@ $input_size_at = ($_conf['ktai']) ? '' : ' size="50"';
 if (strpos($mode, '_msg') !== false) {
     if (isset($_GET['selected_string'])) {
         $aborn_str = trim($_GET['selected_string']);
-        $aborn_str = preg_replace('/\r\n|\r|\n/u', ' <br> ', $aborn_str);
-        // $selected_stringはJavaScriptのencodeURIComponent()関数でURLエンコードされており、
-        // encodeURIComponent()はECMA-262 3rd Editionの仕様により文字列をUTF-8で扱うため。
-        $aborn_str = mb_convert_encoding($aborn_str, 'CP932', 'UTF-8');
+        $aborn_str = str_replace(array("\r\n", "\r", "\n"), '', $aborn_str);
         $aborn_str = p2h($aborn_str);
     }
 }
@@ -341,13 +347,18 @@ switch ($mode) {
         $edit_value = 'ハイライトワード編集：ワッチョイ';
         break;
     default:
-        /*放置*/
+        p2die('想定外のモード（mode）が指定されています。');
 }
 
 
 //=====================================================
 // HTMLプリント
 //=====================================================
+$body_onload = '';
+if ((!$_conf['ktai'] || $_conf['iphone']) && $popup == 2) {
+    $body_onload = " onload=\"startTimer(document.getElementById('timerbutton'));\"";
+}
+
 P2Util::header_nocache();
 echo $_conf['doctype'];
 echo <<<EOHEADER
@@ -361,54 +372,43 @@ echo <<<EOHEADER
     <title>{$title_st}</title>\n
 EOHEADER;
 
-$body_onload = '';
-
 if (!$_conf['ktai']) {
     echo <<<EOSTYLE
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=info&amp;skin={$skin_en}">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">\n
 EOSTYLE;
-    if ($popup == 2) {
-        echo "\t<script type=\"text/javascript\" src=\"js/closetimer.js?{$_conf['p2_version_id']}\"></script>\n";
-        if (preg_match('/^aborn_/', $mode)) {
-            if ($mode != 'aborn_res' && isset($aborn_id) && strlen($aborn_id) >= 8) {
-                $aborn_target = 'ID:' . addslashes($aborn_id);
-                $aborn_once = 'false';
-            } elseif (isset($resnum)) {
-                $aborn_target = '>' . intval($resnum) . '</';
-                $aborn_once = 'true';
-            }
-            echo <<<EOJS
+}
+
+if ((!$_conf['ktai'] || $_conf['iphone'])) {
+    echo <<<EOJS
     <script type="text/javascript">
-    //<![CDATA[
-    function infoSpLiveAborn()
-    {
-        var tgt = "{$aborn_target}";
-        var once = {$aborn_once};
-        /*try {*/
-            var heads = opener.document.getElementsByTagName('*');
-            for (var i = heads.length - 1; i >= 0 ; i--) {
-                if (heads[i].className.indexOf('res-header') != -1 &&
-                    heads[i].innerHTML.indexOf(tgt) != -1)
-                {
-                    heads[i].parentNode.parentNode.removeChild(heads[i].parentNode);
-                    if (once) break;
-                }
+    (function() {
+        var originalClose = window.close;
+        window.close = function() {
+            if (typeof _run !== 'undefined') _run = 0;
+            if (window.parent !== window.self && window.parent.SPM && window.parent.SPM.hideDialog) {
+                window.parent.SPM.hideDialog();
+            } else if (originalClose) {
+                originalClose();
             }
-        /*} catch (e) {
-            window.alert(e.toString());
-            return false;
-        }*/
-        return true;
-    }
-    //]]>
-    </script>\n
+        };
+    })();
+    </script>
 EOJS;
-            $body_onload = " onload=\"infoSpLiveAborn();startTimer(document.getElementById('timerbutton'));\"";
-        } else {
-            $body_onload = " onload=\"startTimer(document.getElementById('timerbutton'));\"";
+
+    if ($popup == 2) {
+        $resnum_i = (int)$resnum;
+        echo <<<EOJS
+    <script type="text/javascript" src="js/closetimer.js?{$_conf['p2_version_id']}"></script>
+    <script type="text/javascript">
+    (function() {
+        if (window.parent !== window.self) {
+            window.parent.spmReloadRes = {$resnum_i};
         }
+    })();
+    </script>
+EOJS;
     }
 }
 
@@ -420,9 +420,9 @@ echo <<<EOP
 <div align="center">
 EOP;
 
-echo "<form action=\"info_sp.php\" method=\"get\" accept-charset=\"{$_conf['accept_charset']}\">\n";
+echo "<p><form action=\"info_sp.php\" method=\"get\" accept-charset=\"{$_conf['accept_charset']}\">\n";
 echo "<p>{$msg}</p>\n";
-if ($popup == 1 && $msg != '') {
+if ($popup == 1) {
     foreach ($_GET as $idx => $value) {
         if ($idx == 'selected_string') {
             continue;
@@ -441,16 +441,16 @@ if ($popup == 1 && $msg != '') {
     echo "\t<p><label><input type=\"checkbox\" name=\"bbsonly\" value=\"1\">{$itaj}板のみ適用する</label></p>\n";
 
     echo "\t<input type=\"submit\" value=\"　Ｏ　Ｋ　\">\n";
-    if (!$_conf['ktai']) {
+    if ((!$_conf['ktai'] || $_conf['iphone'])) {
         echo "\t<input type=\"button\" value=\"キャンセル\" onclick=\"window.close();\">\n";
     }
-} elseif (!$_conf['ktai'] && $popup == 2) {
+} elseif ((!$_conf['ktai'] || $_conf['iphone']) && $popup == 2) {
     echo <<<EOB
     <input id="timerbutton" type="button" value="Close Timer" onclick="stopTimer(document.getElementById('timerbutton'))">\n
 EOB;
 }
 echo "\t{$_conf['detect_hint_input_ht']}{$_conf['k_input_ht']}\n";
-echo "</form>\n";
+echo "</form></p>\n";
 
 //データファイルの編集ボタン
 /*if ($mode == 'readhere') {
@@ -462,14 +462,14 @@ echo "</form>\n";
     echo "\t<input type=\"submit\" value=\"この板のしおりをリセット\">\n";
     echo "</form>\n";
 } else*/
-if (isset($edit_value)) {
+if (isset($edit_value) && $popup == 1) {
     $rows = $_conf['ktai'] ? 5 : 36;
     $cols = $_conf['ktai'] ? 0 : 128;
     $edit_php = ($mode == 'aborn_res') ? 'editfile.php' : 'edit_aborn_word.php';
     $filename = basename($path);
     $filename_ht = p2h($filename);
     echo <<<EOFORM
-<form action="{$edit_php}" method="get"{$target_edit_at}>
+<p><form action="{$edit_php}" method="get"{$target_edit_at}>
     {$_conf['k_input_ht']}
     <input type="hidden" name="file" value="{$filename_ht}">
     <input type="hidden" name="encode" value="Shift_JIS">
@@ -477,17 +477,13 @@ if (isset($edit_value)) {
     <input type="hidden" name="cols" value="{$cols}">
     <input type="submit" value="{$edit_value}">\n
 EOFORM;
-    if (!$_conf['ktai'] && $popup == 1 && $msg == '') {
-        echo "\t<input type=\"button\" value=\"キャンセル\" onclick=\"window.close();\">\n";
-    }
-    echo "</form>\n";
+    echo "</form></p>\n";
 }
 
 echo "</div>\n";
 
-echo "<hr>\n";
-
-if ($_conf['ktai']) {
+if ($_conf['ktai'] && !$_conf['iphone']) {
+    echo "<hr>\n";
     echo '<p>';
     if (!empty($_GET['from_read_new'])) {
         echo "<a href=\"{$_conf['read_new_k_php']}?cview=1\">まとめ読みに戻る</a><br>";
