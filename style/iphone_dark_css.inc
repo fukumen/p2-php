@@ -39,11 +39,10 @@ echo <<<EODARK
     .thumb { background-color: #555 !important; border-color: #666 !important; }
 
     /* Links */
-    a:link, a:visited { color: #e0e0e0 !important; }
-    
+    a:link, a:visited { color: #aef !important; }
+    p.empty { background-color: #000 !important; color: #e0e0e0 !important; }
+
     /* iUI Menu List Links & Subject List Titles (specific override) */
-    body > ul > li > a:link,
-    body > ul > li > a:visited,
     ul.subject > li > a:link,
     ul.subject > li > a:visited {
         color: #e0e0e0 !important;
@@ -80,6 +79,8 @@ echo <<<EODARK
     div.ntoolbar td { border-top: 1px solid #444 !important; }
     div.ntoolbar > form, div.ntoolbar > div > form, div.ntoolbar > div.hits { border-top: 1px solid #444 !important; }
     div.ntoolbar > div.hits { background-color: #333 !important; color: #e0e0e0 !important; }
+    div.ntoolbar a:link, div.ntoolbar a:visited { color: #e0e0e0 !important; }
+    div.ntoolbar a.inactive { color: #e0e0e0 !important; }
     div.info { background-color: #2a2a40 !important; color: #e0e0e0 !important; border-top: 1px solid #444 !important; }
     div.mtoolbar { background-color: #222 !important; color: #e0e0e0 !important; }
     div.mtoolbar_top { border-top: 2px solid #444 !important; }
