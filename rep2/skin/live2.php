@@ -59,6 +59,7 @@ $STYLE['sb_tbgcolor'] = "#f6f6f6"; // ("#fff") subject テーブル内背景色0
 $STYLE['sb_tbgcolor1'] = "#f6f6f6"; // ("#fff") subject テーブル内背景色1
 //$STYLE['sb_tbackground'] = ""; // ("") subject テーブル内背景画像0
 //$STYLE['sb_tbackground1'] = ""; // ("") subject テーブル内背景画像1
+$STYLE['sb_tbgcolor_nosubject'] = "#e6e6e6"; // ("#e6e6e6") subject テーブル内背景色(subject.txtに無いとき)
 
 $STYLE['sb_ttcolor'] = "#333"; // ("#333") subject テーブル内 テキスト色
 $STYLE['sb_tacolor'] = "#333"; // ("#333") subject テーブル内 リンク色
