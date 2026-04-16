@@ -50,7 +50,9 @@ $githubRepo = 'fukumen/p2-php';
         }
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; margin: 0; padding: 10px; background: var(--bg-color); color: var(--text-color); transition: background 0.3s, color 0.3s; }
-        .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header, .footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; }
+        .header { margin-bottom: 20px; }
+        .footer { margin-top: 20px; justify-content: flex-end; }
         h1 { font-size: 1.2rem; margin: 0; padding-bottom: 5px; display: flex; align-items: baseline; }
         .github-link { font-size: 0.9rem; margin-left: 10px; color: var(--link-color); text-decoration: none; font-weight: normal; }
         .github-link:hover { text-decoration: underline; }
@@ -74,20 +76,34 @@ $githubRepo = 'fukumen/p2-php';
     <div class="header">
         <h1>rep2 Commits<a href="https://github.com/<?php echo $githubRepo; ?>/commits/"<?php echo $_conf['ext_win_target_at']; ?> class="github-link">githubで表示</a></h1>
         <div class="controls">
-            <select id="perPage">
+            <select class="perPageSelect">
                 <option value="10" selected>10件表示</option>
                 <option value="50">50件表示</option>
                 <option value="100">100件表示</option>
             </select>
             <div class="pagination">
-                <button id="prevBtn" disabled>前へ</button>
-                <span id="pageInfo" style="display: flex; align-items: center; font-size: 14px; margin: 0 5px;">Page 1</span>
-                <button id="nextBtn" disabled>次へ</button>
+                <button class="prevBtn" disabled>前へ</button>
+                <span class="pageInfo" style="display: flex; align-items: center; font-size: 14px; margin: 0 5px;">Page 1</span>
+                <button class="nextBtn" disabled>次へ</button>
             </div>
         </div>
     </div>
     <div id="error" class="error" style="display: none;"></div>
     <div id="commits"><div class="loading">読み込み中...</div></div>
+    <div class="footer">
+        <div class="controls">
+            <select class="perPageSelect">
+                <option value="10" selected>10件表示</option>
+                <option value="50">50件表示</option>
+                <option value="100">100件表示</option>
+            </select>
+            <div class="pagination">
+                <button class="prevBtn" disabled>前へ</button>
+                <span class="pageInfo" style="display: flex; align-items: center; font-size: 14px; margin: 0 5px;">Page 1</span>
+                <button class="nextBtn" disabled>次へ</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const extWinAttr = '<?php echo $_conf['ext_win_target_at']; ?>';
@@ -97,10 +113,10 @@ $githubRepo = 'fukumen/p2-php';
 
         const commitsContainer = document.getElementById('commits');
         const errorContainer = document.getElementById('error');
-        const perPageSelect = document.getElementById('perPage');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const pageInfo = document.getElementById('pageInfo');
+        const perPageSelects = document.querySelectorAll('.perPageSelect');
+        const prevBtns = document.querySelectorAll('.prevBtn');
+        const nextBtns = document.querySelectorAll('.nextBtn');
+        const pageInfos = document.querySelectorAll('.pageInfo');
 
         function formatDate(isoString) {
             const d = new Date(isoString);
@@ -118,9 +134,9 @@ $githubRepo = 'fukumen/p2-php';
         async function fetchCommits() {
             commitsContainer.innerHTML = '<div class="loading">読み込み中...</div>';
             errorContainer.style.display = 'none';
-            prevBtn.disabled = true;
-            nextBtn.disabled = true;
-            perPageSelect.disabled = true;
+            prevBtns.forEach(btn => btn.disabled = true);
+            nextBtns.forEach(btn => btn.disabled = true);
+            perPageSelects.forEach(sel => sel.disabled = true);
 
             try {
                 const res = await fetch(`https://api.github.com/repos/${repo}/commits?page=${currentPage}&per_page=${currentPerPage}`);
@@ -139,15 +155,15 @@ $githubRepo = 'fukumen/p2-php';
 
                 renderCommits(commits);
 
-                pageInfo.textContent = `Page ${currentPage}`;
-                prevBtn.disabled = currentPage === 1;
-                nextBtn.disabled = !hasNext;
+                pageInfos.forEach(info => info.textContent = `Page ${currentPage}`);
+                prevBtns.forEach(btn => btn.disabled = currentPage === 1);
+                nextBtns.forEach(btn => btn.disabled = !hasNext);
             } catch (err) {
                 errorContainer.textContent = '取得に失敗しました: ' + err.message;
                 errorContainer.style.display = 'block';
                 commitsContainer.innerHTML = '';
             } finally {
-                perPageSelect.disabled = false;
+                perPageSelects.forEach(sel => sel.disabled = false);
             }
         }
 
@@ -190,22 +206,32 @@ $githubRepo = 'fukumen/p2-php';
             commitsContainer.innerHTML = html;
         }
 
-        perPageSelect.addEventListener('change', (e) => {
-            currentPerPage = parseInt(e.target.value, 10);
-            currentPage = 1;
-            fetchCommits();
-        });
-
-        prevBtn.addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
+        perPageSelects.forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                currentPerPage = parseInt(e.target.value, 10);
+                perPageSelects.forEach(s => s.value = currentPerPage); // 同期
+                currentPage = 1;
                 fetchCommits();
-            }
+                window.scrollTo(0, 0);
+            });
         });
 
-        nextBtn.addEventListener('click', () => {
-            currentPage++;
-            fetchCommits();
+        prevBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchCommits();
+                    window.scrollTo(0, 0);
+                }
+            });
+        });
+
+        nextBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentPage++;
+                fetchCommits();
+                window.scrollTo(0, 0);
+            });
         });
 
         fetchCommits();
