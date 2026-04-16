@@ -203,12 +203,12 @@ $MYSTYLE['kanban']['td.tdleft']['color'] = "#fff"; // ("#fff") î•ñƒEƒCƒ“ƒhƒE‚Ìƒ
 $STYLE['live_b_l'] = ""; // ("1px #999 dotted") +live ƒŒƒXŠÔ‚ÌdØü
 $STYLE['live_b_s'] = ""; // ("0px #999 dotted; background:url(./skin/live/bg.gif)") +live ”Ô† –Ú—“ –¼‘O “ú•t ID •\¦•”‚ÆƒŒƒX•\¦•”‚ÌdØü
 $STYLE['live_b_n'] = "2px #900 dotted"; // ("2px #900 dotted") +live À‹µ•\¦&ƒI[ƒgƒŠƒ[ƒh‚ÌŠù“Ç`V’…‚ÌdØü
-$STYLE['live_highlight'] = "#cff"; // ("#cff") +live ƒnƒCƒ‰ƒCƒgƒ[ƒh•\¦‚Ì”wŒiF
-$STYLE['live_highlight_chain'] = "#ffc"; // ("#ffc") +live ˜A½ƒnƒCƒ‰ƒCƒg•\¦‚Ì”wŒiF
+$STYLE['live_highlight'] = "#666"; // ("#666") +live ƒnƒCƒ‰ƒCƒgƒ[ƒh•\¦‚Ì”wŒiF
+$STYLE['live_highlight_chain'] = "#444"; // ("#444") +live ˜A½ƒnƒCƒ‰ƒCƒg•\¦‚Ì”wŒiF
 $STYLE['live_highlight_word_weight'] = "bold"; // ("bold") +live ˜A½ƒnƒCƒ‰ƒCƒg•\¦‚ÌƒtƒHƒ“ƒg‚Ì‘¾‚³
-$STYLE['live_highlight_word_border'] = "3px #900 double"; // ("3px #900 double") +live ˜A½ƒnƒCƒ‰ƒCƒg•\¦‚ÌƒAƒ“ƒ_[ƒ‰ƒCƒ“
+$STYLE['live_highlight_word_border'] = "2px #900 dotted"; // ("2px #900 dotted") +live ˜A½ƒnƒCƒ‰ƒCƒg•\¦‚ÌƒAƒ“ƒ_[ƒ‰ƒCƒ“
 $STYLE['live_font-size'] = "10px"; // ("10px") +live ”Ô† –Ú—“ –¼‘O “ú•t ID —“‚ÌƒtƒHƒ“ƒgƒTƒCƒY
-$STYLE['live2_color'] = "#eee"; // ("#eee") +live Type-B‚Ì ”Ô† –Ú—“ –¼‘O “ú•t ID •\¦•”‚Ì”wŒiF
+$STYLE['live2_color'] = "#13271d"; // ("#13271d") +live Type-B‚Ì ”Ô† –Ú—“ –¼‘O “ú•t ID •\¦•”‚Ì”wŒiF
 
 $MYSTYLE['read']['a']['font-size'] = "10px"; // ("10px") ƒXƒŒƒbƒh•\¦ ƒŠƒ“ƒN‚ÌƒtƒHƒ“ƒgƒTƒCƒY
 $MYSTYLE['read']['.thread_title']['font-size'] = "12px"; // ("12px") ƒXƒŒƒbƒh•\¦ ƒXƒŒƒ^ƒC‚ÌƒtƒHƒ“ƒgƒTƒCƒY
