@@ -939,7 +939,7 @@ abstract class ShowThread
      */
     public function ngAbornCheck($code, $resfield, $ic = false)
     {
-        global $ngaborns;
+        global $_conf, $ngaborns;
 
         //$GLOBALS['debug'] && $GLOBALS['profiler']->enterSection('ngAbornCheck()');
 
@@ -999,6 +999,15 @@ abstract class ShowThread
                         $this->ngAbornUpdate($code, $k);
                         //$GLOBALS['debug'] && $GLOBALS['profiler']->leaveSection('ngAbornCheck()');
                         return $v['cond'];
+                    }
+                // ワッチョイ上位4桁
+                } elseif ($_conf['ngaborn_watchoi4'] && in_array($code, array('aborn_watchoi', 'ng_watchoi', 'highlight_watchoi'))) {
+                    $pattern = '#([0-9A-Za-z./*+]{4}-)[0-9A-Za-z./*+]{4}#';
+                    if (preg_match($pattern, $v['word'], $m)) {
+                        if (strpos($resfield, $m[1]) !== false) {
+                            $this->ngAbornUpdate($code, $k);
+                            return $v['cond'];
+                        }
                     }
                 // 単純に文字列が含まれるかどうかをチェック
                 } else {

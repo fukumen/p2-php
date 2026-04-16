@@ -22,6 +22,7 @@ class ResFilter
     const METHOD_AND = 'and';
     const METHOD_JUST = 'just';
     const METHOD_REGEX = 'regex';
+    const METHOD_WATCHOI4 = 'watchoi4';
     const METHOD_DEFAULT = self::METHOD_OR;
 
     const MATCH_ON = 'on';
@@ -54,6 +55,7 @@ class ResFilter
         self::METHOD_AND => 'すべて',
         self::METHOD_JUST => 'そのまま',
         self::METHOD_REGEX => '正規表現',
+        self::METHOD_WATCHOI4 => 'ワッチョイの上位4桁',
     );
 
     static protected $_matches = array(
@@ -331,6 +333,12 @@ class ResFilter
      */
     public function getPattern()
     {
+        if ($this->method == self::METHOD_WATCHOI4) {
+            $pattern = '#([0-9A-Za-z./*+]{4}-)[0-9A-Za-z./*+]{4}#';
+            if (preg_match($pattern, $this->word, $m)) {
+                return StrCtl::wordForMatch($m[1], 'just');
+            }
+        }
         return $this->_word_fm;
     }
 
@@ -562,6 +570,17 @@ class ResFilter
                 }
             }
             if ($hits == $this->_words_num) {
+                return false;
+            }
+        } elseif ($this->method == self::METHOD_WATCHOI4) {
+            $pattern = '#([0-9A-Za-z./*+]{4}-)[0-9A-Za-z./*+]{4}#';
+            $hit = false;
+            if (preg_match($pattern, $this->word, $m)) {
+                if (strpos($target, $m[1]) !== false) {
+                    $hit = true;
+                }
+            }
+            if ($hit == $failure) {
                 return false;
             }
         } else {

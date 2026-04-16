@@ -425,6 +425,11 @@ SPM.openSubWin = function (aThread, inUrl, option) {
 		if (aThread.spmOption[2] == 1) {
 			popup = 2; // あぼーん/NGワード登録の確認をしないとき
 		}
+		if (option == '') {
+			option = 'bbsonly=' + aThread.spmOption[7].toString();
+		} else {
+			option += '&bbsonly=' + aThread.spmOption[7].toString();
+		}
 		if (option.indexOf('_msg') != -1 && spmSelected != '') {
 			option += '&selected_string=' + encodeURIComponent(spmSelected);
 		}

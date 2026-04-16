@@ -583,6 +583,7 @@ EOP;
             '&rf[match]=' . ResFilter::MATCH_ON .
             '&rf[include]=' . ResFilter::INCLUDE_REFERENCED;
         $_spm_ngaborn_popup = ($_conf['expack.spm.ngaborn_confirm']) ? 1 : 2;
+        $_spm_ngaborn_bbsonly = ($_conf['expack.spm.ngaborn_bbsonly']) ? 1 : 0;
         $_spm_b = ($_conf['view_forced_by_query']) ? "&b={$_conf['b']}" : '';
 
         $code = <<<EOJS
@@ -602,6 +603,7 @@ var {$this->spmObjName} = {
     'rnum_range': '{$_spm_rnum_range}',
     'rref_params': '{$_spm_rref_params}',
     'ngaborn_popup': {$_spm_ngaborn_popup},
+    'ngaborn_bbsonly': {$_spm_ngaborn_bbsonly},
     'client':['{$_conf['b']}','{$_conf['client_type']}']
 };
 {$this->spmObjName}.show = (function(no,id,evt,date,hasWatchoi){SPM.show({$this->spmObjName},no,id,evt,date,hasWatchoi);});
@@ -751,7 +753,7 @@ EOP;
             'idpopup' => '1',
             'rf'      => array(
                 'field'   => ResFilter::FIELD_NAME,
-                'method'  => ResFilter::METHOD_JUST,
+                'method'  => ($_conf['ngaborn_watchoi4'] ? ResFilter::METHOD_WATCHOI4 : ResFilter::METHOD_JUST),
                 'match'   => ResFilter::MATCH_ON,
                 'include' => ResFilter::INCLUDE_NONE,
                 'word'    => $watchoi_id,

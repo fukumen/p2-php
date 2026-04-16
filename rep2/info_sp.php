@@ -424,7 +424,7 @@ echo "<p><form action=\"info_sp.php\" method=\"get\" accept-charset=\"{$_conf['a
 echo "<p>{$msg}</p>\n";
 if ($popup == 1) {
     foreach ($_GET as $idx => $value) {
-        if ($idx == 'selected_string') {
+        if ($idx == 'selected_string' || $idx == 'bbsonly') {
             continue;
         }
         $value_ht = p2h($value);
@@ -438,7 +438,8 @@ if ($popup == 1) {
         echo "\t<input type=\"hidden\" name=\"aborn_id\" value=\"{$aborn_id_ht}\">\n";
     }
 
-    echo "\t<p><label><input type=\"checkbox\" name=\"bbsonly\" value=\"1\">{$itaj}板のみ適用する</label></p>\n";
+    $checked = $bbsonly ? ' checked' : '';
+    echo "\t<p><label><input type=\"checkbox\" name=\"bbsonly\" value=\"1\"{$checked}>{$itaj}板のみ適用する</label></p>\n";
 
     echo "\t<input type=\"submit\" value=\"　Ｏ　Ｋ　\">\n";
     if ((!$_conf['ktai'] || $_conf['iphone'])) {

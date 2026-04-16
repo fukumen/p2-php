@@ -391,6 +391,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('ngaborn_daylimit', 'この期間、NG/あぼーん/ハイライトにHITしなければ、登録ワードを自動的に外す (日数)'),
         array('ngaborn_purge_aborn', 'あぼーんレスは不可視divブロックも描画しない'),
         array('ngaborn_exclude_one', '>>1 をあぼーんの対象外にする'),
+        array('ngaborn_watchoi4', 'ワッチョイの上位4桁のみを使用してNGあぼーんする'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }
@@ -708,6 +709,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('expack.spm.kokores_orig', 'ここにレスで開くフォームに元レスの内容を表示する'),
         array('expack.spm.ngaborn', 'あぼーん/NG/ハイライトワード登録'),
         array('expack.spm.ngaborn_confirm', 'あぼーん/NG/ハイライトワード登録時に確認する'),
+        array('expack.spm.ngaborn_bbsonly', 'あぼーん/NG/ハイライトワード登録時に板限定とする'),
         array('expack.spm.filter', 'フィルタリング'),
         array('expack.spm.filter_target', 'フィルタリング結果を開くフレームまたはウインドウ'),
     );

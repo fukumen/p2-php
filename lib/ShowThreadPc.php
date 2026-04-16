@@ -718,7 +718,7 @@ EOP;
             'idpopup' => '1',
             'rf'      => array(
                 'field'   => ResFilter::FIELD_NAME,
-                'method'  => ResFilter::METHOD_JUST,
+                'method'  => ($_conf['ngaborn_watchoi4'] ? ResFilter::METHOD_WATCHOI4 : ResFilter::METHOD_JUST),
                 'match'   => ResFilter::MATCH_ON,
                 'include' => ResFilter::INCLUDE_NONE,
                 'word'    => $watchoi_id,
@@ -1186,6 +1186,7 @@ EOJS;
             (($this->am_on_spm) ? '1' : '0'),
             (($_conf['expack.aas.enabled']) ? '1' : '0'),
             (($_conf['donguri_use']) ? '1' : '0'),
+            (($_conf['expack.spm.ngaborn_bbsonly']) ? '1' : '0'),
         );
         $spmOptions = implode(',', $_spmOptions);
 

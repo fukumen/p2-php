@@ -154,7 +154,7 @@ SPM.doAction = (function()
 			return;
 	}
 
-	uri += '&resnum=' + SPM.activeNumber + '&popup=' + SPM.activeThread.ngaborn_popup + SPM.activeThread.query;
+	uri += '&resnum=' + SPM.activeNumber + '&popup=' + SPM.activeThread.ngaborn_popup + '&bbsonly=' + SPM.activeThread.ngaborn_bbsonly + SPM.activeThread.query;
 
 	SPM.showDialog(uri);
 });
