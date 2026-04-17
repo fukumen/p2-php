@@ -8,15 +8,15 @@
  * NGメッセージを表示する
  *
  * @param String id
- * @param Element ng
  * @return void
  */
-function show_ng_message(id, ng)
+function show_ng_message(id)
 {
-	document.getElementById(id).style.display = 'block';
-
-	if (ng && ng.parentNode) {
-		ng.parentNode.removeChild(ng);
+	var target = document.getElementById(id);
+	if (target.style.display === 'none' || target.style.display === '') {
+		target.style.display = 'block';
+	} else {
+		target.style.display = 'none';
 	}
 }
 

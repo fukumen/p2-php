@@ -49,6 +49,7 @@ if (array_key_exists('live', $_GET) && $_GET['live']) {
         if ($this->am_side_of_id) {
             $tores .= ' ' . $this->activeMona->getMona($msg_id);
         }
+        $tores .= $ng_badge_html; // NG開閉バッジ
         $tores .= "</div>\n"; // res-headerを閉じる
 
         // 被レスリスト(縦形式)

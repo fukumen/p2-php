@@ -182,7 +182,6 @@ class ShowThreadK extends ShowThread
         }
         if ($ng_type != self::NG_NONE) {
             $ngaborns_head_hits = self::$_ngaborns_head_hits;
-            $ngaborns_body_hits = self::$_ngaborns_body_hits;
         }
 
         // {{{ 名前と日付・IDを調整
@@ -287,27 +286,44 @@ EOMSG;
 
         // NGネーム変換
         if ($ng_type & self::NG_NAME) {
+	        $name = preg_replace("(<b>|</b>)", "", $name);
             $name = <<<EONAME
-<s><font color="{$STYLE['mobile_read_ngword_color']}">{$name}</font></s>
+</b><s><font color="{$STYLE['mobile_read_ngword_color']}">{$name}</font></s><b>
 EONAME;
+        }
+
+        // NGメール変換
+        if ($ng_type & self::NG_MAIL) {
+            $mail = <<<EOMAIL
+<s class="ngword" onmouseover="document.getElementById('ngn{$ngaborns_head_hits}').style.display = 'block';">{$mail}</s>
+EOMAIL;
+        }
+
+        // NGID変換
+        if ($ng_type & self::NG_ID) {
+            $date_id = <<<EOID
+<s><font color="{$STYLE['mobile_read_ngword_color']}">{$date_id}</font></s>
+EOID;
+        }
+
+        // NGメッセージ変換(msg)
+        if ($ng_type != self::NG_NONE && !empty($ng_info)) {
+            // 変換済み
+
+        // NGネーム変換(msg)
+        } elseif ($ng_type & self::NG_NAME) {
             $msg = <<<EOMSG
 <a class="button" href="{$_conf['read_php']}?host={$this->thread->host}&amp;bbs={$this->thread->bbs}&amp;key={$this->thread->key}&amp;ls={$i}&amp;k_continue=1&amp;nong=1{$_conf['k_at_a']}"{$this->respopup_at}{$this->target_at}>{$this->check_st}</a>
 EOMSG;
 
-        // NGメール変換
+            // NGメール変換(msg)
         } elseif ($ng_type & self::NG_MAIL) {
-            $mail = <<<EOMAIL
-<s class="ngword" onmouseover="document.getElementById('ngn{$ngaborns_head_hits}').style.display = 'block';">{$mail}</s>
-EOMAIL;
             $msg = <<<EOMSG
 <div id="ngn{$ngaborns_head_hits}" style="display:none;">{$msg}</div>
 EOMSG;
 
-        // NGID変換
+            // NGID変換(msg)
         } elseif ($ng_type & self::NG_ID) {
-            $date_id = <<<EOID
-<s><font color="{$STYLE['mobile_read_ngword_color']}">{$date_id}</font></s>
-EOID;
             $msg = <<<EOMSG
 <a class="button" href="{$_conf['read_php']}?host={$this->thread->host}&amp;bbs={$this->thread->bbs}&amp;key={$this->thread->key}&amp;ls={$i}&amp;k_continue=1&amp;nong=1{$_conf['k_at_a']}"{$this->respopup_at}{$this->target_at}>{$this->check_st}</a>
 EOMSG;

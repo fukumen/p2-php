@@ -52,6 +52,9 @@ if ($this->am_side_of_id) {
 	$tores .= ' ' . $this->activeMona->getMona($res_id);
 }
 
+// NG開閉バッジ
+$tores .= $ng_badge_html;
+
 // メール
 $tores .= "&nbsp;{$mail}";
 

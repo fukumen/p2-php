@@ -94,16 +94,6 @@ abstract class ShowThread
     static protected $_ngaborns_head_hits = 0;
 
     /**
-     * 本文がNGあぼーんにヒットした総数
-     *
-     * @var int
-     */
-    static protected $_ngaborns_body_hits = 0;
-
-	static protected $_highlight_head_hits = 0; // 本文以外がハイライトにヒットした総数
-	static protected $_highlight_body_hits = 0; // 本文がハイライトにヒットした総数
-
-    /**
      * getAnchorRegex() のキャッシュ
      *
      * @var array
@@ -889,11 +879,7 @@ abstract class ShowThread
     protected function _markNgAborn($num, $type, $isBody)
     {
         if ($type) {
-            if ($isBody) {
-                self::$_ngaborns_body_hits++;
-            } else {
-                self::$_ngaborns_head_hits++;
-            }
+            self::$_ngaborns_head_hits++;
 
             // array_intersect()を効率よく行うため、レス番号を文字列型にキャストする
             $str = (string)$num;
@@ -916,12 +902,6 @@ abstract class ShowThread
 	protected function _markHighlight($num, $type, $isBody)
 	{
 		if ($type) {
-			if ($isBody) {
-				self::$_highlight_body_hits++;
-			} else {
-				self::$_highlight_head_hits++;
-			}
-
 			$str = (string)$num;
 			$this->_highlight_nums[$num] = $str;
 

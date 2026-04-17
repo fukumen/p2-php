@@ -169,14 +169,7 @@ class ShowThreadPc extends ShowThread
         }
         if ($ng_type != self::NG_NONE) {
             $ngaborns_head_hits = self::$_ngaborns_head_hits;
-            $ngaborns_body_hits = self::$_ngaborns_body_hits;
         }
-
-		// +live ハイライトチェック
-		if ($ng_type != self::HIGHLIGHT_NONE) {
-			$highlight_head_hits = self::$_highlight_head_hits;
-			$highlight_body_hits = self::$_highlight_body_hits;
-		}
 
         // AA判定
         if ($this->am_autodetect && $this->activeMona->detectAA($msg)) {
@@ -225,42 +218,82 @@ class ShowThreadPc extends ShowThread
             $date_id = preg_replace_callback("{<a href=\"(http://[-_.!~*()0-9A-Za-z;/?:@&=+\$,%#]+)\"({$_conf['ext_win_target_at']})>((\?#*)|(Lv\.\d+))</a>}", array($this, 'iframePopupCallback'), $date_id);
         }
 
+        $ng_badges = array();
         // NGメッセージ変換
         if ($ng_type != self::NG_NONE && count($ng_info)) {
             $ng_info = implode(', ', $ng_info);
             $msg = <<<EOMSG
-<span class="ngword" onclick="show_ng_message('ngm{$ngaborns_body_hits}', this);">{$ng_info}</span>
-<div id="ngm{$ngaborns_body_hits}" class="ngmsg ngmsg-by-msg">{$msg}</div>
+<span class="ngword">{$ng_info}</span>
+<div id="ngn{$ngaborns_head_hits}" class="ngmsg ngmsg-by-msg">{$msg}</div>
 EOMSG;
+            $ng_badges[] = '本文';
         }
 
         // NGネーム変換
-        if ($ng_type & (self::NG_NAME | self::NG_WATCHOI)) {
+        if ($ng_type & self::NG_NAME) {
+	        $name = preg_replace("(<b>|</b>)", "", $name);
             $name = <<<EONAME
-<span class="ngword" onclick="show_ng_message('ngn{$ngaborns_head_hits}', this);">{$name}</span>
+</b><span class="ngword">{$name}</span><b>
 EONAME;
+            $ng_badges[] = '名前';
+        } elseif ($ng_type & self::NG_WATCHOI) {
+            if ($_conf['ngaborn_watchoi4']) {
+                $pattern = '#\(([^\s()]+\s+)?([0-9A-Za-z./*+]{4}-)([0-9A-Za-z./*+]{4}(?:\s+\[.+])?)\)#';
+                $name = preg_replace($pattern, "($1<span class=\"ngword\">$2</span>$3)", $name);
+            } else {
+                $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+                $name = preg_replace($pattern, "(<span class=\"ngword\">$1</span>)", $name);
+            }
+            $ng_badges[] = 'ワッチョイ';
+        }
+
+        // NGメール変換
+        if ($ng_type & self::NG_MAIL) {
+            $mail = <<<EOMAIL
+<span class="ngword">{$mail}</span>
+EOMAIL;
+            $ng_badges[] ='メール';
+        }
+
+        // NGID変換
+        if ($ng_type & self::NG_ID) {
+            $date_id = <<<EOID
+<span class="ngword">{$date_id}</span>
+EOID;
+            $ng_badges[] = 'ID';
+        }
+
+        // NGメッセージ変換(msg)
+        if ($ng_type != self::NG_NONE && !empty($ng_info)) {
+            // 変換済み
+
+        // NGネーム変換(msg)
+        } elseif ($ng_type & (self::NG_NAME | self::NG_WATCHOI)) {
             $msg = <<<EOMSG
 <div id="ngn{$ngaborns_head_hits}" class="ngmsg ngmsg-by-name">{$msg}</div>
 EOMSG;
 
-        // NGメール変換
+        // NGメール変換(msg)
         } elseif ($ng_type & self::NG_MAIL) {
-            $mail = <<<EOMAIL
-<span class="ngword" onclick="show_ng_message('ngn{$ngaborns_head_hits}', this);">{$mail}</span>
-EOMAIL;
             $msg = <<<EOMSG
 <div id="ngn{$ngaborns_head_hits}" class="ngmsg ngmsg-by-mail">{$msg}</div>
 EOMSG;
 
-        // NGID変換
+        // NGID変換(msg)
         } elseif ($ng_type & self::NG_ID) {
-            $date_id = <<<EOID
-<span class="ngword" onclick="show_ng_message('ngn{$ngaborns_head_hits}', this);">{$date_id}</span>
-EOID;
             $msg = <<<EOMSG
 <div id="ngn{$ngaborns_head_hits}" class="ngmsg ngmsg-by-id">{$msg}</div>
 EOMSG;
 
+        }
+
+         // NG開閉バッジ
+       $ng_badge_html = '';
+        if (!empty($ng_badges)) {
+            $reason = implode(', ', $ng_badges);
+            $ng_badge_html = <<<EOBADGE
+ <span style="cursor:pointer; margin-left:0.5em;" onclick="show_ng_message('ngn{$ngaborns_head_hits}');">[NG: {$reason}]</span>
+EOBADGE;
         }
 
 		// +live ハイライトワード変換

@@ -142,7 +142,7 @@ class ShowThreadI extends ShowThread
      */
     public function transRes($ares, $i, $pattern = null)
     {
-        global $_conf, $STYLE, $mae_msg;
+        global $_conf, $STYLE, $mae_msg, $highlight_msgs, $highlight_chain_nums;
 
         list($name, $mail, $date_id, $msg) = $this->thread->explodeDatLine($ares);
         if (($id = $this->thread->ids[$i]) !== null) {
@@ -195,7 +195,6 @@ class ShowThreadI extends ShowThread
         }
         if ($ng_type != self::NG_NONE) {
             $ngaborns_head_hits = self::$_ngaborns_head_hits;
-            $ngaborns_body_hits = self::$_ngaborns_body_hits;
         }
 
         // {{{ 名前と日付・IDを調整
@@ -301,32 +300,60 @@ EOMSG;
         }
 
         // NGネーム変換
-        if ($ng_type & (self::NG_NAME | self::NG_WATCHOI)) {
+        if ($ng_type & self::NG_NAME) {
+	        $name = preg_replace("(<b>|</b>)", "", $name);
             $name = <<<EONAME
-<s><font color="{$STYLE['mobile_read_ngword_color']}">{$name}</font></s>
+</b><s><font color="{$STYLE['mobile_read_ngword_color']}">{$name}</font></s><b>
 EONAME;
+        } elseif ($ng_type & self::NG_WATCHOI) {
+            if ($_conf['ngaborn_watchoi4']) {
+                $pattern = '#\(([^\s()]+\s+)?([0-9A-Za-z./*+]{4}-)([0-9A-Za-z./*+]{4}(?:\s+\[.+])?)\)#';
+                $name = preg_replace($pattern, "($1<s><font color=\"{$STYLE['mobile_read_ngword_color']}\">$2</font></s>$3)", $name);
+            } else {
+                $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+                $name = preg_replace($pattern, "(<s><font color=\"{$STYLE['mobile_read_ngword_color']}\">$1</font></s>)", $name);
+            }
+        }
+
+        // NGメール変換
+        if ($ng_type & self::NG_MAIL) {
+            $mail = <<<EOMAIL
+<s class="ngword" onmouseover="document.getElementById('ngn{$ngaborns_head_hits}').style.display = 'block';">{$mail}</s>
+EOMAIL;
+        }
+
+        // NGID変換
+        if ($ng_type & self::NG_ID) {
+            $date_id = <<<EOID
+<s><font color="{$STYLE['mobile_read_ngword_color']}">{$date_id}</font></s>
+EOID;
+        }
+
+        // NGメッセージ変換(msg)
+        if ($ng_type != self::NG_NONE && !empty($ng_info)) {
+            // 変換済み
+
+        // NGネーム変換(msg)
+        } elseif ($ng_type & (self::NG_NAME | self::NG_WATCHOI)) {
             $msg = <<<EOMSG
 <a class="button" href="{$_conf['read_php']}?host={$this->thread->host}&amp;bbs={$this->thread->bbs}&amp;key={$this->thread->key}&amp;ls={$i}&amp;k_continue=1&amp;nong=1{$_conf['k_at_a']}"{$this->respopup_at}{$this->target_at}>{$this->check_st}</a>
 EOMSG;
 
-            // NGメール変換
+            // NGメール変換(msg)
         } elseif ($ng_type & self::NG_MAIL) {
-            $mail = <<<EOMAIL
-<s class="ngword" onmouseover="document.getElementById('ngn{$ngaborns_head_hits}').style.display = 'block';">{$mail}</s>
-EOMAIL;
             $msg = <<<EOMSG
 <div id="ngn{$ngaborns_head_hits}" style="display:none;">{$msg}</div>
 EOMSG;
 
-            // NGID変換
+            // NGID変換(msg)
         } elseif ($ng_type & self::NG_ID) {
-            $date_id = <<<EOID
-<s><font color="{$STYLE['mobile_read_ngword_color']}">{$date_id}</font></s>
-EOID;
             $msg = <<<EOMSG
 <a class="button" href="{$_conf['read_php']}?host={$this->thread->host}&amp;bbs={$this->thread->bbs}&amp;key={$this->thread->key}&amp;ls={$i}&amp;k_continue=1&amp;nong=1{$_conf['k_at_a']}"{$this->respopup_at}{$this->target_at}>{$this->check_st}</a>
 EOMSG;
         }
+
+		// +live ハイライトワード変換
+		include P2_LIB_DIR . '/live/live_highlight_convert.php';
 
         /*
         //「ここから新着」画像を挿入
@@ -665,6 +692,7 @@ EOP;
 </select><select id="spm-select-action"class=" form-control" style="width:60%;">
     <option value="aborn" selected>をあぼーん</option>
     <option value="ng">を NG</option>
+    <option value="highlight">を ハイライト</option>
 <!-- <option value="search">検索</option> -->
 </select><span class="input-group-btn"><button class="btn" type="button" onclick="SPM.doAction()">OK</button></span>
 </div></div>

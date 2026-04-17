@@ -133,6 +133,7 @@ SPM.doAction = (function()
 	switch (action) {
 		case 'aborn':
 		case 'ng':
+		case 'highlight':
 			uri = 'info_sp.php?mode=' + action + '_';
 			break;
 		default:

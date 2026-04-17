@@ -1130,6 +1130,12 @@ div.ntoolbar .disabled a:visited {
 
 EOSTYLE;
 
+// ハイライト対応のため、スマホ向けのスキン導入までの暫定的な定義
+$STYLE['live_highlight'] = "#cff"; // ("#cff") +live ハイライトワード表示時の背景色
+$STYLE['live_highlight_chain'] = "#ffc"; // ("#ffc") +live 連鎖ハイライト表示時の背景色
+$STYLE['live_highlight_word_weight'] = "bold"; // ("bold") +live 連鎖ハイライト表示時のフォントの太さ
+$STYLE['live_highlight_word_border'] = "3px #f30 double"; // ("3px #f30 double") +live 連鎖ハイライト表示時のアンダーライン
+
 // スタイルの上書き
 if (isset($MYSTYLE) && is_array($MYSTYLE)) {
     if (isset($MYSTYLE['iphone'])) {
