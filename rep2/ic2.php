@@ -542,8 +542,8 @@ function ic2_aborn($params, $infected = false)
     if ($ini['General']['automemo'] && !is_null($memo)) {
         $aborn->memo = $memo;
     }
-    if (!isset($record->memo)) {
-        $record->memo = '';
+    if (!isset($aborn->memo)) {
+        $aborn->memo = '';
     }
     return $aborn->insert();
 }
