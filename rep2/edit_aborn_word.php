@@ -53,19 +53,24 @@ $path = $_conf['pref_dir'] . DIRECTORY_SEPARATOR . $filename;
 if (!empty($_POST['submit_save'])) {
 
     $newdata = '';
-    foreach ($_POST['nga'] as $na_info) {
-        mb_convert_variables('CP932', 'UTF-8,CP932', $na_info['word']);
-        mb_convert_variables('CP932', 'UTF-8,CP932', $na_info['bbs']);
-        mb_convert_variables('CP932', 'UTF-8,CP932', $na_info['tt']);
-        $a_word = strtr(trim($na_info['word'], "\t\r\n"), "\t\r\n", "   ");
-        $a_bbs = strtr(trim($na_info['bbs'], "\t\r\n"), "\t\r\n", "   ");
-        $a_tt = strtr(trim($na_info['tt'], "\t\r\n"), "\t\r\n", "   ");
-        $a_time = strtr(trim($na_info['ht']), "\t\r\n", "   ");
-        if($na_info['del']) continue;   // +Wiki
+    foreach (($_POST['nga'] ?? []) as $na_info) {
+        $word = $na_info['word'] ?? '';
+        $bbs  = $na_info['bbs']  ?? '';
+        $tt   = $na_info['tt']   ?? '';
+        $ht   = $na_info['ht']   ?? '';
+        $hn   = $na_info['hn']   ?? 0;
+
+        mb_convert_variables('CP932', 'UTF-8,CP932', $word, $bbs, $tt);
+        $a_word = strtr(trim($word, "\t\r\n"), "\t\r\n", "   ");
+        $a_bbs = strtr(trim($bbs, "\t\r\n"), "\t\r\n", "   ");
+        $a_tt = strtr(trim($tt, "\t\r\n"), "\t\r\n", "   ");
+        $a_time = strtr(trim($ht), "\t\r\n", "   ");
+
+        if (!empty($na_info['del'])) continue;   // +Wiki
         if ($a_time === '') {
             $a_time = '--';
         }
-        $a_hits = $na_info['hn'];
+        $a_hits = $hn;
         if ($a_word === '') {
             continue;
         }

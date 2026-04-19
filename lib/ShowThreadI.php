@@ -303,7 +303,7 @@ EOMSG;
         if ($ng_type & self::NG_NAME) {
 	        $name = preg_replace("(<b>|</b>)", "", $name);
             $name = <<<EONAME
-</b><s><font color="{$STYLE['mobile_read_ngword_color']}">{$name}</font></s><b>
+<s><font color="{$STYLE['mobile_read_ngword_color']}">{$name}</font></s>
 EONAME;
         } elseif ($ng_type & self::NG_WATCHOI) {
             if ($_conf['ngaborn_watchoi4']) {
