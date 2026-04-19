@@ -112,6 +112,18 @@ echo <<<EODARK
     tr.iv2-image > td.iv2-image-thumb { background-color: #000 !important; }
     tr.iv2-image > td.iv2-image-info { background-color: #1a1a1a !important; color: #e0e0e0 !important; }
     tr.iv2-image > td.iv2-image-info > span.iv2-image-size { color: #aaa !important; }
+
+    /* ハイライト対応のため、スマホ向けのスキン導入までの暫定的な定義 */
+    span.live_highlight {
+        background-color: #666 !important;
+        font-weight: bold !important;
+        border-bottom: 2px #900 dotted !important;
+    }
+    span.live_highlight_chain {
+        background-color: #444 !important;
+        font-weight: bold !important;
+        border-bottom: 2px #900 dotted !important;
+    }
 EODARK;
 
 if ($_conf['mobile_dark_mode'] == 0) echo "}\n";
