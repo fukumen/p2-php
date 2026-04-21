@@ -23,39 +23,32 @@ var colorFromId = function(idstr, count, mode) {
     var n2 = halfid2num(idstr.substr(4, 4));
     var h1 = n1 / 360 * 360;
     var h2 = n2 / 360 * 360;
+    var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (mode == null) mode = 'L*C*h';
     var ret = (function() {
         switch (mode) {
             case 'HSV':     // HSV色空間
                 // 彩度S(HSV)：値域0（淡い）～1（濃い)
-                var S = count * 0.05;
-                if (S > 1) S = 1;
+                var S = Math.min(count * 0.05, 1);
                 // 明度V(HSV)：値域0（暗い）～1（明るい）
-                var V = 1 - count * 0.025;
-                if (V < 0.1) V = 0.1;
+                var V = isDark ? Math.min(0.1 + count * 0.025, 1) : Math.max(1 - count * 0.025, 0.1);
                 return {label : ColorLib.HSV2RGB([h2, 1, 0.6]),
                         body  : ColorLib.HSV2RGB([h1, S, V]) };
-                return [ColorLib.HSV2RGB([h1, S, V]), ColorLib.HSV2RGB([h2, 1, 0.6])];
                 break;
             case 'HLS':     // HLS色空間
                 // 輝度L(HLS)：値域0（黒）～0.5（純色）～1（白）
-                var L = 0.95 - count * 0.025;
-                if (L < 0.1) L = 0.1;
+                var L = isDark ? Math.min(0.1 + count * 0.025, 0.95) : Math.max(0.95 - count * 0.025, 0.1);
                 // 彩度S(HLS)：値域0（灰色）～1（純色）
-                var S = count * 0.05;
-                if (S > 1) S = 1;
+                var S = Math.min(count * 0.05, 1);
                 return {label : ColorLib.HLS2RGB([h2, 0.6, 0.5]),
                         body  : ColorLib.HLS2RGB([h1, L, S]) };
                 break;
             case 'L*C*h':   // L*C*h色空間
                 // 明度L*(L*C*h)：値域0（黒）～50（純色）～100（白）
-                var L = 100 - count * 2.5;
-                if (L < 10) L = 10;
+                var L = isDark ? Math.min(10 + count * 2.5, 100) : Math.max(100 - count * 2.5, 10);
                 // 彩度C*(L*C*h)：値域0（灰色）～100（純色）
-                var C = Math.floor(40 * Math.sin((count * 180 / 50) * Math.PI / 180) + 8);
-                if (C < 0) C = 0;
-                C += (30 - L) > 0 ? 30 - L : 0;
+                var C = Math.floor(40 * Math.sin((Math.min(count, 25) * 180 / 50) * Math.PI / 180) + 8);
                 return {label : ColorLib.LCh2RGB([50, 60, h2]),
                         body  : ColorLib.LCh2RGB([L, C, h1]) };
                 break;

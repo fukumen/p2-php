@@ -78,9 +78,7 @@ function coloredIdStyle0($id, $count)
         if ($L<10) {$L=10;}
 
         // 彩度C*(L*C*h)：値域0（灰色）～100（純色）
-        $C=floor(40*sin(deg2rad($count*180/50)) + 8);
-        if ($C<0) {$C=0;}
-        $C += (30 - $L > 0) ? 30 - $L : 0;
+        $C=floor(40*sin(deg2rad(min($count,25)*180/50)) + 8);
 
         $color_param=array(
             array($L,$C,$h,$colorMode), // 背景色（ID本体）
