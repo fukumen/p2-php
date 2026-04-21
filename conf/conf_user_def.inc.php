@@ -326,7 +326,7 @@ $conf_user_rad['coloredid.rate.type'] = array('0' => 'しない', '1' => '出現数', 
 // 条件が出現数の場合の数(n以上)
 $conf_user_def['coloredid.rate.times'] = 2;
 $conf_user_rules['coloredid.rate.times'] = array('notIntExceptMinusToDef');
-// 必死判定(IDブリンク)の出現数(0で無効。IE/Safariはblink非対応)
+// 必死判定(IDブリンク)の出現数(0で無効)
 $conf_user_def['coloredid.rate.hissi.times'] = 25;
 $conf_user_rules['coloredid.rate.hissi.times'] = array('notIntExceptMinusToDef');
 // ID出現数をクリックすると着色をトグル(「しない」にするとJavascriptではなくPHPで着色)

@@ -458,6 +458,13 @@ div.resblock div.resblock_inner {
     display: block;
 }
 
+@keyframes p2-hissi-blink {
+	75% { visibility: hidden; }
+}
+@-webkit-keyframes p2-hissi-blink {
+	75% { visibility: hidden; }
+}
+
 EOSTYLE;
 
 /*

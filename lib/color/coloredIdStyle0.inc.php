@@ -129,7 +129,7 @@ function coloredIdStyle0($id, $count)
     }
 
     if ($_conf['coloredid.rate.hissi.times'] > 0 && $count>=$_conf['coloredid.rate.hissi.times']) {     // 必死チェッカー発動
-        $uline.="text-decoration:blink;";
+        $uline.="animation: p2-hissi-blink 1s step-end infinite; -webkit-animation: p2-hissi-blink 1s step-end infinite;";
     }
 
     if ($_conf['coloredid.debug']) {

@@ -85,7 +85,7 @@ function coloredIdStyle($idstr, $id, $count=0)
             // CSSで色をつける
             $uline=$STYLE['a_underline_none']==1 ? '' : "text-decoration:underline;";
             if ($count[$id]>=25 ) {     // 必死チェッカー発動
-                $uline.="text-decoration:blink;";
+                $uline.="animation: p2-hissi-blink 1s step-end infinite; -webkit-animation: p2-hissi-blink 1s step-end infinite;";
             }
             $opacity=''; // "opacity:{$alpha};";
             foreach ($color_param as $area => $param) {

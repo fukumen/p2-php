@@ -362,7 +362,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('coloredid.debug', '色の変換結果を表示'),
         array('coloredid.rate.type', '画面表示時にIDに着色しておく条件'),
         array('coloredid.rate.times', '条件が出現数の場合の数(n以上)'),
-        array('coloredid.rate.hissi.times', '必死判定(IDブリンク)の出現数(0で無効。IE/Safariはblink非対応)'),
+        array('coloredid.rate.hissi.times', '必死判定(IDブリンク)の出現数(0で無効)'),
         array('coloredid.click', 'ID出現数をクリックすると着色をトグル(「しない」にするとJavascriptではなくPHPで着色)'),
         array('coloredid.marking.colors', 'ID出現数をダブルクリックしてマーキングの色リスト(カンマ区切り)'),
         array('coloredid.coloring.type', 'カラーリングのタイプ（thermon版はPHPで着色(coloredid.click=しない)の場合のみ有効）'),

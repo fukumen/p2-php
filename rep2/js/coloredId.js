@@ -66,7 +66,10 @@ var styleFromId = function(idstr, count, hissi, mode) {
         var light = c.type == 'L*C*h' ? c.LCh[0]
             : (RGB2LCh([c.r, c.g, c.b]))[0];
         var ret = {backgroundColor : c.color, color : light > 60 ? '#000' : '#fff'};
-        if (hissi && hissi > 0 && count >= hissi) ret.textDecoration = 'blink';  // 必死チェッカー発動
+        if (hissi && hissi > 0 && count >= hissi) {
+            ret.animation = 'p2-hissi-blink 1s step-end infinite';  // 必死チェッカー発動
+            ret.webkitAnimation = 'p2-hissi-blink 1s step-end infinite';
+        }
         return ret;
     };
     return {label : f(colors.label), body : f(colors.body),
