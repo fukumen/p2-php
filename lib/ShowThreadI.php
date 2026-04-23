@@ -447,10 +447,10 @@ EOP;
 
         // ワッチョイをフィルタリングリンクに変換
         if ($_conf['flex_idpopup'] == 1 && isset($this->thread->watchoicount)) {
-            $pattern_watchoi = '#.*\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+            $pattern_watchoi = '#.*\(((?:[^\s()]+\s+)?(?:([0-9A-Za-z./*+]{4}-)[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
             if (preg_match($pattern_watchoi, $name, $wm)) {
                 $watchoi_full = substr($wm[0], strrpos($wm[0], '('));
-                $name = substr_replace($name, $this->watchoiFilter($watchoi_full, $wm[1]), strrpos($name, $watchoi_full), strlen($watchoi_full));
+                $name = substr_replace($name, $this->watchoiFilter($watchoi_full, $wm[1], $wm[2]), strrpos($name, $watchoi_full), strlen($watchoi_full));
             }
         }
 
@@ -760,17 +760,19 @@ EOP;
      *
      * @param   string  $watchoi_str    ワッチョイ全体文字列
      * @param   string  $watchoi_id     ワッチョイ識別子
+     * @param   string  $watchoi_id4    ワッチョイ左4桁
      * @return  string
      */
-    public function watchoiFilter($watchoi_str, $watchoi_id)
+    public function watchoiFilter($watchoi_str, $watchoi_id, $watchoi_id4)
     {
         global $_conf;
 
-        if (!isset($this->thread->watchoicount[$watchoi_id]) || $this->thread->watchoicount[$watchoi_id] <= 1) {
+        $wid = $_conf['ngaborn_watchoi4'] ? $watchoi_id4 : $watchoi_id;
+        if (!isset($this->thread->watchoicount[$wid]) || $this->thread->watchoicount[$wid] <= 1) {
             return $watchoi_str;
         }
 
-        $count = $this->thread->watchoicount[$watchoi_id];
+        $count = $this->thread->watchoicount[$wid];
 
         $filter_url = $_conf['read_php'] . '?' . http_build_query(array(
             'host'    => $this->thread->host,

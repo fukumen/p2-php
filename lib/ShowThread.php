@@ -980,7 +980,7 @@ abstract class ShowThread
                         //$GLOBALS['debug'] && $GLOBALS['profiler']->leaveSection('ngAbornCheck()');
                         return $v['cond'];
                     }
-                // ワッチョイ上位4桁
+                // ワッチョイ左4桁
                 } elseif ($_conf['ngaborn_watchoi4'] && in_array($code, array('aborn_watchoi', 'ng_watchoi', 'highlight_watchoi'))) {
                     $pattern = '#([0-9A-Za-z./*+]{4}-)[0-9A-Za-z./*+]{4}#';
                     if (preg_match($pattern, $v['word'], $m)) {
@@ -1281,9 +1281,10 @@ abstract class ShowThread
      *
      * @param   string  $watchoi_str    ワッチョイ全体文字列 (例: (ﾜｯﾁｮｲW W4E5-abcd))
      * @param   string  $watchoi_id     ワッチョイ識別子 (例: W4E5-abcd)
+     * @param   string  $watchoi_id4    ワッチョイ左4桁 (例: W4E5-)
      * @return  string
      */
-    abstract public function watchoiFilter($watchoi_str, $watchoi_id);
+    abstract public function watchoiFilter($watchoi_str, $watchoi_id, $watchoi_id4);
 
     // }}}
     // {{{ _idFilterCallback()

@@ -55,7 +55,7 @@ class ResFilter
         self::METHOD_AND => 'すべて',
         self::METHOD_JUST => 'そのまま',
         self::METHOD_REGEX => '正規表現',
-        self::METHOD_WATCHOI4 => 'ワッチョイの上位4桁',
+        self::METHOD_WATCHOI4 => 'ワッチョイの左4桁',
     );
 
     static protected $_matches = array(

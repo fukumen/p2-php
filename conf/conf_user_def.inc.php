@@ -386,7 +386,7 @@ $conf_user_rad['ngaborn_purge_aborn'] = array('1' => 'はい', '0' => 'いいえ');
 $conf_user_def['ngaborn_exclude_one'] = 0; // (0)
 $conf_user_rad['ngaborn_exclude_one'] = array('1' => 'する', '0' => 'しない');
 
-// ワッチョイの上位4桁のみを使用してNGあぼーんする(する:1, しない:0)
+// ワッチョイの左4桁のみを使用してNGあぼーんする(する:1, しない:0)
 $conf_user_def['ngaborn_watchoi4'] = 0; // (0)
 $conf_user_rad['ngaborn_watchoi4'] = array('1' => 'する', '0' => 'しない');
 

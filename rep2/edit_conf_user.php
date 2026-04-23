@@ -391,7 +391,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('ngaborn_daylimit', 'この期間、NG/あぼーん/ハイライトにHITしなければ、登録ワードを自動的に外す (日数)'),
         array('ngaborn_purge_aborn', 'あぼーんレスは不可視divブロックも描画しない'),
         array('ngaborn_exclude_one', '>>1 をあぼーんの対象外にする'),
-        array('ngaborn_watchoi4', 'ワッチョイの上位4桁のみを使用してNGあぼーんする'),
+        array('ngaborn_watchoi4', 'ワッチョイの左4桁のみを使用してNGあぼーんする'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }

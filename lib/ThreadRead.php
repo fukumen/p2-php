@@ -1229,11 +1229,17 @@ class ThreadRead extends Thread {
      * 一つのスレ内でのワッチョイ識別子の出現数をセットする
      */
     protected function _setWatchoiCount() {
+        global $_conf;
+
         if (!$this->datlines) {
             return;
         }
 
-        $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+        if ($_conf['ngaborn_watchoi4']) {
+            $pattern = '#\((?:[^\s()]+\s+)?(?:([0-9A-Za-z./*+]{4}-)[0-9A-Za-z./*+]{4})(?:\s+\[.+])?\)#';
+        } else {
+            $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
+        }
         $i = 0;
         $wids = array_fill(1, $this->rescount, null);
 

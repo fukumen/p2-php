@@ -581,7 +581,7 @@ EOP;
     /**
      * @see ShowThread
      */
-    public function watchoiFilter($watchoi_str, $watchoi_id)
+    public function watchoiFilter($watchoi_str, $watchoi_id, $watchoi_id4)
     {
         return $watchoi_str;
     }
