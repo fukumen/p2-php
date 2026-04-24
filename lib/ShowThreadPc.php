@@ -29,6 +29,9 @@ class ShowThreadPc extends ShowThread
     private $_ids_for_render;   // 出力予定のID(重複のみ)のリスト(8桁)
     private $_idcount_average;  // ID重複数の平均値
     private $_idcount_tops;     // ID重複数のトップ入賞までの重複数値
+    private $_watchois_for_render; // 出力予定のワッチョイ(重複のみ)のリスト(32bit整数のhex)
+    private $_watchoicount_average; // ワッチョイ重複数の平均値
+    private $_watchoicount_tops; // ワッチョイ重複数のトップ入賞までの重複数値
 
     // }}}
     // {{{ constructor
@@ -742,7 +745,29 @@ EOP;
         }
 
         $count = $this->thread->watchoicount[$wid];
-        $num_ht = '(' . $count . ')';
+        $num_ht = '';
+        if ($_conf['iframe_popup'] == 3) {
+            $num_str = (string) $count;
+            $num_ht = ' <img src="img/ida.png" width="2" height="12" alt="">';
+            $num_ht .= preg_replace('/\\d/', '<img src="img/id\\0.png" height="12" alt="">', $num_str);
+            $num_ht .= '<img src="img/idz.png" width="2" height="12" alt=""> ';
+        } else {
+            $num_ht = '(' . $count . ')';
+        }
+
+        if ($_conf['coloredid.enable'] > 0) {
+            $wid32 = substr(md5($wid), 0, 8);
+            if ($this->_watchois_for_render === null) {
+                $this->_watchois_for_render = array();
+            }
+            $this->_watchois_for_render[$wid32] = $count;
+
+            if ($_conf['coloredid.click'] > 0) {
+                $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedWatchoi($wid32) . '" onClick="watchoiCol.click(\'' . $wid32 . '\', event); return false;" onDblClick="this.onclick(event); return false;">' . $num_ht . '</a>';
+            }
+            $watchoi_str = $this->_coloredWatchoiStr(
+                $watchoi_str, $wid, $wid32, $_conf['coloredid.click'] > 0 ? true : false);
+        }
 
         $filter_url = $_conf['read_php'] . '?' . http_build_query(array(
             'host'    => $this->thread->host,
@@ -1044,10 +1069,11 @@ EOP;
 
     private function _coloredIdStrClassed($idstr, $id)
     {
+        global $_conf;
         $ret = array();
         $arr = explode(':', $idstr);
         foreach ($arr as $i => $str) {
-            if ($i == 0 || $i == 1) {
+            if ($i == 1 || ($i == 0 && $_conf['coloredid.label'])) {
                 $ret[] = '<span class="' . self::cssClassedId($id)
                     . ($i == 0 ? '-l' : '-b') . '">' . $str . '</span>';
             } else {
@@ -1065,6 +1091,7 @@ EOP;
      */
     private function _coloredIdStr0($idstr, $id)
     {
+        global $_conf;
         if (!function_exists('coloredIdStyle0')) {
             require P2_LIB_DIR . '/color/coloredIdStyle0.inc.php';
         }
@@ -1077,7 +1104,7 @@ EOP;
         }
         $ret = array();
         foreach ($arr = explode(':', $idstr) as $i => $str) {
-            if ($colored[$i]) {
+            if ($colored[$i] && ($i == 1 || ($i == 0 && $_conf['coloredid.label']))) {
                 $ret[] = "<span style=\"{$colored[$i]}\">{$str}</span>";
             } else {
                 $ret[] = $str;
@@ -1125,6 +1152,128 @@ EOP;
     {
         return 'idcss-' . bin2hex(
             base64_decode(str_replace('.', '+', substr($id, 0, 8))));
+    }
+
+    // }}}
+    // {{{ _coloredWatchoiStr()
+
+    /**
+     * ワッチョイカラー
+     *
+     * @return  string
+     */
+    protected function _coloredWatchoiStr($watchoi_str, $wid, $wid32, $classed = false)
+    {
+        global $_conf;
+
+        if (!(isset($this->thread->watchoicount[$wid])
+                && $this->thread->watchoicount[$wid] > 1)) {
+            return $watchoi_str;
+        }
+        if ($classed) {
+            return $this->_coloredWatchoiStrClassed($watchoi_str, $wid32);
+        }
+
+        switch ($_conf['coloredid.rate.type']) {
+        case 1:
+            $rate = $_conf['coloredid.rate.times'];
+            break;
+        case 2:
+            $rate = $this->getWatchoiCountRank(10);
+            break;
+        case 3:
+            $rate = $this->getWatchoiCountAverage();
+            break;
+        default:
+            return $watchoi_str;
+        }
+
+        if ($rate > 1 && $this->thread->watchoicount[$wid] >= $rate) {
+            switch ($_conf['coloredid.coloring.type']) {
+            case 0:
+                return $this->_coloredWatchoiStr0($watchoi_str, $wid, $wid32);
+                break;
+            case 1:
+                return $this->_coloredWatchoiStr1($watchoi_str, $wid, $wid32);
+                break;
+            default:
+                return $watchoi_str;
+            }
+        }
+
+        return $watchoi_str;
+    }
+
+    // }}}
+    // {{{ _coloredWatchoiStrClassed()
+
+    private function _coloredWatchoiStrClassed($watchoi_str, $wid32)
+    {
+        $ret = '<span class="' . self::cssClassedWatchoi($wid32) . '-b">' . $watchoi_str . '</span>';
+
+        return $ret;
+    }
+
+    // }}}
+    // {{{ _coloredWatchoiStr0()
+
+    /**
+     * ワッチョイカラー オリジナル着色用
+     */
+    private function _coloredWatchoiStr0($watchoi_str, $wid, $wid32)
+    {
+        if (!function_exists('coloredIdStyle0')) {
+            require P2_LIB_DIR . '/color/coloredIdStyle0.inc.php';
+        }
+
+        if (isset($this->watchoistyles[$wid32])) {
+            $colored = $this->watchoistyles[$wid32];
+        } else {
+            $colored = coloredWatchoiStyle0($wid32, $this->thread->watchoicount[$wid]);
+            $this->watchoistyles[$wid32] = $colored;
+        }
+
+        if ($colored) {
+            $ret = "<span style=\"{$colored}\">{$watchoi_str}</span>";
+        } else {
+            $ret = $watchoi_str;
+        }
+
+        return $ret;
+    }
+
+    // }}}
+    // {{{ _coloredWatchoiStr1()
+
+    /**
+     * ワッチョイカラー thermon版用
+     */
+    private function _coloredWatchoiStr1($watchoi_str, $wid, $wid32)
+    {
+        if (!function_exists('coloredIdStyle')) {
+            require P2_LIB_DIR . '/color/coloredIdStyle.inc.php';
+        }
+
+        $colored = coloredWatchoiStyle($wid32, $this->thread->watchoicount[$wid]);
+
+        if ($colored) {
+            $ret = "<span style=\"{$colored}\">{$watchoi_str}</span>";
+        } else {
+            $ret = $watchoi_str;
+        }
+
+        return $ret;
+    }
+
+    // }}}
+    // {{{ cssClassedWatchoi()
+
+    /**
+     * ワッチョイカラーに使用するCSSクラス名をID文字列から算出して返す.
+     */
+    static public function cssClassedWatchoi($wid32)
+    {
+        return 'watchoicss-' . $wid32;
     }
 
     // }}}
@@ -1723,36 +1872,8 @@ EOJS;
         if ($_conf['coloredid.enable'] < 1 || $_conf['coloredid.click'] < 1) {
             return '';
         }
-        if (count($this->thread->idcount) < 1) {
-            return '';
-        }
-
-        $idslist = $this->getIdsForRenderJson();
 
         $rate = $_conf['coloredid.rate.times'];
-        $tops = $this->getIdCountRank(10);
-        $average = $this->getIdCountAverage();
-        $color_init = '';
-        if ($_conf['coloredid.rate.type'] > 0) {
-            switch($_conf['coloredid.rate.type']) {
-            case 2:
-                $init_rate = $tops;
-                break;
-            case 3:
-                $init_rate = $average;
-                break;
-            case 1:
-                $init_rate = $rate;
-            default:
-            }
-            if ($init_rate > 1)
-                $color_init .= 'idCol.initColor(' . $init_rate . ', idslist);';
-        }
-        $color_init .= "idCol.rate = {$rate};";
-        if (!$this->_matome) {
-            $color_init .= "idCol.tops = {$tops};";
-            $color_init .= "idCol.average = {$average};";
-        }
         $hissiCount = $_conf['coloredid.rate.hissi.times'];
         $mark_colors = join(',',
             array_map(function ($x) {
@@ -1764,9 +1885,37 @@ EOJS;
         $fontstyle_bold = empty($STYLE['fontstyle_bold']) ? 'normal' : $STYLE['fontstyle_bold'];
         $fontweight_bold = empty($STYLE['fontweight_bold']) ? 'normal' : $STYLE['fontweight_bold'];
         $fontfamily_bold = $STYLE['fontfamily_bold'];
-        $uline = $STYLE['a_underline_none'] != 1
-            ? 'idCol.colorStyle["textDecoration"] = "underline"' : '';
-        return <<<EOJS
+
+        $js = '';
+        if (isset($this->thread->idcount) && count($this->thread->idcount) > 0) {
+            $idslist = $this->getIdsForRenderJson();
+            $tops = $this->getIdCountRank(10);
+            $average = $this->getIdCountAverage();
+            $color_init = '';
+            if ($_conf['coloredid.rate.type'] > 0) {
+                switch($_conf['coloredid.rate.type']) {
+                case 2:
+                    $init_rate = $tops;
+                    break;
+                case 3:
+                    $init_rate = $average;
+                    break;
+                case 1:
+                    $init_rate = $rate;
+                default:
+                }
+                if ($init_rate > 1)
+                    $color_init .= 'idCol.initColor(' . $init_rate . ', idslist);';
+            }
+            $color_init .= "idCol.rate = {$rate};";
+            $uline = $STYLE['a_underline_none'] != 1
+                ? 'idCol.colorStyle["textDecoration"] = "underline"' : '';
+            if (!$this->_matome) {
+                $color_init .= "idCol.tops = {$tops};";
+                $color_init .= "idCol.average = {$average};";
+            }
+
+            $js .= <<<EOJS
 <script>
 (function() {
 var idslist = {$idslist};
@@ -1781,6 +1930,55 @@ idCol.setupSPM('{$this->spmObjName}');
 })();
 </script>
 EOJS;
+        }
+
+        if (isset($this->thread->watchoicount) && count($this->thread->watchoicount) > 0) {
+            $watchoislist = $this->getWatchoisForRenderJson();
+            $w_tops = $this->getWatchoiCountRank(10);
+            $w_average = $this->getWatchoiCountAverage();
+            $w_color_init = '';
+            if ($_conf['coloredid.rate.type'] > 0) {
+                switch($_conf['coloredid.rate.type']) {
+                case 2:
+                    $w_init_rate = $w_tops;
+                    break;
+                case 3:
+                    $w_init_rate = $w_average;
+                    break;
+                case 1:
+                    $w_init_rate = $rate;
+                default:
+                }
+                if ($w_init_rate > 1) {
+                    $w_color_init .= 'watchoiCol.initColor(' . $w_init_rate . ', watchoislist);';
+                }
+            }
+            $w_color_init .= "watchoiCol.rate = {$rate};";
+            $w_uline = $STYLE['a_underline_none'] != 1
+                ? 'watchoiCol.colorStyle["textDecoration"] = "underline"' : '';
+            if (!$this->_matome) {
+                $w_color_init .= "watchoiCol.tops = {$w_tops};";
+                $w_color_init .= "watchoiCol.average = {$w_average};";
+            }
+
+            $js .= <<<EOJS
+<script>
+(function() {
+var watchoislist = {$watchoislist};
+if (typeof watchoiCol == 'undefined') {
+    watchoiCol = new WatchoiColorChanger(watchoislist, {$hissiCount});
+    watchoiCol.colors = [{$mark_colors}];
+{$w_uline};
+    watchoiCol.highlightStyle = {fontStyle :'{$fontstyle_bold}', fontWeight : '{$fontweight_bold}', fontFamily : '{$fontfamily_bold}', fontSize : '104%'};
+} else watchoiCol.addWatchoilist(watchoislist);
+{$w_color_init}
+watchoiCol.setupSPM('{$this->spmObjName}');
+})();
+</script>
+EOJS;
+        }
+
+        return $js;
     }
 
     // }}}
@@ -1834,6 +2032,79 @@ EOJS;
 
         $result = ($rcount >= $rank) ? $ranking[$rank - 1] : $ranking[$rcount  - 1];
         $this->_idcount_tops = $result;
+
+        return $result;
+    }
+
+    // }}}
+    // {{{ getWatchoisForRenderJson()
+
+    public function getWatchoisForRenderJson()
+    {
+        $ret = array();
+        if ($this->_watchois_for_render) {
+            foreach ($this->_watchois_for_render as $wid => $count) {
+                $ret[] = "'{$wid}':{$count}";
+            }
+        }
+        return '{' . join(',', $ret) . '}';
+    }
+
+    // }}}
+    // {{{ getWatchoiCountAverage()
+
+    public function getWatchoiCountAverage()
+    {
+        if ($this->_watchoicount_average !== null) {
+            return $this->_watchoicount_average;
+        }
+
+        $sum = 0;
+        $param = 0;
+
+        if (isset($this->thread->watchoicount)) {
+            foreach ($this->thread->watchoicount as $count) {
+                if ($count > 1) {
+                    $sum += $count;
+                    $param++;
+                }
+            }
+        }
+
+        $result = ($param < 1) ? 0 : intval(ceil($sum / $param));
+        $this->_watchoicount_average = $result;
+
+        return $result;
+    }
+
+    // }}}
+    // {{{ getWatchoiCountRank()
+
+    public function getWatchoiCountRank($rank)
+    {
+        if ($this->_watchoicount_tops !== null) {
+            return $this->_watchoicount_tops;
+        }
+
+        $ranking = array();
+
+        if (isset($this->thread->watchoicount)) {
+            foreach ($this->thread->watchoicount as $count) {
+                if ($count > 1) {
+                    $ranking[] = $count;
+                }
+            }
+        }
+
+        if (count($ranking) == 0) {
+            return 0;
+        }
+
+        rsort($ranking);
+        $rcount = count($ranking);
+
+        $result = ($rcount >= $rank) ? $ranking[$rank - 1] : $ranking[$rcount  - 1];
+        $this->_watchoicount_tops = $result;
 
         return $result;
     }

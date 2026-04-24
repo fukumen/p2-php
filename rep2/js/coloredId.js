@@ -21,8 +21,8 @@ var colorFromId = function(idstr, count, mode) {
     // 色相H：値域0～360（角度）
     var n1 = halfid2num(idstr.substr(0, 4));
     var n2 = halfid2num(idstr.substr(4, 4));
-    var h1 = n1 / 360 * 360;
-    var h2 = n2 / 360 * 360;
+    var h1 = n1 % 360;
+    var h2 = n2 % 360;
     var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
     if (mode == null) mode = 'L*C*h';
@@ -204,6 +204,117 @@ if (!this['ColoredIDLib']) ColoredIDLib = {
     clearrule : clearrule
 };
 
+var colorFromWatchoi = function(wid32, count, mode) {
+    if (wid32.length != 8) return;
+    var n = parseInt(wid32, 16);
+    var h1 = n % 360;
+    var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (mode == null) mode = 'L*C*h';
+    var ret = (function() {
+        switch (mode) {
+            case 'HSV':     // HSV色空間
+                var S = Math.min(count * 0.05, 1);
+                var V = isDark ? Math.min(0.1 + count * 0.025, 1) : Math.max(1 - count * 0.025, 0.1);
+                return {body  : ColorLib.HSV2RGB([h1, S, V]) };
+                break;
+            case 'HLS':     // HLS色空間
+                var L = isDark ? Math.min(0.1 + count * 0.025, 0.95) : Math.max(0.95 - count * 0.025, 0.1);
+                var S = Math.min(count * 0.05, 1);
+                return {body  : ColorLib.HLS2RGB([h1, L, S]) };
+                break;
+            case 'L*C*h':   // L*C*h色空間
+                var L = isDark ? Math.min(10 + count * 2.5, 100) : Math.max(100 - count * 2.5, 10);
+                var C = Math.floor(40 * Math.sin((Math.min(count, 25) * 180 / 50) * Math.PI / 180) + 8);
+                return {body  : ColorLib.LCh2RGB([L, C, h1]) };
+                break;
+        }
+    })();
+    ret.num = n;
+    return ret;
+};
+
+var styleFromWatchoi = function(wid32, count, hissi, mode) {
+    if (mode == null) mode = 'L*C*h';
+    wid32 = wid32.substr(0, 8);
+    var colors = colorFromWatchoi(wid32, count, mode);
+    var f = function (c) {
+        var light = c.type == 'L*C*h' ? c.LCh[0]
+            : (RGB2LCh([c.r, c.g, c.b]))[0];
+        var ret = {backgroundColor : c.color, color : light > 60 ? '#000' : '#fff'};
+        if (hissi && hissi > 0 && count >= hissi) {
+            ret.animation = 'p2-hissi-blink 1s step-end infinite';  // 必死チェッカー発動
+            ret.webkitAnimation = 'p2-hissi-blink 1s step-end infinite';
+        }
+        return ret;
+    };
+    return {body : f(colors.body),
+            klass : 'watchoicss-' + wid32 };
+};
+
+var toggleWatchoi = function(wid32, cnt, colorStyle, hissi) {
+    var styles = styleFromWatchoi(wid32, cnt, hissi);
+    var d1 = delrule(styles.klass + '-b');
+    var n  = delrule(styles.klass);
+    if (!d1) {
+        for (var i in colorStyle) {
+            styles.body[i] = (styles.body[i] ? styles.body[i] + ' ' : '')
+                + colorStyle[i];
+        }
+        insrule(styles.body, styles.klass + '-b');
+        return true;
+    }
+    return false;
+};
+
+var clearruleWatchoi = function() {
+    var i = STYLEID;
+    var rules = document.styleSheets[i].cssRules
+        ? document.styleSheets[i].cssRules
+        : document.styleSheets[i].rules;
+    var f = function() {
+        var hit = 0;
+        for(var j = 0; j < rules.length; j++) {
+            if (rules[j].selectorText && rules[j].selectorText.substr(0, '.watchoicss-'.length) == '.watchoicss-') {
+                if (document.all) document.styleSheets[i].removeRule(j)
+                else document.styleSheets[i].deleteRule(j);
+                hit++;
+            }
+        }
+        return hit;
+    };
+    while (f() > 0);
+};
+
+var makeColorWatchoi = function(wid32, cnt, colorStyle, hissi) {
+    var styles = styleFromWatchoi(wid32, cnt, hissi);
+    for (var i in colorStyle) {
+        styles.body[i] = (styles.body[i] ? styles.body[i] + ' ' : '')
+            + colorStyle[i];
+    }
+    insrule(styles.body, styles.klass + '-b');
+};
+
+var addStylesWatchoi = function(wid32, cnt, hissi, addStyle) {
+    var styles = styleFromWatchoi(wid32, cnt, hissi);
+    for (var i in addStyle) {
+        styles.body[i] = addStyle[i];
+    }
+    var b = getRule(styles.klass + '-b');
+    if (b) for (var i in styles.body) b.style[i] = styles.body[i];
+    else insrule(styles.body, styles.klass + '-b');
+    var n = getRule(styles.klass);
+    if (n) b.style.color = addStyle.color;
+    else insrule({color : addStyle.color}, styles.klass);
+};
+
+if (!this['ColoredWatchoiLib']) ColoredWatchoiLib = {
+    makeColor : makeColorWatchoi,
+    toggle : toggleWatchoi,
+    addStyles : addStylesWatchoi,
+    clearrule : clearruleWatchoi
+};
+
 })();
 
 (function(){
@@ -273,8 +384,8 @@ var createSPMmenu = function (idval) {
     var _this = this;
     amenu.appendItem('全てクリア', function() {_this.clear()});
     if (this.tops) amenu.appendItem('トップ10', function() {_this.refreshColor(_this.tops)});
-    if (this.average) amenu.appendItem('平均(' + idCol.average + ')以上', function() {_this.refreshColor(_this.average)});
-    amenu.appendItem(idCol.rate + '以上', function() {_this.refreshColor(_this.rate)});
+    if (this.average) amenu.appendItem('平均(' + _this.average + ')以上', function() {_this.refreshColor(_this.average)});
+    amenu.appendItem(_this.rate + '以上', function() {_this.refreshColor(_this.rate)});
     if (this.rate != 2) amenu.appendItem('2以上', function() {_this.refreshColor(2)});
     return amenu;
 };
@@ -311,4 +422,101 @@ if (!this['IDColorChanger']) {
         setupSPM : setupSPM
     };
 }
+
+var addWatchoilist = function(addlist) {
+    for (var i in addlist) {
+        if (this.watchoilist[i]) this.watchoilist[i] = this.watchoilist[i] + addlist[i]
+        else this.watchoilist[i] = addlist[i];
+    }
+};
+
+var initColorWatchoi = function(rate, watchoilist) {
+    if (!rate) rate = this.rate;
+    if (!watchoilist) watchoilist = this.watchoilist;
+    if (rate && watchoilist) {
+        for (var i in watchoilist) {
+            if (watchoilist[i] >= rate)
+                ColoredWatchoiLib.makeColor(i, watchoilist[i], this.colorStyle, this.hissi);
+        }
+    }
+};
+
+var refreshColorWatchoi = function(rate) {
+    this.clear();
+    this.initColor(rate);
+};
+
+var toggleWatchoiChanger = function(wid32) {
+    if (this.watchoilist[wid32])
+        ColoredWatchoiLib.toggle(wid32, this.watchoilist[wid32], this.colorStyle, this.hissi);
+};
+
+var markWatchoi = function(wid32) {
+    var style = {color : this.getColor()};
+    var addStyle = (function(p) {
+            var F = new Function();
+            F.prototype = p;
+            var ret = new F();
+            ret.color = style.color;
+            return ret;
+            })(this.highlightStyle);
+    ColoredWatchoiLib.addStyles(wid32, this.watchoilist[wid32], this.hissi, addStyle);
+};
+
+var clickWatchoi = function(wid32, evt) {
+    if (evt.type == 'click') this.toggle(wid32)
+    else if (evt.type == 'dblclick') this.mark(wid32);
+};
+
+var createSPMmenuWatchoi = function (idval) {
+    var amenu = document.createElement('div');
+    amenu.id = idval;
+    amenu.className = 'spm';
+    amenu.appendItem = function()
+    {
+        this.appendChild(SPM.createMenuItem.apply(this, arguments));
+    }
+    SPM.setOnPopUp(amenu, amenu.id, true);
+
+    var _this = this;
+    amenu.appendItem('全てクリア', function() {_this.clear()});
+    if (this.tops) amenu.appendItem('トップ10', function() {_this.refreshColor(_this.tops)});
+    if (this.average) amenu.appendItem('平均(' + _this.average + ')以上', function() {_this.refreshColor(_this.average)});
+    amenu.appendItem(_this.rate + '以上', function() {_this.refreshColor(_this.rate)});
+    if (this.rate != 2) amenu.appendItem('2以上', function() {_this.refreshColor(2)});
+    return amenu;
+};
+
+var setupSPMWatchoi = function (objName) {
+    var amenu = this.createSPMmenu(objName + '_wcol');
+    document.getElementById(objName + '_spm').appendItem(
+            'ワッチョイカラー', null, objName + '_wcol');
+    document.getElementById('popUpContainer').appendChild(amenu);
+};
+
+if (!this['WatchoiColorChanger']) {
+    WatchoiColorChanger = function(watchoilist, hissi) {
+        this.watchoilist = watchoilist;
+        this.hissi = hissi;
+    };
+    WatchoiColorChanger.prototype = {
+        watchoilist : {},
+        hissi : null,
+        rate : null,
+        addWatchoilist : addWatchoilist,
+        initColor : initColorWatchoi,
+        toggle : toggleWatchoiChanger,
+        mark : markWatchoi,
+        getColor : getColor,
+        click : clickWatchoi,
+        clear : ColoredWatchoiLib.clearrule,
+        refreshColor : refreshColorWatchoi,
+        colors : [],
+        colorStyle : {},
+        highlightStyle : {},
+        createSPMmenu : createSPMmenuWatchoi,
+        setupSPM : setupSPMWatchoi
+    };
+}
+
 })()

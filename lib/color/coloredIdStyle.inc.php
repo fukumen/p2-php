@@ -84,7 +84,7 @@ function coloredIdStyle($idstr, $id, $count=0)
 
             // CSSで色をつける
             $uline=$STYLE['a_underline_none']==1 ? '' : "text-decoration:underline;";
-            if ($count[$id]>=25 ) {     // 必死チェッカー発動
+            if ($count>=25 ) {     // 必死チェッカー発動
                 $uline.="animation: p2-hissi-blink 1s step-end infinite; -webkit-animation: p2-hissi-blink 1s step-end infinite;";
             }
             $opacity=''; // "opacity:{$alpha};";
@@ -136,4 +136,80 @@ function coloredIdStyle($idstr, $id, $count=0)
     }
 //    var_dump(array('idstyles'=>$idstyles[$id]));echo "<br>";
     return $idstyles[$id];
+}
+
+function coloredWatchoiStyle($wid32, $count)
+{
+    static $watchoistyles = array();
+
+    global $STYLE;
+
+    if ($count < 2) {
+        return '';
+    }
+
+    if (isset($watchoistyles[$wid32])) {
+        return $watchoistyles[$wid32];
+    }
+
+    $coldiv = 64;
+    $color = hexdec($wid32) % $coldiv;
+
+    $color_param = array();
+    // HLS色空間
+    // 色相H：値域0～360（角度）
+    // 輝度L(HLS)：値域0（黒）～0.5（純色）～1（白）
+    // 彩度S(HLS)：値域0（灰色）～1（純色）
+    $angle = deg2rad($color * 180 / $coldiv);
+
+    $color_param['H'] = $color * 360 * 4 / $coldiv;
+    while ($color_param['H'] > 360) {
+        $color_param['H'] -= 360;
+    }
+
+    $color_param['L'] = 0.22 + sin($angle) * 0.08;
+    $color_param['S'] = 0.4 + sin($angle) * 0.1;
+
+    // RGBに変換
+    $rgb = HLS2RGB($color_param);
+    $y_val = ($rgb['R'] * 299 + $rgb['G'] * 587 + $rgb['B'] * 114) / 1000;
+
+    // CSSで色をつける
+    $uline = $STYLE['a_underline_none'] == 1 ? '' : "text-decoration:underline;";
+    if ($count >= 25) {     // 必死チェッカー発動
+        $uline .= "animation: p2-hissi-blink 1s step-end infinite; -webkit-animation: p2-hissi-blink 1s step-end infinite;";
+    }
+
+    $r = (int)$rgb['R'];
+    $g = (int)$rgb['G'];
+    $b = (int)$rgb['B'];
+    $bcolor = "background-color:rgb({$r},{$g},{$b});";
+
+    // 背景色によって文字色を変える
+    $y1 = 158;
+    $y2 = 185;
+    if ($y_val >= $y1) {
+        $y = ($y_val - ($y_val >= $y2 ? $y2 : $y1)) / $y_val;
+        $r = (int)($r * $y);
+        $g = (int)($g * $y);
+        $b = (int)($b * $y);
+        $bcolor .= "color:rgb({$r},{$g},{$b});";
+    } else {
+        $y1 = 140;
+        $y2 = 160;
+        if ($y_val <= 255 - $y1) {
+            $y = ($y_val <= 255 - $y2 ? $y2 : $y1) / (255 - $y_val);
+            $r += (int)((255 - $r) * $y);
+            $g += (int)((255 - $g) * $y);
+            $b += (int)((255 - $b) * $y);
+            $bcolor .= "color:rgb({$r},{$g},{$b});";
+        } else {
+            $bcolor .= "color:#fff;";
+        }
+    }
+
+    $style = "{$bcolor}{$uline}";
+    $watchoistyles[$wid32] = $style;
+
+    return $style;
 }

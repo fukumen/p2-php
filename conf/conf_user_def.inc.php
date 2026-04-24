@@ -314,19 +314,16 @@ $conf_user_rad['backlink_coloring_track'] = array('1' => 'する', '0' => 'しない'
 // 本文をダブルクリックしてレス追跡カラーリングの色リスト(カンマ区切り)
 $conf_user_def['backlink_coloring_track_colors'] = '#479e01,#0033ff,#0099cc,#9900ff,#ff5599,#ff9900,#993333,#ff6600,#0066cf,#ff3300';
 
-// IDに色を付ける
+// IDとワッチョイに色を付ける
 $conf_user_def['coloredid.enable'] = 1;
 $conf_user_rad['coloredid.enable'] = array('1' => 'する', '0' => 'しない');
-// 色の変換結果を表示
-$conf_user_def['coloredid.debug'] = 0;
-$conf_user_rad['coloredid.debug'] = array('1' => 'する', '0' => 'しない');
-// 画面表示時にIDに着色しておく条件
+// 画面表示時にIDとワッチョイに着色しておく条件
 $conf_user_def['coloredid.rate.type'] = 3;
 $conf_user_rad['coloredid.rate.type'] = array('0' => 'しない', '1' => '出現数', '2' => 'スレ内トップ10', '3' => 'スレ内平均以上');
 // 条件が出現数の場合の数(n以上)
 $conf_user_def['coloredid.rate.times'] = 2;
 $conf_user_rules['coloredid.rate.times'] = array('notIntExceptMinusToDef');
-// 必死判定(IDブリンク)の出現数(0で無効)
+// 必死判定(IDとワッチョイブリンク)の出現数(0で無効)
 $conf_user_def['coloredid.rate.hissi.times'] = 25;
 $conf_user_rules['coloredid.rate.hissi.times'] = array('notIntExceptMinusToDef');
 // ID出現数をクリックすると着色をトグル(「しない」にするとJavascriptではなくPHPで着色)
@@ -337,6 +334,9 @@ $conf_user_def['coloredid.marking.colors'] = '#f00,#0f0,#00f,#f90,#f0f,#ff0,#90f
 // カラーリングのタイプ
 $conf_user_def['coloredid.coloring.type'] = 0;
 $conf_user_rad['coloredid.coloring.type'] = array('0' => 'オリジナル', '1' => 'thermon版');
+// IDのラベルに色を付ける
+$conf_user_def['coloredid.label'] = 0;
+$conf_user_rad['coloredid.label'] = array('1' => 'する', '0' => 'しない');
 
 // まちBBSでリモートホスト名を表示
 $conf_user_def['machibbs.disphost.enable'] = 1;
