@@ -362,7 +362,6 @@ div.res > div.res-header {
     margin: 0;
     padding: 5px;
     font-size: {$STYLE['read_fontsize']};
-    line-height: 120%;
     color: #1144AA;
     display: inline-block;
     /*border-bottom: #808080 solid 1px;*/

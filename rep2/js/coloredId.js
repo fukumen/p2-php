@@ -344,7 +344,7 @@ var refreshColor = function(rate) {
 
 var toggle = function(idstr) {
     if (this.idlist[idstr])
-        ColoredIDLib.toggle(idstr, this.idlist[idstr], this.colorStyle, this.hissi);
+        ColoredIDLib.toggle(idstr, this.idlist[idstr], this.colorStyle, hissi);
 };
 
 
@@ -371,7 +371,7 @@ var click = function(idstr, evt) {
     else if (evt.type == 'dblclick') this.mark(idstr);
 };
 
-var createSPMmenu = function (idval) {
+var createSPMmenuPC = function (idval) {
     var amenu = document.createElement('div');
     amenu.id = idval;
     amenu.className = 'spm';
@@ -390,13 +390,12 @@ var createSPMmenu = function (idval) {
     return amenu;
 };
 
-var setupSPM = function (objName) {
-    var amenu = this.createSPMmenu(objName + '_col');
+var setupSPMPC = function (objName) {
+    var amenu = this.createSPMmenuPC(objName + '_col');
     document.getElementById(objName + '_spm').appendItem(
             'IDカラー', null, objName + '_col');
     document.getElementById('popUpContainer').appendChild(amenu);
 };
-
 
 if (!this['IDColorChanger']) {
     IDColorChanger = function(idlist, hissi) {
@@ -418,8 +417,8 @@ if (!this['IDColorChanger']) {
         colors : [],
         colorStyle : {},
         highlightStyle : {},
-        createSPMmenu : createSPMmenu,
-        setupSPM : setupSPM
+        createSPMmenuPC : createSPMmenuPC,
+        setupSPMPC : setupSPMPC
     };
 }
 
@@ -468,7 +467,7 @@ var clickWatchoi = function(wid32, evt) {
     else if (evt.type == 'dblclick') this.mark(wid32);
 };
 
-var createSPMmenuWatchoi = function (idval) {
+var createSPMmenuWatchoiPC = function (idval) {
     var amenu = document.createElement('div');
     amenu.id = idval;
     amenu.className = 'spm';
@@ -487,8 +486,8 @@ var createSPMmenuWatchoi = function (idval) {
     return amenu;
 };
 
-var setupSPMWatchoi = function (objName) {
-    var amenu = this.createSPMmenu(objName + '_wcol');
+var setupSPMWatchoiPC = function (objName) {
+    var amenu = this.createSPMmenuPC(objName + '_wcol');
     document.getElementById(objName + '_spm').appendItem(
             'ワッチョイカラー', null, objName + '_wcol');
     document.getElementById('popUpContainer').appendChild(amenu);
@@ -514,9 +513,106 @@ if (!this['WatchoiColorChanger']) {
         colors : [],
         colorStyle : {},
         highlightStyle : {},
-        createSPMmenu : createSPMmenuWatchoi,
-        setupSPM : setupSPMWatchoi
+        createSPMmenuPC : createSPMmenuWatchoiPC,
+        setupSPMPC : setupSPMWatchoiPC
     };
 }
 
 })()
+
+var setupSPMColorI = function () {
+    var colorActionDiv = document.getElementById('spm-color-action');
+    var targetSelect = document.getElementById('spm-color-target');
+    var rateSelect = document.getElementById('spm-color-rate');
+    var okBtn = document.getElementById('spm-color-ok');
+
+    if (!colorActionDiv || !targetSelect || !rateSelect || !okBtn) return;
+
+    var hasIdCol = (typeof idCol !== 'undefined');
+    var hasWatchoiCol = (typeof watchoiCol !== 'undefined');
+
+    // 両方不在ならセクション全体をグレーアウト
+    if (!hasIdCol && !hasWatchoiCol) {
+        colorActionDiv.style.opacity = '0.5';
+        targetSelect.disabled = true;
+        rateSelect.disabled = true;
+        okBtn.disabled = true;
+        return;
+    }
+
+    colorActionDiv.style.display = 'table';
+    colorActionDiv.style.opacity = '1.0';
+
+    // targetSelect の各項目の有効・無効（グレーアウト）制御
+    for (var i = 0; i < targetSelect.options.length; i++) {
+        var opt = targetSelect.options[i];
+        if (opt.value === 'id') {
+            opt.disabled = !hasIdCol;
+        } else if (opt.value === 'watchoi') {
+            opt.disabled = !hasWatchoiCol;
+        }
+    }
+
+    // デフォルトの選択肢を有効な方に合わせる
+    if (!hasIdCol && hasWatchoiCol) {
+        targetSelect.value = 'watchoi';
+    } else if (hasIdCol) {
+        targetSelect.value = 'id';
+    }
+
+    targetSelect.onchange = function() {
+        var t = targetSelect.value;
+        var colObj = (t === 'id') ? (hasIdCol ? idCol : null) : (hasWatchoiCol ? watchoiCol : null);
+
+        if (!colObj) {
+            rateSelect.disabled = true;
+            okBtn.disabled = true;
+            return;
+        }
+
+        rateSelect.disabled = false;
+        okBtn.disabled = false;
+
+        // PHP側で定義済みの option のテキストを動的に更新する
+        for (var j = 0; j < rateSelect.options.length; j++) {
+            var opt = rateSelect.options[j];
+            switch (opt.value) {
+                case 'top10':
+                    opt.style.display = colObj.tops ? '' : 'none';
+                    opt.disabled = !colObj.tops;
+                    break;
+                case 'average':
+                    opt.style.display = colObj.average ? '' : 'none';
+                    opt.disabled = !colObj.average;
+                    if (colObj.average) opt.innerHTML = '平均(' + colObj.average + ')以上';
+                    break;
+                case 'rate':
+                    opt.innerHTML = colObj.rate + '以上';
+                    break;
+                case '2':
+                    var isTwoDefault = (colObj.rate == 2);
+                    opt.style.display = isTwoDefault ? 'none' : '';
+                    opt.disabled = isTwoDefault;
+                    break;
+            }
+        }
+    };
+
+    okBtn.onclick = function() {
+        if (okBtn.disabled) return;
+        var target = targetSelect.value;
+        var rate = rateSelect.value;
+        var colObj = (target === 'id') ? (hasIdCol ? idCol : null) : (hasWatchoiCol ? watchoiCol : null);
+        if (!colObj) return;
+
+        if (rate === 'clear') colObj.clear();
+        else if (rate === 'top10') colObj.refreshColor(colObj.tops);
+        else if (rate === 'average') colObj.refreshColor(colObj.average);
+        else if (rate === 'rate') colObj.refreshColor(colObj.rate);
+        else if (rate === '2') colObj.refreshColor(2);
+
+        SPM.hide();
+    };
+
+    targetSelect.onchange();
+};

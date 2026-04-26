@@ -273,6 +273,10 @@ if ($_conf['ktai']) {
             echo $aShowThread->getSpmObjJs();
         }
 
+        if ($_conf['iphone'] && $_conf['coloredid.enable'] > 0 && $_conf['coloredid.click'] > 0) {
+            echo $aShowThread->getIdColorJs();
+        }
+
         echo $content;
 
         include READ_FOOTER_INC_PHP;

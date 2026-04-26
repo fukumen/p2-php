@@ -696,6 +696,19 @@ EOP;
 <!-- <option value="search">検索</option> -->
 </select><span class="input-group-btn"><button class="btn" type="button" onclick="SPM.doAction()">OK</button></span>
 </div></div>
+<div id="spm-color-action" class="input-group" style="display:none;">
+<select id="spm-color-target" class="form-control" style="width:50%;">
+    <option value="id">IDカラー</option>
+    <option value="watchoi">ワッチョイカラー</option>
+</select>
+<select id="spm-color-rate" class="form-control" style="width:50%;">
+    <option value="clear">全てクリア</option>
+    <option value="top10">トップ10</option>
+    <option value="average">平均以上</option>
+    <option value="rate">設定値以上</option>
+    <option value="2">2以上</option>
+</select><span class="input-group-btn"><button id="spm-color-ok" class="btn" type="button">OK</button></span>
+</div>
 <img id="spm-closer" src="img/iphone/close.png" width="24" height="26" onclick="SPM.hide(event)">
 </div>
 EOP;
@@ -727,6 +740,27 @@ EOP;
         }
         */
 
+        $num_ht = '';
+        if (isset($this->thread->idcount[$id]) && $this->thread->idcount[$id] > 0) {
+            $num = (string) $this->thread->idcount[$id];
+            $num_ht = '('.$num.')';
+        } else {
+            return $idstr;
+        }
+
+        if ($_conf['coloredid.enable'] > 0 && preg_match("|^ID: ?[0-9A-Za-z/.+]+|",$idstr)) {
+            if ($this->_ids_for_render === null) {
+                $this->_ids_for_render = array();
+            }
+            $this->_ids_for_render[substr($id, 0, 8)] = $this->thread->idcount[$id];
+            if ($_conf['coloredid.click'] > 0) {
+                $id_click_evt = ($_conf['coloredid.smartphone.tap']) ? "{type:'dblclick'}" : "event";
+                $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedId($id) . '" onClick="idCol.click(\'' . substr($id, 0, 8) . '\', ' . $id_click_evt . '); return false;">' . $num_ht . '</a>';
+            }
+            $idstr = $this->_coloredIdStr(
+                $idstr, $id, $_conf['coloredid.click'] > 0 ? true : false);
+        }
+
         $filter_url = $_conf['read_php'] . '?' . http_build_query(array(
             'host' => $this->thread->host,
             'bbs' => $this->thread->bbs,
@@ -743,13 +777,7 @@ EOP;
             ),
         ), '', '&amp;') . $_conf['k_at_a'];
 
-        if (isset($this->thread->idcount[$id]) && $this->thread->idcount[$id] > 0) {
-            $num_ht = "(<a href=\"{$filter_url}\"{$this->target_at}>{$this->thread->idcount[$id]}</a>)";
-        } else {
-            return $idstr;
-        }
-
-        return "{$idstr}{$num_ht}";
+        return "<a href=\"{$filter_url}\"{$this->target_at}>{$idstr}</a>{$num_ht}";
     }
 
     // }}}
@@ -773,6 +801,22 @@ EOP;
         }
 
         $count = $this->thread->watchoicount[$wid];
+        $num_ht = '(' . $count . ')';
+
+        if ($_conf['coloredid.enable'] > 0) {
+            $wid32 = substr(md5($wid), 0, 8);
+            if ($this->_watchois_for_render === null) {
+                $this->_watchois_for_render = array();
+            }
+            $this->_watchois_for_render[$wid32] = $count;
+
+            if ($_conf['coloredid.click'] > 0) {
+                $w_click_evt = ($_conf['coloredid.smartphone.tap']) ? "{type:'dblclick'}" : "event";
+                $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedWatchoi($wid32) . '" onClick="watchoiCol.click(\'' . $wid32 . '\', ' . $w_click_evt . '); return false;">' . $num_ht . '</a>';
+            }
+            $watchoi_str = $this->_coloredWatchoiStr(
+                $watchoi_id, $wid, $wid32, $_conf['coloredid.click'] > 0 ? true : false);
+        }
 
         $filter_url = $_conf['read_php'] . '?' . http_build_query(array(
             'host'    => $this->thread->host,
@@ -790,9 +834,7 @@ EOP;
             ),
         ), '', '&amp;') . $_conf['k_at_a'];
 
-        $num_ht = "(<a href=\"{$filter_url}\"{$this->target_at}>{$count}</a>)";
-
-        return "{$watchoi_str}{$num_ht}";
+        return "<a href=\"{$filter_url}\"{$this->target_at}>{$watchoi_str}</a>{$num_ht}";
     }
 
     // }}}

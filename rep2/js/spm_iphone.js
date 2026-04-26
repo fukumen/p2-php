@@ -65,6 +65,11 @@ SPM.show = (function(thread, no, id, evt, date, hasWatchoi)
 		}
 	}
 
+	// カラーIDとカラーワッチョイの設定
+	if (typeof setupSPMColorI === 'function') {
+		setupSPMColorI();
+	}
+
 	//spm.style.display = 'block';
 	spm.style.top = (iutil.getPageY(evt) + 10) + 'px';
 	$(spm).show();

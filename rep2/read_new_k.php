@@ -489,6 +489,10 @@ EOP;
                 $read_cont_ht .= $aShowThread->getSpmObjJs();
             }
 
+            if ($_conf['coloredid.enable'] > 0 && $_conf['coloredid.click'] > 0) {
+                $read_cont_ht .= $aShowThread->getIdColorJs();
+            }
+
         } else {
             $aShowThread = new ShowThreadK($aThread);
         }

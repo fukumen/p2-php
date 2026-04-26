@@ -326,11 +326,14 @@ $conf_user_rules['coloredid.rate.times'] = array('notIntExceptMinusToDef');
 // 必死判定(IDとワッチョイブリンク)の出現数(0で無効)
 $conf_user_def['coloredid.rate.hissi.times'] = 25;
 $conf_user_rules['coloredid.rate.hissi.times'] = array('notIntExceptMinusToDef');
-// ID出現数をクリックすると着色をトグル(「しない」にするとJavascriptではなくPHPで着色)
+// IDとワッチョイ出現数をクリックすると着色をトグル(「しない」にするとJavascriptではなくPHPで着色)
 $conf_user_def['coloredid.click'] = 1;
 $conf_user_rad['coloredid.click'] = array('1' => 'する', '0' => 'しない');
-// ID出現数をダブルクリックしてマーキングする色リスト(カンマ区切り)
+// IDとワッチョイ出現数をダブルクリックしてマーキングする色リスト(カンマ区切り)
 $conf_user_def['coloredid.marking.colors'] = '#f00,#0f0,#00f,#f90,#f0f,#ff0,#90f,#0ff,#9f0';
+// スマホでIDとワッチョイ出現数をタップするとマーキングする(「しない」にすると着色をトグル)
+$conf_user_def['coloredid.smartphone.tap'] = 1;
+$conf_user_rad['coloredid.smartphone.tap'] = array('1' => 'する', '0' => 'しない');
 // カラーリングのタイプ
 $conf_user_def['coloredid.coloring.type'] = 0;
 $conf_user_rad['coloredid.coloring.type'] = array('0' => 'オリジナル', '1' => 'thermon版');

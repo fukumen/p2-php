@@ -143,6 +143,25 @@ if ($_conf['bottom_res_form']) {
 EOP;
     }
 }
+// coloredid
+if ($_conf['coloredid.enable'] > 0) {
+    if ($_conf['coloredid.click'] > 0) {
+        $_conf['extra_headers_ht'] .= <<<EOS
+<script type="text/javascript" src="js/colorLib.js?{$_conf['p2_version_id']}"></script>
+<script type="text/javascript" src="js/coloredId.js?{$_conf['p2_version_id']}"></script>
+EOS;
+    }
+    $_conf['extra_headers_ht'] .= <<<EOS
+<style type="text/css">
+@keyframes p2-hissi-blink {
+	75% { visibility: hidden; }
+}
+@-webkit-keyframes p2-hissi-blink {
+	75% { visibility: hidden; }
+}
+</style>
+EOS;
+}
 // }}}
 // }}}
 // {{{ HTMLƒvƒŠƒ“ƒg

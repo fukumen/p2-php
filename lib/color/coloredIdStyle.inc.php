@@ -13,7 +13,7 @@ function coloredIdStyle($idstr, $id, $count=0)
     static $idstyles = array();
     static $id_color_used= array() ;
 
-    global $STYLE;
+    global $_conf, $STYLE;
 
     if ($count >= 2) {
         //[$id] >= 2　ココの数字でスレに何個以上同じＩＤが出た時に背景色を変えるか決まる
@@ -83,7 +83,7 @@ function coloredIdStyle($idstr, $id, $count=0)
             }
 
             // CSSで色をつける
-            $uline=$STYLE['a_underline_none']==1 ? '' : "text-decoration:underline;";
+            $uline=($_conf['ktai'] || $STYLE['a_underline_none']==1) ? '' : "text-decoration:underline;";
             if ($count>=25 ) {     // 必死チェッカー発動
                 $uline.="animation: p2-hissi-blink 1s step-end infinite; -webkit-animation: p2-hissi-blink 1s step-end infinite;";
             }
@@ -142,7 +142,7 @@ function coloredWatchoiStyle($wid32, $count)
 {
     static $watchoistyles = array();
 
-    global $STYLE;
+    global $_conf, $STYLE;
 
     if ($count < 2) {
         return '';
@@ -175,7 +175,7 @@ function coloredWatchoiStyle($wid32, $count)
     $y_val = ($rgb['R'] * 299 + $rgb['G'] * 587 + $rgb['B'] * 114) / 1000;
 
     // CSSで色をつける
-    $uline = $STYLE['a_underline_none'] == 1 ? '' : "text-decoration:underline;";
+    $uline = ($_conf['ktai'] || $STYLE['a_underline_none'] == 1) ? '' : "text-decoration:underline;";
     if ($count >= 25) {     // 必死チェッカー発動
         $uline .= "animation: p2-hissi-blink 1s step-end infinite; -webkit-animation: p2-hissi-blink 1s step-end infinite;";
     }
