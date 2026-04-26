@@ -96,10 +96,10 @@ $post_config_key = PostDataStore::getKeyForConfig($host, $bbs);
 
 // 前回のPOST失敗データ
 if ($post_backup = PostDataStore::get($post_backup_key)) {
-    $hd['FROM'] = p2h($post_backup['FROM']);
-    $hd['mail'] = p2h($post_backup['mail']);
-    $hd['MESSAGE'] = p2h($post_backup['MESSAGE']);
-    $hd['subject'] = p2h($post_backup['subject']);
+    $hd['FROM'] = p2h($post_backup['FROM'] ?? $post_backup['NAME'] ?? '');
+    $hd['mail'] = p2h($post_backup['mail'] ?? $post_backup['MAIL'] ?? '');
+    $hd['MESSAGE'] = p2h($post_backup['MESSAGE'] ?? '');
+    $hd['subject'] = p2h($post_backup['subject'] ?? $post_backup['SUBJECT'] ?? '');
 }
 
 // beres/p2res
