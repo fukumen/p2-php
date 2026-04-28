@@ -61,7 +61,8 @@ $STYLE['sb_tbgcolor'] = "#e3e3e3"; // ("#fff") subject テーブル内背景色0
 $STYLE['sb_tbackground'] = "./skin/metal/hl10b.gif"; // ("") subject テーブル内背景0
 $STYLE['sb_tbgcolor1'] = "#CFCFCF"; // ("#eef") subject テーブル内背景色1
 $STYLE['sb_tbackground1'] = "./skin/metal/hl08b.gif"; // ("") subject テーブル内背景1
-$STYLE['sb_tbgcolor_nosubject'] = "#d3d3d3"; // ("#d3d3d3") subject テーブル内背景色(subject.txtに無いとき)
+$STYLE['sb_tbgcolor_nosubject'] = "#afafaf"; // ("#afafaf") subject テーブル内背景色(subject.txtに無いとき)
+$STYLE['sb_tbackground_nosubject'] = "./skin/metal/hl06b.gif"; // ("") subject テーブル内背景0
 
 $STYLE['sb_ttcolor'] = "#333"; // ("#333") subject テーブル内 テキスト色
 $STYLE['sb_tacolor'] = "#000"; // ("#000") subject テーブル内 リンク色

@@ -222,7 +222,7 @@ table.threadlist tr.r2 {
 	background: {$STYLE['sb_tbgcolor']} {$STYLE['sb_tbackground']};
 }
 table.threadlist tr.nosubject {
-	background: {$STYLE['sb_tbgcolor_nosubject']} {$STYLE['sb_tbackground']};
+	background: {$STYLE['sb_tbgcolor_nosubject']} {$STYLE['sb_tbackground_nosubject']};
 }
 
 /* t スレッドリスト テーブル欄 基本 */
