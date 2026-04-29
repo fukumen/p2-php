@@ -303,6 +303,7 @@ if (!$_conf['ktai']) {
     echo <<<EOP
 <fieldset>
 <legend><a href="{$ng_url}"{$_conf['ext_win_target_at']}>NGワード</a>編集</legend>
+<div class="button-group">
 EOP;
     printEditFileForm($ng_name_txt, '名前');
     printEditFileForm($ng_mail_txt, 'メール');
@@ -312,6 +313,7 @@ EOP;
     // +Wiki
     printEditFileForm($ng_be_txt, 'ＢＥ');
     echo <<<EOP
+</div>
 </fieldset>\n\n
 EOP;
 
@@ -325,6 +327,7 @@ EOP;
     echo <<<EOP
 <fieldset>
 <legend>あぼーんワード編集</legend>\n
+<div class="button-group">
 EOP;
     printEditFileForm($aborn_res_txt, 'レス');
     printEditFileForm($aborn_thread_txt, 'スレッド');
@@ -336,6 +339,7 @@ EOP;
     // +Wiki
     printEditFileForm($aborn_be_txt, 'ＢＥ');
     echo <<<EOP
+</div>
 </fieldset>\n
 EOP;
 
@@ -349,6 +353,7 @@ EOP;
 	echo <<<EOP
 <fieldset>
 <legend>ハイライトワード編集</legend>\n
+<div class="button-group">
 EOP;
 	printEditFileForm($highlight_name_txt, '名前');
 	printEditFileForm($highlight_mail_txt, 'メール');
@@ -356,6 +361,7 @@ EOP;
 	printEditFileForm($highlight_id_txt, 'ID');
 	printEditFileForm($highlight_watchoi_txt, 'ワッチョイ');
 	echo <<<EOP
+</div>
 </fieldset>\n
 EOP;
 
@@ -369,9 +375,11 @@ EOP;
     echo <<<EOP
 <fieldset>
 <legend>履歴・キャッシュの削除</legend>\n
+<div class="button-group">
 EOP;
     echo getDeleteHistoryFormHt();
     echo <<<EOP
+</div>
 </fieldset>\n
 EOP;
 
@@ -384,12 +392,14 @@ EOP;
 <tr><td colspan="2">
 <fieldset>
 <legend>ホストの同期 （2chの板移転に対応します）</legend>
+<div class="button-group">
 EOP;
     echo getSyncFavoritesFormHt('all', 'すべて');
     foreach ($synctitles as $syncmode => $syncname) {
         echo getSyncFavoritesFormHt($syncmode, $syncname);
     }
     echo <<<EOP
+</div>
 </fieldset>
 </td></tr>\n
 EOP;

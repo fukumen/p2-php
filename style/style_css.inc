@@ -10,25 +10,13 @@ if ($STYLE['a_underline_none'] == 1) {
     $a_underline_none_css = '';
 }
 
-// ブラウザが Camino なら
-if (strstr($_SERVER['HTTP_USER_AGENT'], "Camino") || strstr($_SERVER['HTTP_USER_AGENT'], "Chimera")) {
-	echo <<<EOSTYLE
-
-input,option,select,textarea{
-	font-size:10px;
-	font-family:"Osaka"; /*  Camino ではフォームのフォントにヒラギノを指定するとline-heightが崩れる */
-}
-
-EOSTYLE;
-} else {
-	echo <<<EOSTYLE
+echo <<<EOSTYLE
 
 input,option,select,textarea{
 	font-size:{$STYLE['form_fontsize']};
 }
 
 EOSTYLE;
-}
 
 if (!empty($STYLE['fontfamily_bold'])) {
 	$fontstyle_bold = empty($STYLE['fontstyle_bold']) ? 'normal' : $STYLE['fontstyle_bold'];

@@ -35,6 +35,23 @@ ul#matome_cache div.popup_element ul {
 	list-style-type: none;
 }
 
+.button-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	align-items: stretch;
+}
+
+.button-group form.inline-form {
+	display: flex;
+	margin: 0;
+}
+
+.button-group form.inline-form input[type="submit"] {
+	height: 100%;
+	box-sizing: border-box;
+}
+
 EOSTYLE;
 
 /*
