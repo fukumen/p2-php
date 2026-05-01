@@ -47,8 +47,8 @@ class P2CurlMulti
 
             // datŽæ“¾—pheader¶¬
             $header = array();
-            $header["If-Modified-Since"] = gmdate('D, d M Y H:i:s T', $this->file_update[$key]);
-            $header["Connection"] = 'close';
+            $header[] = "If-Modified-Since: " . gmdate('D, d M Y H:i:s T', $this->file_update[$key]);
+            $header[] = "Connection: close";
 
             curl_setopt($this->ch[$key], CURLOPT_URL, $url);
             curl_setopt($this->ch[$key], CURLOPT_RETURNTRANSFER, true);
@@ -76,7 +76,6 @@ class P2CurlMulti
                 $tor_address   = "{$_conf['tor_proxy_host']}:{$_conf['tor_proxy_port']}";
                 $address = sprintf("http://%s%s", strpos($tor_user_info, "@") === 0 ? "" : $tor_user_info, $tor_address);
 
-                curl_setopt($this->ch[$key], CURLOPT_HTTPPROXYTUNNEL, 1);
                 curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
 
                 if($_conf['tor_proxy_mode'] == 'socks5'){
@@ -88,7 +87,6 @@ class P2CurlMulti
                 $proxy_address   = "{$_conf['proxy_host']}:{$_conf['proxy_port']}";
                 $address = sprintf("http://%s%s", strpos($proxy_user_info, "@") === 0 ? "" : $proxy_user_info, $proxy_address);
 
-                curl_setopt($this->ch[$key], CURLOPT_HTTPPROXYTUNNEL, 1);
                 curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
 
                 if($_conf['proxy_mode'] == 'socks5'){
