@@ -274,6 +274,9 @@ class ShowThreadI extends ShowThread
         // BEプロファイルリンク変換
         $date_id = $this->replaceBeId($date_id, $i);
 
+        // BE＆絵文字アイコンリンク変換
+        $msg = $this->replaceSsspIcon($msg);
+
         // NGメッセージ変換
         if ($ng_type != self::NG_NONE && count($ng_info)) {
             $ng_info = implode(', ', $ng_info);
