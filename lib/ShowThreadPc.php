@@ -1107,11 +1107,11 @@ EOJS;
 
         // エスケープ
         $_spm_title = StrCtl::toJavaScript($this->thread->ttitle_hc);
-        $_spm_url = addslashes($motothre_url);
-        $_spm_host = addslashes($this->thread->host);
-        $_spm_bbs = addslashes($this->thread->bbs);
-        $_spm_key = addslashes($this->thread->key);
-        $_spm_ls = addslashes($this->thread->ls);
+        $_spm_url = StrCtl::toJavaScript($motothre_url);
+        $_spm_host = StrCtl::toJavaScript($this->thread->host);
+        $_spm_bbs = StrCtl::toJavaScript($this->thread->bbs);
+        $_spm_key = StrCtl::toJavaScript($this->thread->key);
+        $_spm_ls = StrCtl::toJavaScript($this->thread->ls);
 
         $code = <<<EOJS
 <script type="text/javascript">

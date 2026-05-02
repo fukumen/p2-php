@@ -125,7 +125,7 @@ EOP;
                 extract($favita);
                 $itaj_view = p2h($itaj);
                 $itaj_en = UrlSafeBase64::encode($itaj);
-                $itaj_js = addslashes($itaj_view);
+                $itaj_js = StrCtl::toJavaScript($itaj);
 
                 $p_htm['star'] = <<<EOP
 <a href="{$menu_php_ht}?host={$host}&amp;bbs={$bbs}&amp;setfavita=0{$_conf['m_favita_set_at_a']}" target="_self" class="fav" title="「{$itaj_view}」をお気に板から外す" onclick="return window.confirm('「{$itaj_js}」をお気に板から外してよろしいですか？');">★</a>
