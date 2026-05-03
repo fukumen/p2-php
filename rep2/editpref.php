@@ -487,6 +487,10 @@ if ($_conf['ktai']) {
 </form>
 <hr>
 EOP;
+    echo "<p>履歴・キャッシュの削除</p>\n";
+    echo getDeleteHistoryFormHt();
+
+    echo "<hr>\n";
     echo "<p>ホストの同期（2chの板移転に対応します）</p>\n";
     echo getSyncFavoritesFormHt('all', 'すべて');
     foreach ($synctitles as $syncmode => $syncname) {
