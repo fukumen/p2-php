@@ -111,13 +111,14 @@ function menu_iphone_show_board_menu($cateid = 0)
         echo '<ul id="cate0" title="”ÂƒŠƒXƒg">';
         $i = 0;
         $j = 0;
+        $num_menus = count($brd_menus);
         foreach ($brd_menus as $a_brd_menu) {
+            if ($num_menus > 1) {
+                echo '<li class="group">' . p2h($a_brd_menu->source) . '</li>';
+            }
             foreach ($a_brd_menu->categories as $category) {
                 $i++;
                 echo "<li><a href=\"menu_i.php?cateid={$i}{$_conf['k_at_a']}\">{$category->name}</a></li>";
-            }
-            if ($j++ > 0) {
-                echo '<li class="group">&nbsp;</li>';
             }
         }
         echo "</ul>\n";

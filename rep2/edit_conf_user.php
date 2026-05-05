@@ -283,6 +283,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 '板リストの指定（オンラインURL）<br>
 板リストをオンラインURLから自動で読み込む。
 指定先は menu.html 形式、2channel.brd 形式のどちらでもよい。
+<br>複数指定するときはカンマ区切りで指定すること。
 <!-- 必要なければ、空白に。 --><br>
 2ch基本 <a href="' . P2Util::throughIme('https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html') . '"' . $_conf['ext_win_target_at'] . '>https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html</a><br>
 2ch + 外部BBS <a href="' . P2Util::throughIme('http://azlucky.s25.xrea.com/2chboard/bbsmenu.html') . '"' . $_conf['ext_win_target_at'] . '>http://azlucky.s25.xrea.com/2chboard/bbsmenu.html</a>',

@@ -53,6 +53,8 @@ class BrdCtl
                 $filepath = $brd_dir.'/'.$entry;
                 if ($data = FileCtl::file_read_lines($filepath)) {
                     $aBrdMenu = new BrdMenu();    // クラス BrdMenu のオブジェクトを生成
+                    $aBrdMenu->source = $entry;
+                    $aBrdMenu->source_type = 'local';
                     $aBrdMenu->setBrdMatch($filepath);    // パターンマッチ形式を登録
                     $aBrdMenu->setBrdList($data);    // カテゴリーと板をセット
                     $brd_menus[] = $aBrdMenu;
@@ -81,75 +83,90 @@ class BrdCtl
         $isNewDL = false;
 
         if ($_conf['brdfile_online']) {
-            $cachefile = P2Util::cacheFileForDL($_conf['brdfile_online']);
+            $urls = array_map('trim', explode(',', $_conf['brdfile_online']));
 
-            $read_html_flag = false;
-
-            // DLする、ただしnorefreshならDLしない
-            if (empty($_GET['nr']) || !file_exists($cachefile.'.p2.brd')) {
-                //echo "DL!<br>";//
-                $cache_time = time() - 60 * 30 * $_conf['menu_dl_interval'];
-                $brdfile_online_res = P2Commun::fileDownload($_conf['brdfile_online'], $cachefile, $cache_time);
-                if (isset($brdfile_online_res) && $brdfile_online_res->getStatus() != 304) {
-                    $isNewDL = true;
+            foreach ($urls as $brdfile_online) {
+                if (empty($brdfile_online)) {
+                    continue;
                 }
 
-                unset($brdfile_online_res);
-            }
+                $cachefile = P2Util::cacheFileForDL($brdfile_online);
+                $source_host = parse_url($brdfile_online, PHP_URL_HOST);
 
-            // html形式なら
-            if (preg_match('/html?$/', $_conf['brdfile_online'])) {
+                $read_html_flag = false;
 
-                // 更新されていたら新規キャッシュ作成
-                if ($isNewDL) {
-                    // 検索結果がキャッシュされるのを回避
-                    if (isset($GLOBALS['word']) && strlen($GLOBALS['word']) > 0) {
-                        $_tmp = array($GLOBALS['word'], $GLOBALS['word_fm'], $GLOBALS['words_fm']);
-                        $GLOBALS['word'] = null;
-                        $GLOBALS['word_fm'] = null;
-                        $GLOBALS['words_fm'] = null;
-                    } else {
-                        $_tmp = null;
+                // DLする、ただしnorefreshならDLしない
+                if (empty($_GET['nr']) || !file_exists($cachefile.'.p2.brd')) {
+                    //echo "DL!<br>";//
+                    $cache_time = time() - 60 * 30 * $_conf['menu_dl_interval'];
+                    $brdfile_online_res = P2Commun::fileDownload($brdfile_online, $cachefile, $cache_time);
+                    if (isset($brdfile_online_res) && $brdfile_online_res->getStatus() != 304) {
+                        $isNewDL = true;
                     }
 
-                    //echo "NEW!<br>"; //
-                    $aBrdMenu = new BrdMenu(); // クラス BrdMenu のオブジェクトを生成
-                    $aBrdMenu->makeBrdFile($cachefile); // .p2.brdファイルを生成
-                    $brd_menus[] = $aBrdMenu;
-                    unset($aBrdMenu);
-
-                    if ($_tmp) {
-                        list($GLOBALS['word'], $GLOBALS['word_fm'], $GLOBALS['words_fm']) = $_tmp;
-                        $brd_menus = array();
-                    } else {
-                        $read_html_flag = true;
-                    }
+                    unset($brdfile_online_res);
                 }
 
-                if (file_exists($cachefile.'.p2.brd')) {
-                    $cache_brd = $cachefile.'.p2.brd';
+                // html形式なら
+                if (preg_match('/html?$/', $brdfile_online)) {
+
+                    // 更新されていたら新規キャッシュ作成
+                    if ($isNewDL) {
+                        // 検索結果がキャッシュされるのを回避
+                        if (isset($GLOBALS['word']) && strlen($GLOBALS['word']) > 0) {
+                            $_tmp = array($GLOBALS['word'], $GLOBALS['word_fm'], $GLOBALS['words_fm']);
+                            $GLOBALS['word'] = null;
+                            $GLOBALS['word_fm'] = null;
+                            $GLOBALS['words_fm'] = null;
+                        } else {
+                            $_tmp = null;
+                        }
+
+                        //echo "NEW!<br>"; //
+                        $aBrdMenu = new BrdMenu(); // クラス BrdMenu のオブジェクトを生成
+                        $aBrdMenu->source = $source_host;
+                        $aBrdMenu->source_type = 'online';
+                        $aBrdMenu->makeBrdFile($cachefile); // .p2.brdファイルを生成
+                        $brd_menus[] = $aBrdMenu;
+                        unset($aBrdMenu);
+
+                        if ($_tmp) {
+                            list($GLOBALS['word'], $GLOBALS['word_fm'], $GLOBALS['words_fm']) = $_tmp;
+                            $brd_menus = array();
+                        } else {
+                            $read_html_flag = true;
+                        }
+                    }
+
+                    if (file_exists($cachefile.'.p2.brd')) {
+                        $cache_brd = $cachefile.'.p2.brd';
+                    } else {
+                        $cache_brd = $cachefile;
+                    }
+
                 } else {
                     $cache_brd = $cachefile;
                 }
 
-            } else {
-                $cache_brd = $cachefile;
-            }
-
-            if (!$read_html_flag) {
-                if ($data = FileCtl::file_read_lines($cache_brd)) {
-                    $aBrdMenu = new BrdMenu(); // クラス BrdMenu のオブジェクトを生成
-                    $aBrdMenu->setBrdMatch($cache_brd); // パターンマッチ形式を登録
-                    $aBrdMenu->setBrdList($data); // カテゴリーと板をセット
-                    if ($aBrdMenu->num) {
-                        $brd_menus[] = $aBrdMenu;
+                if (!$read_html_flag) {
+                    if ($data = FileCtl::file_read_lines($cache_brd)) {
+                        $aBrdMenu = new BrdMenu(); // クラス BrdMenu のオブジェクトを生成
+                        $aBrdMenu->source = $source_host;
+                        $aBrdMenu->source_type = 'online';
+                        $aBrdMenu->setBrdMatch($cache_brd); // パターンマッチ形式を登録
+                        $aBrdMenu->setBrdList($data); // カテゴリーと板をセット
+                        if ($aBrdMenu->num) {
+                            $brd_menus[] = $aBrdMenu;
+                        } else {
+                            P2Util::pushInfoHtml("<p>p2 error: {$cache_brd} から板メニューを生成することはできませんでした。</p>");
+                        }
+                        unset($data, $aBrdMenu);
                     } else {
-                        P2Util::pushInfoHtml("<p>p2 error: {$cache_brd} から板メニューを生成することはできませんでした。</p>");
+                        P2Util::pushInfoHtml("<p>p2 error: {$cachefile} は読み込めませんでした。</p>");
                     }
-                    unset($data, $aBrdMenu);
-                } else {
-                    P2Util::pushInfoHtml("<p>p2 error: {$cachefile} は読み込めませんでした。</p>");
                 }
+
+                $isNewDL = false;
             }
         }
 

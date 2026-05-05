@@ -15,6 +15,8 @@ class BrdMenu
     public $cate_match;    // カテゴリーマッチ形式
     public $ita_match;     // 板マッチ形式
     public $matches;       // マッチした BrdMenuIta オブジェクトを格納する配列
+    public $source;        // ソース名 (ローカル: ファイル名、オンライン: ホスト名)
+    public $source_type;   // ソース種別 ("local" / "online")
 
     // }}}
     // {{{ constructor

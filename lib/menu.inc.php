@@ -488,37 +488,43 @@ if ($_conf['menu_hide_brds'] && !$GLOBALS['ita_mikke']['num']) {
 } else {
     $brd_menus_style = '';
 }
+$brd_menu_total = count($brd_menus_dir) + count($brd_menus_online);
+$brd_menu_i = 0;
 // boardディレクトリから読み込んだユーザ定義板カテゴリメニューを表示
 if ($brd_menus_dir) {
-    $brd_menus_title = ($brd_menus_online) ? '板一覧 (private)' : '板一覧';
-    echo <<<EOP
-<hr>
-<div class="menu_cate"><b class="menu_cate" onclick="showHide('c_private_boards');">【{$brd_menus_title}】</b><br>
-    <div id="c_private_boards"{$brd_menus_style}>\n
-EOP;
     foreach ($brd_menus_dir as $a_brd_menu) {
+        $brd_menu_i++;
+        $brd_menu_id = 'c_brd_menu_' . $brd_menu_i;
+        $brd_menus_title = ($brd_menu_total > 1) ? $a_brd_menu->source : '板一覧';
+        echo <<<EOP
+<hr>
+<div class="menu_cate"><b class="menu_cate" onclick="showHide('{$brd_menu_id}');">【{$brd_menus_title}】</b><br>
+    <div id="{$brd_menu_id}"{$brd_menus_style}>\n
+EOP;
         $aShowBrdMenuPc->printBrdMenu($a_brd_menu->categories);
-    }
-    echo <<<EOP
+        echo <<<EOP
     </div>
 </div>\n
 EOP;
+    }
 }
 // オンライン板カテゴリメニューを表示
 if ($brd_menus_online) {
-    $brd_menus_title = ($brd_menus_dir) ? '板一覧 (online)' : '板一覧';
-    echo <<<EOP
-<hr>
-<div class="menu_cate"><b class="menu_cate" onclick="showHide('c_online_boards');">【{$brd_menus_title}】</b><br>
-    <div id="c_online_boards"{$brd_menus_style}>\n
-EOP;
     foreach ($brd_menus_online as $a_brd_menu) {
+        $brd_menu_i++;
+        $brd_menu_id = 'c_brd_menu_' . $brd_menu_i;
+        $brd_menus_title = ($brd_menu_total > 1) ? $a_brd_menu->source : '板一覧';
+        echo <<<EOP
+<hr>
+<div class="menu_cate"><b class="menu_cate" onclick="showHide('{$brd_menu_id}');">【{$brd_menus_title}】</b><br>
+    <div id="{$brd_menu_id}"{$brd_menus_style}>\n
+EOP;
         $aShowBrdMenuPc->printBrdMenu($a_brd_menu->categories);
-    }
-    echo <<<EOP
+        echo <<<EOP
     </div>
 </div>\n
 EOP;
+    }
 }
 
 //==============================================================
