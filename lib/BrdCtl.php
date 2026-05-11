@@ -51,11 +51,12 @@ class BrdCtl
                     continue;
                 }
                 $filepath = $brd_dir.'/'.$entry;
+                $brd_format = preg_match('/\.html?$/', $entry) ? 'html' : 'brd';
                 if ($data = FileCtl::file_read_lines($filepath)) {
                     $aBrdMenu = new BrdMenu();    // クラス BrdMenu のオブジェクトを生成
                     $aBrdMenu->source = $entry;
                     $aBrdMenu->source_type = 'local';
-                    $aBrdMenu->setBrdMatch($filepath);    // パターンマッチ形式を登録
+                    $aBrdMenu->setBrdMatch($filepath, $brd_format);    // パターンマッチ形式を登録
                     $aBrdMenu->setBrdList($data);    // カテゴリーと板をセット
                     $brd_menus[] = $aBrdMenu;
 
@@ -96,54 +97,55 @@ class BrdCtl
                 $read_html_flag = false;
 
                 // DLする、ただしnorefreshならDLしない
-                if (empty($_GET['nr']) || !file_exists($cachefile.'.p2.brd')) {
+                if (empty($_GET['nr']) || !file_exists($cachefile)) {
                     //echo "DL!<br>";//
-                    $cache_time = time() - 60 * 30 * $_conf['menu_dl_interval'];
+                    $cache_time = $_conf['menu_dl_interval'] * 3600;
                     $brdfile_online_res = P2Commun::fileDownload($brdfile_online, $cachefile, $cache_time);
                     if (isset($brdfile_online_res) && $brdfile_online_res->getStatus() != 304) {
-                        $isNewDL = true;
+                        $contentType = $brdfile_online_res->getHeader('Content-Type');
+                        if (!empty($contentType)) {
+                            if (is_array($contentType)) {
+                                $contentType = $contentType[0];
+                            }
+                            if (preg_match('/text\/html|application\/xhtml\+xml/i', $contentType)) {
+                                $isNewDL = true;
+                            }
+                        }
                     }
 
                     unset($brdfile_online_res);
                 }
 
-                // html形式なら
-                if (preg_match('/html?$/', $brdfile_online)) {
-
-                    // 更新されていたら新規キャッシュ作成
-                    if ($isNewDL) {
-                        // 検索結果がキャッシュされるのを回避
-                        if (isset($GLOBALS['word']) && strlen($GLOBALS['word']) > 0) {
-                            $_tmp = array($GLOBALS['word'], $GLOBALS['word_fm'], $GLOBALS['words_fm']);
-                            $GLOBALS['word'] = null;
-                            $GLOBALS['word_fm'] = null;
-                            $GLOBALS['words_fm'] = null;
-                        } else {
-                            $_tmp = null;
-                        }
-
-                        //echo "NEW!<br>"; //
-                        $aBrdMenu = new BrdMenu(); // クラス BrdMenu のオブジェクトを生成
-                        $aBrdMenu->source = $source_host;
-                        $aBrdMenu->source_type = 'online';
-                        $aBrdMenu->makeBrdFile($cachefile); // .p2.brdファイルを生成
-                        $brd_menus[] = $aBrdMenu;
-                        unset($aBrdMenu);
-
-                        if ($_tmp) {
-                            list($GLOBALS['word'], $GLOBALS['word_fm'], $GLOBALS['words_fm']) = $_tmp;
-                            $brd_menus = array();
-                        } else {
-                            $read_html_flag = true;
-                        }
-                    }
-
-                    if (file_exists($cachefile.'.p2.brd')) {
-                        $cache_brd = $cachefile.'.p2.brd';
+                // 更新されていたら新規キャッシュ作成
+                if ($isNewDL) {
+                    // 検索結果がキャッシュされるのを回避
+                    if (isset($GLOBALS['word']) && strlen($GLOBALS['word']) > 0) {
+                        $_tmp = array($GLOBALS['word'], $GLOBALS['word_fm'], $GLOBALS['words_fm']);
+                        $GLOBALS['word'] = null;
+                        $GLOBALS['word_fm'] = null;
+                        $GLOBALS['words_fm'] = null;
                     } else {
-                        $cache_brd = $cachefile;
+                        $_tmp = null;
                     }
 
+                    //echo "NEW!<br>"; //
+                    $aBrdMenu = new BrdMenu(); // クラス BrdMenu のオブジェクトを生成
+                    $aBrdMenu->source = $source_host;
+                    $aBrdMenu->source_type = 'online';
+                    $aBrdMenu->makeBrdFile($cachefile, 'html'); // .p2.brdファイルを生成
+                    $brd_menus[] = $aBrdMenu;
+                    unset($aBrdMenu);
+
+                    if ($_tmp) {
+                        list($GLOBALS['word'], $GLOBALS['word_fm'], $GLOBALS['words_fm']) = $_tmp;
+                        $brd_menus = array();
+                    } else {
+                        $read_html_flag = true;
+                    }
+                }
+
+                if (file_exists($cachefile.'.p2.brd')) {
+                    $cache_brd = $cachefile.'.p2.brd';
                 } else {
                     $cache_brd = $cachefile;
                 }
@@ -153,7 +155,7 @@ class BrdCtl
                         $aBrdMenu = new BrdMenu(); // クラス BrdMenu のオブジェクトを生成
                         $aBrdMenu->source = $source_host;
                         $aBrdMenu->source_type = 'online';
-                        $aBrdMenu->setBrdMatch($cache_brd); // パターンマッチ形式を登録
+                        $aBrdMenu->setBrdMatch($cache_brd, 'brd'); // パターンマッチ形式を登録
                         $aBrdMenu->setBrdList($data); // カテゴリーと板をセット
                         if ($aBrdMenu->num) {
                             $brd_menus[] = $aBrdMenu;
