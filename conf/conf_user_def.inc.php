@@ -646,6 +646,10 @@ $conf_user_rad['pane_mode'] = array('0' => '•W€i‚ÉŒ`j', '1' => '‰¡ˆê—ñiìŒ`
 // SSL’ÊM‚ÌÚ‘±æ‚ðŒŸØ‚·‚é‚½‚ß‚ÉŽg—p‚·‚éØ–¾‘‚ªŠi”[‚³‚ê‚½ƒfƒBƒŒƒNƒgƒŠ ¦ŒŸØ‚Å‚«‚È‚¢Žž‚Ì‚ÝŽw’è
 $conf_user_def['ssl_capath'] = ""; // ()
 
+// SSL’ÊM‚ÅØ–¾‘‚ðŒŸØ‚·‚é‚© ¦ƒfƒoƒbƒO—p
+$conf_user_def['ssl_verify_peer'] = 1;  // (1)
+$conf_user_rad['ssl_verify_peer'] = array('1' => '‚·‚é', '0' => '‚µ‚È‚¢');
+
 // HTTPSÚ‘±‚ðŽg—p‚·‚é
 $conf_user_def['use_https'] = 1;  // (1)
 $conf_user_rad['use_https'] = array('1' => '‚·‚é', '0' => '‚µ‚È‚¢');

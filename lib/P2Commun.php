@@ -59,6 +59,7 @@ class P2Commun
             {
                 $req->setConfig ('ssl_capath', $_conf['ssl_capath']);
             }
+            $req->setConfig ('ssl_verify_peer', (bool)$_conf['ssl_verify_peer']);
         }
 
         // ƒvƒƒLƒV

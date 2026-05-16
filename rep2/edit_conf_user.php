@@ -528,6 +528,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('tor_proxy_mode', 'Tor プロキシの種類'),
         'SSL通信設定',
         array('ssl_capath', 'SSL通信で接続先を検証するための証明書があるディレクトリ ex)&quot;/etc/ssl/certs&quot;<br>設定なして動く場合は設定不要'),
+        array('ssl_verify_peer', 'SSL通信で証明書を検証するか ※デバッグ用'),
         array('use_https', 'HTTPS接続を使用する'),
         array('use_http_domains', 'HTTP接続を使用するドメイン (カンマ区切りで複数指定可)'),
         '浪人設定',

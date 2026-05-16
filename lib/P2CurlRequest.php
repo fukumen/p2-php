@@ -124,6 +124,12 @@ class P2CurlRequest
         if (isset($this->config['ssl_capath'])) {
             curl_setopt($ch, CURLOPT_CAPATH, $this->config['ssl_capath']);
         }
+        if (isset($this->config['ssl_verify_peer'])) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->config['ssl_verify_peer']);
+        }
+        if (isset($this->config['ssl_verify_host'])) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->config['ssl_verify_host'] ? 2 : 0);
+        }
         if (isset($this->config['proxy_host'])) {
             curl_setopt($ch, CURLOPT_PROXY, $this->config['proxy_host']);
             curl_setopt($ch, CURLOPT_PROXYPORT, $this->config['proxy_port']);
