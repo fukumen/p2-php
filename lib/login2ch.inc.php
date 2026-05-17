@@ -128,7 +128,7 @@ function login2ch_tora3($login2chID, $login2chPW)
     file_exists($_conf['siduplift_file']) and unlink($_conf['siduplift_file']);
     $cont = sprintf('<?php $uaMona = %s; $SID2ch = %s;', var_export($uaMona, true), var_export($SID2ch, true));
     $temp_file = $_conf['sid2ch_php'] . '.tmp';
-    if (FileCtl::file_write_contents($temp_file, serialize($sid)) === false) {
+    if (FileCtl::file_write_contents($temp_file, $cont) === false) {
         P2Util::pushInfoHtml("<p>p2 Error: {$_conf['sid2ch_php']} を保存できませんでした。ログイン登録失敗。</p>");
         return false;
     }
