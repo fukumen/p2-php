@@ -1911,8 +1911,8 @@ ERR;
                 self::pushInfoHtml("<p>p2 error: 2chと通信するために必要な情報が設定されていません。</p>");
                 return false;
             }
-            $agent = sprintf($_conf['2chapi_ua.auth'], $x_2ch_ua);
             $x_2ch_ua = $_conf['2chapi_appname'];
+            $agent = sprintf($_conf['2chapi_ua.auth'], $x_2ch_ua);
         } else {
             $agent = 'DOLIB/1.00';
             $x_2ch_ua = P2Commun::getP2UA(false,false);
