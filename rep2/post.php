@@ -29,6 +29,12 @@ if ($_conf['expack.aas.enabled'] && !empty($_POST['PREVIEW_AAS'])) {
     exit;
 }
 
+if (!empty($_POST['newthread'])) {
+    $ptitle = 'rep2 - 新規スレッド作成';
+} else {
+    $ptitle = 'rep2 - レス書き込み';
+}
+
 //================================================================
 // 変数
 //================================================================
@@ -202,12 +208,6 @@ if (!empty($_POST['p2_post_confirm_cookie'])) {
             $post[$k] = $v;
         }
     }
-}
-
-if (!empty($_POST['newthread'])) {
-    $ptitle = 'rep2 - 新規スレッド作成';
-} else {
-    $ptitle = 'rep2 - レス書き込み';
 }
 
 $post_backup_key = PostDataStore::getKeyForBackup($host, $bbs, $key, !empty($_REQUEST['newthread']));
