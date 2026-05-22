@@ -60,7 +60,7 @@
             $res = P2Commun::getHTTPResponse($req);
 
             $code = $res->getStatus();
-            if ($code =! 200) {
+            if ($code != 200) {
                 P2Util::pushInfoHtml("<p>p2 Error: HTTP Error({$code})</p>");
             } else {
                 $body = $res->getBody();
