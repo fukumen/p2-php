@@ -124,6 +124,7 @@ $htm['post_form'] = <<<EOP
 {$htm['proxy']}
 <input id="kakiko_submit" type="submit" name="submit" value="{$submit_value}"{$htm['kaiko_set_hidden_js']}{$htm['submit_extra_at']}>
 {$htm['beres']}
+{$htm['talk_account']}
 {$htm['p2res']}
 {$htm['table_end']}
 {$htm['samba']}

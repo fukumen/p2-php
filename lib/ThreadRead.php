@@ -62,7 +62,9 @@ class ThreadRead extends Thread {
                 include P2_LIB_DIR . '/read_shitaraba.inc.php';
             }
             return shitarabaDownload ($this);
-
+            // Talk
+        } elseif (P2HostMgr::isHostTalk ($this->host)) {
+            return DownloadDatTalk::invoke ($this);
             // 2ch系
         } else {
             $this->getDatBytesFromLocalDat (); // $aThread->length をset
@@ -155,11 +157,9 @@ class ThreadRead extends Thread {
         $HB = hash_hmac ("sha256", $message, $HMKey);
 
         try {
-            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_POST);
+            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_POST, $ReadUA);
 
             // ヘッダ
-            $req->setHeader ('User-Agent', $ReadUA);
-
             if (! empty ($_GET['one'])) {
                 // >>1プレビューの時はサーバーに最初の部分だけ請求
                 $req->setHeader ('Range', "bytes=0-8192");
@@ -652,11 +652,10 @@ class ThreadRead extends Thread {
         $url = P2Util::selectScheme($this->host)."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
 
         try {
-            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);
+            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET, $_SERVER['HTTP_USER_AGENT']);
             // ヘッダ
             // $req->setHeader ('User-Agent', P2Commun::getP2UA(false,P2HostMgr::isHost2chs($this->host))); // ここは、"Monazilla/" をつけるとNG
             // read.cgiにrep2のUAでアクセスすると弾かれるサイトがあるので対処
-            $req->setHeader ('User-Agent', $_SERVER['HTTP_USER_AGENT']);
 
             // Requestの送信
             $response = P2Commun::getHTTPResponse($req);
@@ -955,11 +954,10 @@ class ThreadRead extends Thread {
         }
 
         try {
-            $req = P2Commun::createHTTPRequest ($read_url.'1', HTTP_Request2::METHOD_GET);
+            $req = P2Commun::createHTTPRequest ($read_url.'1', HTTP_Request2::METHOD_GET, $_SERVER['HTTP_USER_AGENT']);
             // ヘッダ
             // $req->setHeader ('User-Agent', P2Commun::getP2UA(false,P2HostMgr::isHost2chs($this->host))); // ここは、"Monazilla/" をつけるとNG
             // read.cgiにrep2のUAでアクセスすると弾かれるサイトがあるので対処
-            $req->setHeader ('User-Agent', $_SERVER['HTTP_USER_AGENT']);
 
             // Requestの送信
             $response = P2Commun::getHTTPResponse($req);

@@ -255,7 +255,7 @@ class P2Util
 
         $parsed = parse_url($url); // URL分解
 
-        $save_uri = isset($parsed['host']) ? $parsed['host'] : '';
+        $save_uri = isset($parsed['host']) ? self::normalizeHostName($parsed['host']) : '';
         $save_uri .= isset($parsed['port']) ? ':' . $parsed['port'] : '';
         $save_uri .= isset($parsed['path']) ? $parsed['path'] : '';
         $save_uri .= isset($parsed['query']) ? '?' . $parsed['query'] : '';
@@ -762,9 +762,14 @@ class P2Util
     {
         $host = trim($host, '/');
         if (($sp = strpos($host, '/')) !== false) {
-            return strtolower(substr($host, 0, $sp)) . substr($host, $sp);
+            $host = strtolower(substr($host, 0, $sp)) . substr($host, $sp);
+        } else {
+            $host = strtolower($host);
         }
-        return strtolower($host);
+
+        $host = P2HostMgr::normalizeTalkHost($host);
+
+        return $host;
     }
 
     // }}}
@@ -1596,6 +1601,13 @@ ERR;
                 $key = $matches[4];
                 $ls = (isset($matches[5]) && strlen($matches[5])) ? $matches[5] : '';
 
+                // talk - https://talk.jp/boards/newsplus/1777768335
+            } elseif (preg_match('<^https?://(talk\\.jp)(?:/api)?/boards/(\\w+)(?:/threads)?/(\\d+)(?:/([^/]*))?>x', $nama_url, $matches)) {
+                $host = $matches[1];
+                $bbs = $matches[2];
+                $key = $matches[3];
+                $ls = (isset($matches[4]) && strlen($matches[4])) ? $matches[4] : '';
+
                 // itest - https://itest.5ch.net/hayabusa9/test/read.cgi/mnewsplus/1510531889
             } elseif (preg_match('<^https?://(itest\\.(?:[25]ch\\.net|' . preg_quote($_conf['2ch_domain'], '<') . '|bbspink\\.com))/(\\w+)/test/read\\.cgi/(\\w+)/(\\d+)(?:/(.+$))?>x', $nama_url, $matches)) {
                 $host = str_replace("itest", $matches[2], $matches[1]);
@@ -1836,8 +1848,6 @@ ERR;
         try {
             $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST);
 
-            $req->setHeader('User-Agent', P2Commun::getP2UA(true, true));
-
             $req->addPostParameter('mail', $mail);
             $req->addPostParameter('pass', $pass);
             $req->addPostParameter('login', P2HostMgr::isHost5ch($host) ? 'ログイン' : 'ログインする');
@@ -1927,9 +1937,8 @@ ERR;
         }
 
         try {
-            $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST);
+            $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST, $agent);
 
-            $req->setHeader('User-Agent', $agent);
             $req->setHeader('X-2ch-UA', $x_2ch_ua);
 
             $req->addPostParameter('email', $login2chID);

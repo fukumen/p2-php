@@ -445,6 +445,32 @@ $conf_user_rad['2chapi_debug_print'] = array('1' => 'する', '0' => 'しない');
 $conf_user_def['2chapi_post'] = 0; // (0)
 $conf_user_rad['2chapi_post'] = array('1' => 'する', '0' => 'しない');
 
+// talk API・ログイン を使用する
+$conf_user_def['talkapi_use'] = 0; // (0)
+$conf_user_rad['talkapi_use'] = array('1' => 'する', '0' => 'しない');
+
+// talk API 認証する間隔(単位:時間)
+$conf_user_def['talkapi_interval'] = 1; // (1)
+$conf_user_rules['talkapi_interval'] = array('emptyToDef', 'notIntExceptMinusToDef');
+
+// APPKey
+$conf_user_def['talkapi_appkey'] = ""; // ("")
+
+// HMKey
+$conf_user_def['talkapi_hmkey'] = ""; // ("")
+
+// API認証に使用するX-2ch-UA
+$conf_user_def['talkapi_appname'] = ""; // ("")
+
+// API認証で使用するUser-Agent
+$conf_user_def['talkapi_ua.auth'] = ""; // ("")
+
+// DAT取得で使用するUser-Agent
+$conf_user_def['talkapi_ua.read'] = ""; // ("")
+
+// 書き込みで使用するUser-Agent
+$conf_user_def['talkapi_ua.post'] = ""; // ("")
+
 // }}}
 // {{{ どんぐり
 

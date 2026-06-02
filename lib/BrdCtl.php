@@ -92,9 +92,10 @@ class BrdCtl
                 }
 
                 $cachefile = P2Util::cacheFileForDL($brdfile_online);
-                $source_host = parse_url($brdfile_online, PHP_URL_HOST);
+                $source_host = P2Util::normalizeHostName(parse_url($brdfile_online, PHP_URL_HOST));
 
                 $read_html_flag = false;
+                $format = null;
 
                 // DLする、ただしnorefreshならDLしない
                 if (empty($_GET['nr']) || !file_exists($cachefile)) {
@@ -109,6 +110,10 @@ class BrdCtl
                             }
                             if (preg_match('/text\/html|application\/xhtml\+xml/i', $contentType)) {
                                 $isNewDL = true;
+                                $format = 'html';
+                            } elseif (preg_match('/application\/json/i', $contentType)) {
+                                $isNewDL = true;
+                                $format = 'json';
                             }
                         }
                     }
@@ -132,7 +137,7 @@ class BrdCtl
                     $aBrdMenu = new BrdMenu(); // クラス BrdMenu のオブジェクトを生成
                     $aBrdMenu->source = $source_host;
                     $aBrdMenu->source_type = 'online';
-                    $aBrdMenu->makeBrdFile($cachefile, 'html'); // .p2.brdファイルを生成
+                    $aBrdMenu->makeBrdFile($cachefile, $format); // .p2.brdファイルを生成
                     $brd_menus[] = $aBrdMenu;
                     unset($aBrdMenu);
 

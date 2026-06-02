@@ -671,6 +671,24 @@ abstract class ShowThread
     }
 
     // }}}
+    // {{{ replaceTid()
+
+    /**
+     * talk.jp TIDプロファイルリンク変換
+     */
+    public function replaceTid($date_id)
+    {
+        global $_conf;
+
+        if (P2HostMgr::isHostTalk($this->thread->host)) {
+            $tid_replace = "<a href=\"https://talk.jp/users/\$1\"{$_conf['ext_win_target_at']}>TID:\$1</a>";
+            $date_id = preg_replace('|TID:([a-zA-Z0-9_\-]+)|i', $tid_replace, $date_id);
+        }
+
+        return $date_id;
+    }
+
+    // }}}
     // {{{ replaceSsspIcon()
 
     /**

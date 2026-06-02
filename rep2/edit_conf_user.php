@@ -281,12 +281,13 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 //        array('first_page', '右下部分に最初に表示されるページ。オンラインURLも可。'),
         array('brdfile_online',
 '板リストの指定（オンラインURL）<br>
-板リストをオンラインURLから自動で読み込む。
-指定先は menu.html 形式、2channel.brd 形式のどちらでもよい。
+板リストをオンラインURLから自動で読み込む。<br>
+対応フォーマット: bbsmenu.html 形式、bbsmenu.json 形式、2channel.brd 形式
 <br>複数指定するときはカンマ区切りで指定すること。
 <!-- 必要なければ、空白に。 --><br>
-2ch基本 <a href="' . P2Util::throughIme('https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html') . '"' . $_conf['ext_win_target_at'] . '>https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html</a><br>
-2ch + 外部BBS <a href="' . P2Util::throughIme('http://azlucky.s25.xrea.com/2chboard/bbsmenu.html') . '"' . $_conf['ext_win_target_at'] . '>http://azlucky.s25.xrea.com/2chboard/bbsmenu.html</a>',
+5ch基本(HTML) <a href="' . P2Util::throughIme('https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html') . '"' . $_conf['ext_win_target_at'] . '>https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.html</a><br>
+5ch基本(JSON) <a href="' . P2Util::throughIme('https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.json') . '"' . $_conf['ext_win_target_at'] . '>https://menu.' . $_conf['2ch_domain'] . '/bbsmenu.json</a><br>
+talk.jp(JSON) <a href="' . P2Util::throughIme('https://classic.talk-platform.com/bbsmenu.json') . '"' . $_conf['ext_win_target_at'] . '>https://classic.talk-platform.com/bbsmenu.json</a><br>',
             P2_EDIT_CONF_USER_LONGTEXT),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
@@ -424,6 +425,15 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('2chapi_debug_print','デバッグ用の情報を出力する'),
         '認証情報を変更した場合再認証してください',
         array('2chapi_post','浪人で書き込む際にAPIのSIDを使用する（人柱機能）'),
+        '以降、talk.jp用',
+        array('talkapi_use', 'talk API・ログイン を使用する'),
+        array('talkapi_interval', 'talk API 認証する間隔(単位:時間)'),
+        array('talkapi_appkey', 'APPKey'),
+        array('talkapi_hmkey', 'HMKey'),
+        array('talkapi_appname', 'API認証に使用するX-2ch-UA'),
+        array('talkapi_ua.auth', 'API認証で使用するUser-Agent'),
+        array('talkapi_ua.read', 'DAT取得で使用するUser-Agent'),
+        array('talkapi_ua.post', '書き込みで使用するUser-Agent'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }

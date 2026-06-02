@@ -26,6 +26,16 @@ class P2CurlRequest
         $this->method = $method;
     }
 
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
+    public function getMethod()
+    {
+        return $this->method;
+    }
+
     public function setHeader($name, $value = null)
     {
         if (is_array($name)) {
@@ -43,6 +53,11 @@ class P2CurlRequest
                 $this->headers[strtolower($name)] = $value;
             }
         }
+    }
+
+    public function getHeaders()
+    {
+        return $this->headers;
     }
 
     public function setConfig($name, $value = null)
@@ -298,8 +313,11 @@ class P2CurlResponse
         return $this->body;
     }
 
-    public function getHeader($name)
+    public function getHeader($name = null)
     {
+        if ($name === null) {
+            return $this->headers;
+        }
         $name = strtolower($name);
         return isset($this->headers[$name]) ? $this->headers[$name] : null;
     }

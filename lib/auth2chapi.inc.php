@@ -45,9 +45,8 @@
         }
 
         try {
-            $req = P2Commun::createHTTPRequest($url,HTTP_Request2::METHOD_POST);
+            $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST, $AuthUA);
 
-            $req->setHeader('User-Agent', $AuthUA);
             $req->setHeader('X-2ch-UA', $AppName);
 
             $req->addPostParameter('ID', $login2chID);

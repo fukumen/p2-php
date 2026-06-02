@@ -64,10 +64,9 @@ function login2ch_tora3($login2chID, $login2chPW)
     }
 
     try {
-        $req = P2Commun::createHTTPRequest($auth2ch_url,HTTP_Request2::METHOD_POST);
+        $req = P2Commun::createHTTPRequest($auth2ch_url,HTTP_Request2::METHOD_POST, $dolib2ch);
 
         // ヘッダー
-        $req->setHeader('User-Agent', $dolib2ch);
         $req->setHeader('X-2ch-UA', $x_2ch_ua);
 
         // POSTデータ
@@ -165,7 +164,6 @@ function login2ch_uplift($login2chID, $login2chPW)
         $req = P2Commun::createHTTPRequest ($uplift_url . 'log', HTTP_Request2::METHOD_POST);
         $req->setHeader('Referer', $uplift_url . 'login');
         $req->setHeader('Origin', rtrim($uplift_url, '/'));
-        $req->setHeader('User-Agent', P2Commun::getP2UA(true, true));
         $req->addPostParameter('usr', $login2chID);
         $req->addPostParameter('pwd', $login2chPW);
         $response = P2Commun::getHTTPResponse($req);
@@ -298,7 +296,6 @@ function check_uplift_expiration($uplift_cookie)
     $body = null;
     try {
         $req = P2Commun::createHTTPRequest ($uplift_url . 'dashboard', HTTP_Request2::METHOD_GET);
-        $req->setHeader('User-Agent', P2Commun::getP2UA(true, true));
         if ($uplift_cookie) {
             // ログイン中なのでクッキーの期限は大丈夫なはずなのでそのまま詰める
             foreach ($uplift_cookie as $c) {

@@ -43,7 +43,8 @@ $newtime = date('gis');
 $post_param_keys    = array('bbs', 'key', 'time', 'FROM', 'mail', 'MESSAGE', 'subject', 'submit');
 $post_internal_keys = array('host', 'sub', 'popup', 'rescount', 'ttitle_en');
 $post_optional_keys = array('newthread', 'beres', 'p2res', 'from_read_new', 'maru', 'csrfid', 'proxy');
-$post_p2_flag_keys  = array('b', 'p2_post_confirm_cookie');
+$post_p2_flag_keys  = array('b', 'p2_post_confirm_cookie', 'p2_write_token', 'p2_talksid', 'p2_extend_token');
+$header = array();
 
 foreach ($post_param_keys as $pk) {
     ${$pk} = (isset($_POST[$pk])) ? $_POST[$pk] : '';
@@ -193,6 +194,42 @@ if (!empty($_POST['maru']) and P2HostMgr::isHost2chs($host)) {
 }
 
 // }}}
+// {{{ talk認証中ならsid追加
+
+if (P2HostMgr::isHostTalk($host)) {
+    if (!empty($_POST['p2_post_confirm_cookie'])) {
+        if (isset($_POST['sid'], $_POST['appkey'], $_POST['anonymous'])) {
+            $post['sid'] = $_POST['sid'];
+            $post['appkey'] = $_POST['appkey'];
+            $post['anonymous'] = $_POST['anonymous'];
+        }
+        if (!empty($_POST['p2_write_token'])) {
+            $header['X-Write-Token']  = $_POST['p2_write_token'];
+        }
+        if (!empty($_POST['p2_talksid'])) {
+            $header['X-Talk-Sid']  = $_POST['p2_talksid'];
+        }
+        if (!empty($_POST['p2_extend_token'])) {
+            $header['X-Write-Key-Extend-Token']  = $_POST['p2_extend_token'];
+        }
+    } else {
+        require_once P2_LIB_DIR . '/authtalkapi.inc.php';
+        $talkapi = AuthTalkAPI::load();
+        if ($talkapi) {
+            if ($talkapi->auth_sid) {
+                $post['sid'] = $talkapi->auth_sid;
+                $post['appkey'] = $_conf['talkapi_appkey'];
+                $post['anonymous'] = empty($_POST['talk_account']) ? 'true' : 'false';
+            }
+            if ($talkapi->talk_sid) {
+                $post['anonymous'] = empty($_POST['talk_account']) ? 'true' : 'false';
+                $header['X-Talk-Sid'] = $talkapi->talk_sid;
+            }
+        }
+    }
+}
+
+// }}}
 
 if (!empty($_POST['p2_post_confirm_cookie'])) {
     if (P2HostMgr::isHost2chs($host)) {
@@ -201,7 +238,7 @@ if (!empty($_POST['p2_post_confirm_cookie'])) {
         $post = [];
         $post_ignore_keys = array_merge($post_internal_keys, $post_optional_keys, $post_p2_flag_keys, ["_hint"]);
     } else {
-        $post_ignore_keys = array_merge($post_param_keys, $post_internal_keys, $post_optional_keys, $post_p2_flag_keys);
+        $post_ignore_keys = array_merge($post_param_keys, $post_internal_keys, $post_optional_keys, $post_p2_flag_keys, ["_hint"]);
     }
     foreach ($_POST as $k => $v) {
         if (!array_key_exists($k, $post) && !in_array($k, $post_ignore_keys)) {
@@ -257,11 +294,11 @@ if ($_conf['proxy_host']) {
         // proxyをオンで書き込み
         $_conf['proxy_use'] = 1;
     }
-    $posted = postIt($host, $bbs, $key, $post);
+    $posted = postIt($host, $bbs, $key, $post, $header);
     $_conf['proxy_use'] = $bak_proxy_use;
 } else {
     // 直接書き込み
-    $posted = postIt($host, $bbs, $key, $post);
+    $posted = postIt($host, $bbs, $key, $post, $header);
 }
 
 // cookie 保存
@@ -432,29 +469,27 @@ if ($_conf['res_write_rec']) {
  *
  * @return boolean 書き込み成功なら true、失敗なら false
  */
-function postIt($host, $bbs, $key, $post)
+function postIt($host, $bbs, $key, $post, $header)
 {
+    if (P2HostMgr::isHostTalk($host)) {
+        return postTalk($host, $bbs, $key, $post, $header);
+    }
+
     global $_conf, $post_result, $post_error2ch, $p2cookies, $popup, $rescount, $ttitle_en;
     global $bbs_cgi;
 
     $scheme = P2Util::selectScheme($host);
+    $PostUA = null;
     $bbs_cgi_url = $scheme . '://' . $host . $bbs_cgi;
 
     $post_seikou = false;
     try {
-        $req = P2Commun::createHTTPRequest ($bbs_cgi_url,HTTP_Request2::METHOD_POST);
+        $req = P2Commun::createHTTPRequest ($bbs_cgi_url,HTTP_Request2::METHOD_POST, $PostUA);
 
         // ヘッダ
-        // $bypass_headers = ['Cache-Control', 'Sec-Ch-Ua', 'Sec-Ch-Ua-Mobile', 'Upgrade-Insecure-Requests', 'User-Agent', 'Accept', 'Sec-Fetch-Site', 'Sec-Fetch-Mode', 'Sec-Fetch-User', 'Sec-Fetch-Dest', 'Accept-Encoding', 'Accept-Language'];
-        $bypass_headers = [];
-
-        foreach (getallheaders() as $name => $value) {
-            if (!in_array($name, $bypass_headers, true)) {
-                continue;
-            }
+        foreach ($header as $name => $value) {
             $req->setHeader($name, $value);
         }
-
         if (P2HostMgr::isHost2chs($host)){
             if (empty($_POST['p2_post_confirm_cookie'])) {
                 $req->setHeader('Referer', "{$scheme}://{$host}/test/read.cgi/{$bbs}/{$key}/");
@@ -538,6 +573,7 @@ function postIt($host, $bbs, $key, $post)
     } catch (Exception $e) {
         $error_msg = $e->getMessage();
         showPostMsg(false, "サーバ接続エラー: {$error_msg}<br>p2 Error: 板サーバへの接続に失敗しました", false);
+        return false;
     }
 
     // be.2ch.net or JBBSしたらば 文字コード変換 EUC→SJIS
@@ -588,6 +624,149 @@ function postIt($host, $bbs, $key, $post)
         echo preg_replace('@こちらでリロードしてください。<a href="\\.\\./[a-z]+/index\\.html"> GO! </a><br>@', '', $body);
         return false;
     }
+}
+
+// }}}
+// {{{ postTalk()
+
+/**
+ * レスを書き込む(talk.jp)
+ *
+ * @return boolean 書き込み成功なら true、失敗なら false
+ */
+function postTalk($host, $bbs, $key, $post, $header)
+{
+    global $_conf, $p2cookies, $talkapi;
+
+    $scheme = P2Util::selectScheme($host);
+    $bbs_cgi_url = $scheme . '://api.talk-platform.com/v1/bbs.cgi';
+    $PostUA = $_conf['talkapi_ua.post'] ?: null;
+
+    $_post = array();
+    foreach ($post as $name => $value) {
+        if ($name === 'submit') {
+            continue;
+        }
+        $_post[$name] = mb_convert_encoding($value, 'UTF-8', 'CP932');
+    }
+
+    for ($i = 0; $i < 2; $i++) {
+        try {
+            $req = P2Commun::createHTTPRequest($bbs_cgi_url, HTTP_Request2::METHOD_POST, $PostUA);
+
+            // POSTする内容
+            foreach ($_post as $name => $value) {
+                $req->addPostParameter($name, $value);
+            }
+
+            $keydata = KeyDataStore::get($host);
+            if (is_array($keydata) && !empty($keydata['X-Write-Key'])) {
+                $writeKey = $keydata['X-Write-Key'];
+                if ($writeKey !== '00000000-0000-0000-0000-000000000000') {
+                    $header['X-Write-Key'] = $writeKey;
+                }
+            }
+
+            if (empty($header['X-Write-Token']) && $talkapi && $talkapi->auth_sid) {
+                $writeToken = $talkapi->make_writetoken($bbs, $key, $_post['subject'] ?? '', $_post['MESSAGE'], $_post['time']);
+                if ($writeToken) {
+                    $header['X-Write-Token'] = $writeToken;
+                }
+            }
+
+            // ヘッダ
+            foreach ($header as $name => $value) {
+                $req->setHeader($name, $value);
+            }
+
+            // クッキー
+            if ($p2cookies) {
+                foreach ($p2cookies as $cname => $cvalue) {
+                    if ($cname != 'expires') {
+                        $req->addCookie($cname,$cvalue);
+                    }
+                }
+            }
+
+            // POSTデータの送信
+            $response = P2Commun::getHTTPResponse($req);
+
+            // Cookieを取得
+            $cookies = $response->getCookies();
+            if ($cookies) {
+                foreach ($cookies as $cookie) {
+                    if (!$p2cookies) {
+                        $p2cookies = array();
+                    }
+                    $p2cookies[ $cookie['name'] ] = $cookie['value'];
+                }
+            }
+
+            $body = $response->getBody();
+
+            $newWriteKey = $response->getHeader('X-Write-Key');
+            $newExtendToken = $response->getHeader('X-Write-Key-Extend-Token');
+
+            if ($newWriteKey) {
+                $keydata = array('X-Write-Key' => $newWriteKey);
+                KeyDataStore::set($host, $keydata);
+
+                if ($newExtendToken) {
+                    $header['X-Write-Key-Extend-Token'] = $newExtendToken;
+                    sleep(2);
+                    continue;
+                } else {
+                    showTalkConfirmation($host, $body, $post, $header, $newExtendToken);
+                    return false;
+                }
+            } elseif ($newExtendToken) {
+                $header['X-Write-Key-Extend-Token'] = $newExtendToken;
+                sleep(2);
+                continue;
+            }
+
+            // 書き込み結果判定
+            $json = json_decode($body, true);
+            if (is_array($json) && isset($json['commentNumber'])) {
+                $reload = (bool)$_conf['res_popup_reload'];
+                if (!empty($_POST['from_read_new'])) {
+                    $reload = false;
+                }
+                showPostMsg(true, '書きこみが終わりました。', $reload);
+
+                // +Wiki sambaタイマー
+                if ($_conf['wiki.samba_timer']) {
+                    require_once P2_LIB_DIR . '/wiki/Samba.php';
+                    $samba = new Samba();
+                    $samba->setWriteTime($host, $bbs);
+                    $samba->save();
+                }
+
+                return true;
+            } else {
+                $debug_info = P2Commun::getDebugInfo($req, $response, $_post);
+                $debug_txt = '<hr><h3>通信内容</h3><pre>' . p2h($debug_info) . '</pre>';
+
+                if (is_array($json) && isset($json['error']['message'])) {
+                    $err_msg = p2h(mb_convert_encoding($json['error']['message'], 'CP932', 'UTF-8'));
+                    $body = "<html><head><title>p2 ERROR</title></head><body><h1>p2 ERROR(talk)</h1><p>{$err_msg}</p>{$debug_txt}</body></html>";
+                } else {
+                    $body_txt = '<pre>' . p2h($body) . '</pre>';
+                    $body = "<html><head><title>p2 ERROR</title></head><body><h1>p2 ERROR(talk)</h1><p>予期せぬレスポンス (JSON parse error)</p>{$debug_txt}{$body_txt}</body></html>";
+                }
+                echo $body;
+                return false;
+            }
+
+        } catch (Exception $e) {
+            $error_msg = $e->getMessage();
+            showPostMsg(false, "サーバ接続エラー: {$error_msg}<br>p2 Error: 板サーバへの接続に失敗しました", false);
+            return false;
+        }
+    }
+
+    showPostMsg(false, "p2 Error: talk.jpへの書き込み試行回数が上限に達しました。", false);
+    return false;
 }
 
 // }}}
@@ -909,6 +1088,149 @@ function showCookieConfirmation($host, $response)
     // メソッドでは読み込んだ文書のエンコーディングに再変換して出力される
     // (DOMDocumentのencodingプロパティを変更することで変られる)
     echo $doc->saveHTML();
+}
+
+// }}}
+// {{{ showTalkConfirmation()
+
+/**
+ * talk書き込み確認HTMLを出力する
+ *
+ * @param   string      $host           ホスト名
+ * @param   string|null $body           レスポンスボディ
+ * @param   array       $post           post
+ * @param   array       $header         header
+ * @param   string|null $extendToken    Extend-Token
+ * @return  void
+ */
+function showTalkConfirmation($host, $body, $post, $header, $extendToken)
+{
+    global $_conf, $post_param_keys, $post_optional_keys;
+    global $popup, $rescount, $ttitle_en, $ptitle;
+    global $STYLE, $skin_en;
+
+    $hidden_fields = '';
+    foreach ($post_param_keys as $name) {
+        if (array_key_exists($name, $_POST)) {
+            $hidden_fields .= '<input type="hidden" name="' . $name . '" value="' . p2h($_POST[$name]) . '">';
+        }
+    }
+
+    // talk用パラメータ
+    if (isset($post['sid'], $post['appkey'], $post['anonymous'])) {
+        $hidden_fields .= '<input type="hidden" name="sid" value="' . p2h($post['sid']) . '">';
+        $hidden_fields .= '<input type="hidden" name="appkey" value="' . p2h($post['appkey']) . '">';
+        $hidden_fields .= '<input type="hidden" name="anonymous" value="' . p2h($post['anonymous']) . '">';
+    }
+    if (isset($header['X-Write-Token'])) {
+        $hidden_fields .= '<input type="hidden" name="p2_write_token" value="' . p2h($header['X-Write-Token']) . '">';
+    }
+    if (isset($header['X-Talk-Sid'])) {
+        $hidden_fields .= '<input type="hidden" name="p2_talksid" value="' . p2h($header['X-Talk-Sid']) . '">';
+    }
+    if ($extendToken) {
+        $hidden_fields .= '<input type="hidden" name="p2_extend_token" value="' . p2h($extendToken) . '">';
+    }
+
+    // rep2が使用する変数その1
+    foreach (array('host', 'popup', 'rescount', 'ttitle_en') as $name) {
+        $hidden_fields .= '<input type="hidden" name="' . $name . '" value="' . p2h($$name) . '">';
+    }
+
+    // rep2が使用する変数その2
+    foreach ($post_optional_keys as $name) {
+        if (array_key_exists($name, $_POST)) {
+            $hidden_fields .= '<input type="hidden" name="' . $name . '" value="' . p2h($_POST[$name]) . '">';
+        }
+    }
+
+    // ソースコード補正
+    if (!empty($_POST['fix_source'])) {
+        $hidden_fields .= '<input type="hidden" name="fix_source" value="1">';
+    }
+
+    // 実況モード
+    if (!empty($_POST['live'])) {
+        $hidden_fields .= '<input type="hidden" name="live" value="1">';
+    }
+
+    // 強制ビュー指定
+    if ($_conf['b'] != $_conf['client_type']) {
+        $hidden_fields .= '<input type="hidden" name="b" value="' . p2h($_conf['b']) . '">';
+    }
+
+    // Cookie確認フラグ
+    $hidden_fields .= '<input type="hidden" name="p2_post_confirm_cookie" value="1">';
+
+    // エンコーディング判定のヒント
+    $hidden_fields .= '<input type="hidden" name="_hint" value="' . p2h($_conf['detect_hint']) . '">';
+
+    $extra_headers = '';
+    if (!empty($_conf['extra_headers_ht'])) {
+        $extra_headers = $_conf['extra_headers_ht'];
+    }
+
+    echo $_conf['doctype'];
+    echo <<<EOHEADER
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <meta http-equiv="Content-Script-Type" content="text/javascript">
+    <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
+    {$extra_headers}
+    <title>{$ptitle}</title>
+EOHEADER;
+
+    if (!$_conf['ktai']) {
+        $skin_q = str_replace('&amp;', '&', $skin_en);
+        echo "    <link rel=\"stylesheet\" type=\"text/css\" href=\"css.php?css=style&amp;skin={$skin_en}\">\n";
+        echo "    <link rel=\"stylesheet\" type=\"text/css\" href=\"css.php?css=post&amp;skin={$skin_en}\">\n";
+        echo "    <link rel=\"shortcut icon\" type=\"image/x-icon\" href=\"favicon.ico\">\n";
+
+        if ($popup) {
+            $mado_okisa = explode(',', $STYLE['post_pop_size']);
+            echo <<<EOSCRIPT
+            <script type="text/javascript">
+            //<![CDATA[
+                resizeTo({$mado_okisa[0]},{$mado_okisa[1]} + 200);
+            //]]>
+            </script>
+EOSCRIPT;
+        }
+    }
+
+    echo "</head>\n";
+    echo "<body{$_conf['k_colors']}>\n";
+
+    P2Util::printInfoHtml();
+
+    $confirmation_html = '';
+    if (!empty($body)) {
+        $body = mb_convert_encoding($body, 'CP932', 'UTF-8,CP932');
+
+        // HTMLの確認画面が来る想定
+        if (preg_match('/<body[^>]*>(.*?)<\/body>/is', $body, $matches)) {
+            $allowed_tags = '<p><br><b><strong><a>';
+            $confirmation_html = strip_tags($matches[1], $allowed_tags);
+        }
+        else {
+            $safe_text = strip_tags($body);
+            $confirmation_html = '<p><b>書き込み確認</b></p><div>' . nl2br(p2h($safe_text)) . '</div>';
+        }
+    } else {
+        $confirmation_html = '<p><b>書き込み確認<br>この書き込みで本当にいいですか？</b></p><br>';
+    }
+
+    echo <<<EOBODY
+{$confirmation_html}
+<form method="POST" action="./post.php" accept-charset="{$_conf['accept_charset']}">
+{$hidden_fields}
+<input type="submit" value="上記全てを承諾して書き込む" name="submit">
+</form>
+</body>
+</html>
+EOBODY;
 }
 
 // }}}

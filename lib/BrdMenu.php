@@ -97,12 +97,12 @@ class BrdMenu
                 $aBrdMenuIta = new BrdMenuIta();
                 // html形式
                 if ($this->format == 'html') {
-                    $aBrdMenuIta->host = $matches[2];
+                    $aBrdMenuIta->host = P2Util::normalizeHostName($matches[2]);
                     $aBrdMenuIta->bbs = $matches[3];
                     $itaj_match = $matches[6];
                 // brd形式
                 } else {
-                    $aBrdMenuIta->host = $matches[1];
+                    $aBrdMenuIta->host = P2Util::normalizeHostName($matches[1]);
                     $aBrdMenuIta->bbs = $matches[2];
                     $itaj_match = $matches[3];
                 }
@@ -174,6 +174,11 @@ class BrdMenu
 
         $p2brdfile = $cachefile.".p2.brd";
         FileCtl::make_datafile($p2brdfile);
+
+        if ($format === 'json') {
+            return $this->_makeBrdFileFromJson($cachefile, $p2brdfile);
+        }
+
         $data = FileCtl::file_read_lines($cachefile);
         $cont = '';
         $this->setBrdMatch($cachefile, $format); // パターンマッチ形式を登録
@@ -193,6 +198,77 @@ class BrdMenu
             if (FileCtl::file_write_contents($p2brdfile, $cont) === false) {
                 p2die("{$p2brdfile} を更新できませんでした");
             }
+            return $p2brdfile;
+        } else {
+            @unlink($p2brdfile);
+            if (!$word) {
+                P2Util::pushInfoHtml("<p>p2 error: {$cachefile} から板メニューを生成することはできませんでした。</p>");
+            }
+            return false;
+        }
+    }
+
+    // }}}
+    // {{{ _makeBrdFileFromJson()
+
+    /**
+     * bbsmenu.json から brd 形式への変換
+     *
+    * @return    string    brdファイルのパス
+     */
+    private function _makeBrdFileFromJson($cachefile, $p2brdfile)
+    {
+        global $word;
+
+        $jsonRaw = FileCtl::file_read_contents($cachefile);
+        if ($jsonRaw === false) {
+            @unlink($p2brdfile);
+            P2Util::pushInfoHtml("<p>p2 error: {$cachefile} を読み込めませんでした。</p>");
+            return false;
+        }
+
+        $json = json_decode($jsonRaw, true);
+        if ($json === null || empty($json['menu_list'])) {
+            @unlink($p2brdfile);
+            if (!$word) {
+                P2Util::pushInfoHtml("<p>p2 error: {$cachefile} から板メニューを生成することはできませんでした。</p>");
+            }
+            return false;
+        }
+
+        $json = mb_convert_encoding($json, 'CP932', 'UTF-8');
+
+        $cont = '';
+        foreach ($json['menu_list'] as $category) {
+            $catName = $category['category_name'];
+            $boards = '';
+
+            foreach ($category['category_content'] as $board) {
+                $dirName = $board['directory_name'];
+                if (empty($dirName) || $dirName === 'NONE') {
+                    continue;
+                }
+
+                $url = $board['url'];
+                $host = parse_url($url, PHP_URL_HOST);
+                $host = P2Util::normalizeHostName($host);
+                $boardName = $board['board_name'];
+
+                $boards .= "\t{$host}\t{$dirName}\t{$boardName}\n";
+            }
+
+            if ($boards) {
+                $cont .= $catName . "\t0\n" . $boards;
+            }
+        }
+
+        if ($cont) {
+            if (FileCtl::file_write_contents($p2brdfile, $cont) === false) {
+                p2die("{$p2brdfile} を更新できませんでした");
+            }
+            $this->setBrdMatch($p2brdfile, 'brd');
+            $brdLines = FileCtl::file_read_lines($p2brdfile);
+            $this->setBrdList($brdLines);
             return $p2brdfile;
         } else {
             @unlink($p2brdfile);

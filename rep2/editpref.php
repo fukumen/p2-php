@@ -9,6 +9,7 @@ $_login->authorize(); // ユーザ認証
 
 $deltitles = array(
     'cookie'    => 'Cookie',
+    'key'       => 'Key',
     'matome'    => '新着まとめ読み',
     'recent'    => '最近読んだスレ',
     'reshist'  => '書き込み履歴',
@@ -114,6 +115,10 @@ if (isset($_POST['sync'])) {
                     P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>');
                 }
             }
+            break;
+        case 'key':
+            // key
+            $delflag = KeyDataStore::clear() === false ? false : true;
             break;
         case 'matome':
             // 新着まとめ読み

@@ -205,6 +205,7 @@ class ShowThreadPc extends ShowThread
 
         // BEプロファイルリンク変換
         $date_id = $this->replaceBeId($date_id, $i);
+        $date_id = $this->replaceTid($date_id);
 
         // BE＆絵文字アイコンリンク変換
         $msg = $this->replaceSsspIcon($msg);
@@ -429,6 +430,7 @@ EOJS;
 
         // BEプロファイルリンク変換
         $date_id = $this->replaceBeId($date_id, $i);
+        $date_id = $this->replaceTid($date_id);
 
         // BE＆絵文字アイコンリンク変換
         $msg = $this->replaceSsspIcon($msg);

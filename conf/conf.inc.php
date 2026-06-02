@@ -7,7 +7,7 @@
 // バージョン情報
 $_conf = array(
     'p2name'    => 'rep2-expack_allinone',   // rep2の名前
-    'p2version' => '260101.0021',   // rep2のバージョン
+    'p2version' => '260101.0022',   // rep2のバージョン
 );
 
 $_conf['p2ua'] = "{$_conf['p2name']}/{$_conf['p2version']}";
@@ -265,6 +265,7 @@ function p2_init()
         'login_log_file'    => 'p2_login.log.php',      // ログイン履歴 (データPHP)
         'login_failed_log_file' => 'p2_login_failed.dat.php',   // ログイン失敗履歴 (データPHP)
         'sid2chapi_php'     => 'p2_sid2chapi.php',      // 2ch APIセッションID記録ファイル (データPHP)
+        'sidtalkapi_file'   => 'p2_sidtalkapi.srd',     // Talk APIセッションID記録ファイル (シリアライズドデータ)
         'donguri_cache'     => 'p2_donguri.cache',      // どんぐり基地の情報キャッシュ(シリアライズドデータ)
     );
     foreach ($preferences as $k => $v) {
@@ -278,6 +279,7 @@ function p2_init()
     $_conf['post_db_path']      = $_conf['db_dir'] . '/p2_post_data.sqlite3';
     $_conf['hostcheck_db_path'] = $_conf['db_dir'] . '/p2_hostcheck_cache.sqlite3';
     $_conf['matome_db_path']    = $_conf['db_dir'] . '/p2_matome_cache.sqlite3';
+    $_conf['key_db_path']       = $_conf['db_dir'] . '/p2_keys.sqlite3';
     $_conf['iv2_cache_db_path'] = $_conf['db_dir'] . '/iv2_cache.sqlite3';
 
     // 補正

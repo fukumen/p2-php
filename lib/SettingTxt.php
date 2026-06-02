@@ -75,7 +75,7 @@ class SettingTxt
         global $_conf;
 
         // ‚Ü‚¿BBSE‚µ‚½‚ç‚Î ‚Í SETTING.TXT ‚ª‘¶İ‚µ‚È‚¢‚à‚Ì‚Æ‚·‚é
-        if (P2HostMgr::isHostMachiBbs($this->_host) || P2HostMgr::isHostJbbsShitaraba($this->_host)) {
+        if (P2HostMgr::isHostMachiBbs($this->_host) || P2HostMgr::isHostJbbsShitaraba($this->_host) || P2HostMgr::isHostTalk($this->_host)) {
             return false;
         }
 

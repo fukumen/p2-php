@@ -21,6 +21,7 @@ $hd['proxy_checked'] = '';
 
 $htm['beres'] = '';
 $htm['p2res'] = '';
+$htm['talk_account'] = '';
 $htm['sage_cb'] = '';
 $htm['maru_post'] = '';
 $htm['block_submit'] = '';
@@ -172,7 +173,7 @@ EOP;
 }
 
 // }}}
-// {{{ ●/Be 書き込み チェックボックス
+// {{{ ●/Be/Talk 書き込み チェックボックス
 
 //  2ch●書き込み
 if (P2HostMgr::isHost2chs($host) and file_exists($_conf['sid2ch_php'])) {
@@ -184,6 +185,15 @@ if (P2HostMgr::isHost2chs($host) and file_exists($_conf['sid2ch_php'])) {
 if (P2HostMgr::isHost2chs($host) and P2Util::isEnableBe2ch()) {
     $htm['beres'] = '<input type="checkbox" id="beres" name="beres" value="1"'. $hd['beres_checked'] . '>'
                   . '<label for="beres">Beで書き込む</label>';
+}
+
+// Talk アカウント連携
+if (P2HostMgr::isHostTalk($host) && file_exists($_conf['sidtalkapi_file'])) {
+    require_once P2_LIB_DIR . '/authtalkapi.inc.php';
+    if (AuthTalkAPI::is_login()) {
+        $htm['talk_account'] = '<input type="checkbox" id="talk_account" name="talk_account" value="1">'
+                          . '<label for="talk_account">アカウント連携する</label>';
+    }
 }
 
 // }}}

@@ -560,6 +560,10 @@ class Thread
             $bbs_cgi = ($mobile) ? 'i.cgi' : 'read.cgi';
             $motothre_url = "{$scheme}://{$host}/bbs/{$bbs_cgi}/{$category}/{$this->bbs}/{$this->key}/{$ls}";
 
+        // talk
+        } elseif (P2HostMgr::isHostTalk ($this->host)) {
+            $motothre_url = "{$scheme}://{$this->host}/boards/{$this->bbs}/{$this->key}";
+
         // ‚»‚Ì‘¼
         } else {
             $motothre_url = "{$scheme}://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/{$ls}";

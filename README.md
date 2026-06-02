@@ -30,6 +30,8 @@
 * 画像アップローダ(imgur/imgbb/catbox/litterbox)に対応
 * ログインロックアウト機能を追加([詳細はこちら](doc/README-lockout.md))
 * フォント設定の見直し、アクティブモナーのスマホ対応、アクティブモナー用のWebフォント(Textar)に対応
+* ワッチョイ対応
+* talk.jp対応([詳細はこちら](doc/README-talkjp.md))
 
 なお、5ch以外やpinkでは全くテストしていません。
 

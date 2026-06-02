@@ -20,7 +20,7 @@ class P2Commun
      * @param $method HTTP_Request2と同じ
      * @return HTTP_Request2
      */
-    static public function createHTTPRequest($url , $method = HTTP_Request2::METHOD_GET)
+    static public function createHTTPRequest($url , $method = HTTP_Request2::METHOD_GET, $ua = null)
     {
         global $_conf;
 
@@ -39,7 +39,7 @@ class P2Commun
 
         // よく使うヘッダを指定
         // p2のHTTP通信は特に指定の無い限りMonazillaを名乗るようにする
-        $req->setHeader ('User-Agent', self::getP2UA(true,P2HostMgr::isHost2chs($purl['host'])));
+        $req->setHeader ('User-Agent', $ua ?? self::getP2UA(true,P2HostMgr::isHost2chs($purl['host'])));
         $req->setHeader ('Accept-Language', 'ja,en-us;q=0.7,en;q=0.3');
         $req->setHeader ('Accept', '*/*');
         $req->setHeader ('Accept-Encoding', 'gzip, deflate');
@@ -238,4 +238,29 @@ class P2Commun
             return false; // $error_msg
         }
     }
+
+    // {{{ getDebugInfo()
+    
+    /**
+     * デバッグ情報取得
+     */
+    public static function getDebugInfo($req, $response, $post_data = null)
+    {
+        $debug_txt = $req->getMethod() . ' ' . $req->getUrl() . "\n";
+        $debug_txt .= "request headers\n";
+        foreach ($req ? $req->getHeaders() : array() as $name => $val) {
+            $debug_txt .= "{$name}: {$val}\n";
+        }
+        $debug_txt .= "\nrequest body\n";
+        foreach ($post_data ? $post_data : array() as $name => $val) {
+            $debug_txt .= "{$name}: {$val}\n";
+        }
+        $debug_txt .= "\nresponse headers\n";
+        foreach ($response ? $response->getHeader() : array() as $name => $val) {
+            $debug_txt .= "{$name}: {$val}\n";
+        }
+        return $debug_txt;
+    }
+    
+    // }}}
 }

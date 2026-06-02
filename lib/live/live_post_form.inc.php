@@ -88,6 +88,7 @@ $htm['post_form'] = <<<EOP
 <b class="thre_title" id="write_regulation"></b>
 <span id="write_reg_byou"></span>
 {$htm['beres']}
+{$htm['talk_account']}
 {$htm['p2res']}
 {$htm['samba']}
 {$htm['k_br']}{$savedraft}

@@ -91,6 +91,7 @@ class ShowThreadLive extends ShowThreadPc
 
         // BEプロファイルリンク変換
         $date_id = $this->replaceBeId($date_id, $i);
+        $date_id = $this->replaceTid($date_id);
 
         // IDフィルタ
         if ($_conf['flex_idpopup'] == 1 && $id && $this->thread->idcount[$id] > 1) {

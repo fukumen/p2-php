@@ -97,6 +97,12 @@ echo <<<EOP
     <li><a href="auth2chapi.php{$_conf['k_at_q']}">2ch API”FØŠÇ—</a></li>
 EOP;
 }
+
+if ($_conf['talkapi_use'] == 1) {
+echo <<<EOP
+    <li><a href="authtalkapi.php{$_conf['k_at_q']}">talk API”FØŠÇ—</a></li>
+EOP;
+}
 echo '</ul>';
 
 

@@ -260,6 +260,7 @@ class ShowThreadK extends ShowThread
 
         // BEプロファイルリンク変換
         $date_id = $this->replaceBeId($date_id, $i);
+        $date_id = $this->replaceTid($date_id);
 
         // NGメッセージ変換
         if ($ng_type != self::NG_NONE && count($ng_info)) {

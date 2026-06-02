@@ -419,6 +419,23 @@ class P2HostMgr
     }
 
     // }}}
+    // {{{ normalizeTalkHost()
+
+    /**
+     * talk.jp ånÉzÉXÉgÇê≥ãKâªÇ∑ÇÈ
+     *
+     * @param   string $host
+     * @return  string
+     */
+    static public function normalizeTalkHost($host)
+    {
+        if ($host === 'classic.talk-platform.com') {
+            return 'talk.jp';
+        }
+        return $host;
+    }
+
+    // }}}
     // {{{ isHostTor()
 
     /**
@@ -483,6 +500,23 @@ class P2HostMgr
             self::$_hostIsJikkyoOrg[$host] = (bool)preg_match('/\\.(jikkyo\\.org)$/', $host);
         }
         return self::$_hostIsJikkyoOrg[$host];
+    }
+
+    // }}}
+    // {{{ isHostTalk()
+
+    /**
+     * host Ç™ talk.jp Ç»ÇÁ true Çï‘Ç∑
+     *
+     * @param string $host
+     * @return bool
+     */
+    static public function isHostTalk($host)
+    {
+        if ($host === 'talk.jp') {
+            return true;
+        }
+        return false;
     }
 
     // }}}
