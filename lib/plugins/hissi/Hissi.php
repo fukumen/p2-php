@@ -64,8 +64,8 @@ class Hissi
         global $_conf;
 
         $path = P2Util::cacheFileForDL($this->menuUrl);
-        // メニューのキャッシュ時間の10倍キャッシュ
-        P2Commun::fileDownload($this->menuUrl, $path, $_conf['menu_dl_interval'] * 36000);
+        // メニューのキャッシュ時間の10倍キャッシュ、エラー時はキャッシュ時間を延長
+        P2Commun::fileDownload($this->menuUrl, $path, $_conf['menu_dl_interval'] * 36000, true, false, $_conf['menu_dl_interval'] * 3600);
 
         $this->boards = array();
         $file = @file_get_contents($path);

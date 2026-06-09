@@ -171,7 +171,8 @@ class P2Commun
     static public function fileDownload($url, $localfile,
                                         $cache_time = 0,
                                         $disp_error = true,
-                                        $trace_redirection = false)
+                                        $trace_redirection = false,
+                                        $error_cache_time = 0)
     {
         global $_conf;
 
@@ -206,6 +207,12 @@ class P2Commun
 
         // エラーが出たらnullを返して終わり
         if (isset($error_msg) && strlen($error_msg) > 0) {
+            if ($error_cache_time > 0 && file_exists($localfile)) {
+                $new_mtime = time() - $cache_time + $error_cache_time;
+                if ($new_mtime > filemtime($localfile)) {
+                    @touch($localfile, $new_mtime);
+                }
+            }
             // エラーメッセージを設定
             if ($disp_error) {
                 $url_t = P2Util::throughIme($url);
