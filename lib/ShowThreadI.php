@@ -752,14 +752,17 @@ EOP;
             return $idstr;
         }
 
-        if ($_conf['coloredid.enable'] > 0 && preg_match("|^ID: ?[0-9A-Za-z/.+]+|",$idstr)) {
+        // 文字集合のうち「:*」はIPv6形式用
+        if ($_conf['coloredid.enable'] > 0
+            && strlen($id) >= 4
+            && preg_match("<^(?:ID:|発信元:) ?[0-9A-Za-z/.+:*]+>",$idstr)) {
             if ($this->_ids_for_render === null) {
                 $this->_ids_for_render = array();
             }
-            $this->_ids_for_render[substr($id, 0, 8)] = $this->thread->idcount[$id];
+            $this->_ids_for_render[$id] = $this->thread->idcount[$id];
             if ($_conf['coloredid.click'] > 0) {
                 $id_click_evt = ($_conf['coloredid.smartphone.tap']) ? "{type:'dblclick'}" : "event";
-                $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedId($id) . '" onClick="idCol.click(\'' . substr($id, 0, 8) . '\', ' . $id_click_evt . '); return false;">' . $num_ht . '</a>';
+                $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedId($idstr, $id) . '" onClick="idCol.click(\'' . $id . '\', ' . $id_click_evt . '); return false;">' . $num_ht . '</a>';
             }
             $idstr = $this->_coloredIdStr(
                 $idstr, $id, $_conf['coloredid.click'] > 0 ? true : false);

@@ -2249,10 +2249,10 @@ abstract class ShowThread
     {
         global $_conf;
         $ret = array();
-        $arr = explode(':', $idstr);
+        $arr = explode(':', $idstr, 2);
         foreach ($arr as $i => $str) {
             if ($i == 1 || ($i == 0 && $_conf['coloredid.label'])) {
-                $ret[] = '<span class="' . self::cssClassedId($id)
+                $ret[] = '<span class="' . self::cssClassedId($idstr, $id)
                     . ($i == 0 ? '-l' : '-b') . '">' . $str . '</span>';
             } else {
                 $ret[] = $str;
@@ -2277,11 +2277,16 @@ abstract class ShowThread
         if (isset($this->idstyles[$id])) {
             $colored = $this->idstyles[$id];
         } else {
-            $colored = coloredIdStyle0($id, $this->thread->idcount[$id]);
+            $colored = coloredIdStyle0($idstr, $id, $this->thread->idcount[$id]);
             $this->idstyles[$id] = $colored;
         }
+
+        if (empty($colored)) {
+            return $idstr;
+        }
+
         $ret = array();
-        foreach ($arr = explode(':', $idstr) as $i => $str) {
+        foreach ($arr = explode(':', $idstr, 2) as $i => $str) {
             if ($colored[$i] && ($i == 1 || ($i == 0 && $_conf['coloredid.label']))) {
                 $ret[] = "<span style=\"{$colored[$i]}\">{$str}</span>";
             } else {
@@ -2304,11 +2309,38 @@ abstract class ShowThread
         }
 
         $colored = coloredIdStyle($idstr, $id, $this->thread->idcount[$id]);
+        if (empty($colored)) {
+            return $idstr;
+        }
         $idstr2 = preg_split('/:/',$idstr,2); // コロンでID文字列を分割
         $ret = array_shift($idstr2).':';
-        if ($colored[1]) {
-            $idstr2[1] = substr($idstr2[0], 4);
-            $idstr2[0] = substr($idstr2[0], 0, 4);
+        if (isset($colored[1]) && $colored[1]) {
+            if (preg_match('/ID:/', $idstr)) {
+                $len = strlen($idstr2[0]);
+                if ($len >= 8) {
+                    $half = 4;
+                } else {
+                    $half = (int)(($len + 1) / 2);
+                }
+                $idstr2[1] = substr($idstr2[0], $half);
+                $idstr2[0] = substr($idstr2[0], 0, $half);
+            } else {
+                if (strpos($idstr2[0], ':') !== false) {
+                    // IPv6
+                    $ip_parts = preg_split('/:/', $idstr2[0]);
+                    if (count($ip_parts) >= 3) {
+                        $idstr2[1] = ':' . implode(':', array_slice($ip_parts, 2));
+                        $idstr2[0] = $ip_parts[0] . ':' . $ip_parts[1];
+                    }
+                } else {
+                    // IPv4
+                    $ip_parts = preg_split('/\\./', $idstr2[0]);
+                    if (count($ip_parts) >= 4) {
+                        $idstr2[1] = '.' . $ip_parts[2] . '.' . $ip_parts[3];
+                        $idstr2[0] = $ip_parts[0] . '.' . $ip_parts[1];
+                    }
+                }
+            }
         }
         foreach ($idstr2 as $i => $str) {
             if ($colored[$i]) {
@@ -2326,10 +2358,26 @@ abstract class ShowThread
     /**
      * IDカラーに使用するCSSクラス名をID文字列から算出して返す.
      */
-    static public function cssClassedId($id)
+    static public function cssClassedId($idstr, $id)
     {
-        return 'idcss-' . bin2hex(
-            base64_decode(str_replace('.', '+', substr($id, 0, 8))));
+        if (strpos($idstr, 'ID:') === 0) {
+            $id8 = substr(str_pad($id, 8, 'A', STR_PAD_RIGHT), 0, 8);
+            return 'idcss-' . bin2hex(
+                base64_decode(str_replace('.', '+', $id8)));
+        } else {
+            if (strpos($id, ':') !== false) {
+                $s = str_replace(array(':', '*'), '', $id);
+                $s_pad = substr(str_pad($s, 12, '0', STR_PAD_RIGHT), 0, 12);
+                return 'idcss-' . strtolower($s_pad);
+            } else {
+                $n = ip2long($id);
+                $seed = ($n !== false) ? $n : 0;
+                $hex = sprintf('%08x', $seed);
+                $n1_hex = substr($hex, 0, 6);
+                $n2_hex = substr($hex, 6, 2);
+                return 'idcss-' . $n1_hex . str_pad($n2_hex, 6, '0', STR_PAD_LEFT);
+            }
+        }
     }
 
     // }}}

@@ -7,20 +7,48 @@ var b64decs = function(){
     return ret;
 }();
 
+var ip2long = function(ip) {
+    var parts = ip.split('.');
+    if (parts.length !== 4) return 0;
+    var num = 0;
+    for (var i = 0; i < 4; i++) {
+        var val = parseInt(parts[i], 10);
+        if (isNaN(val) || val < 0 || val > 255) return 0;
+        num = (num << 8) + val;
+    }
+    return num >>> 0;
+};
+
 var halfid2num = function(idstr) {
     idstr = idstr.replace(/\./g, '+');
-        var n = (b64decs[ idstr.charAt(0) ] << 18)
-            |   (b64decs[ idstr.charAt(1) ] << 12)
-            |   (b64decs[ idstr.charAt(2) ] <<  6)
-            |   (b64decs[ idstr.charAt(3) ]);
+    var n = (b64decs[ idstr.charAt(0) ] << 18)
+        |   (b64decs[ idstr.charAt(1) ] << 12)
+        |   (b64decs[ idstr.charAt(2) ] <<  6)
+        |   (b64decs[ idstr.charAt(3) ]);
     return n;
 };
 
-var colorFromId = function(idstr, count, mode) {
-    if (idstr.length != 8) return;
-    // 色相H：値域0～360（角度）
-    var n1 = halfid2num(idstr.substr(0, 4));
-    var n2 = halfid2num(idstr.substr(4, 4));
+var colorFromId = function(id, count, mode) {
+    var n1, n2;
+
+    if (id.indexOf(':') !== -1) {
+        // IPv6
+        var s = id.replace(/[:*]/g, '');
+        var s_pad = (s + '000000000000').substr(0, 12);
+        n1 = parseInt(s_pad.substr(0, 6), 16);
+        n2 = parseInt(s_pad.substr(6, 6), 16);
+    } else if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(id)) {
+        // IPv4
+        var seed = ip2long(id);
+        n1 = (seed >>> 8) & 0xFFFFFF;
+        n2 = seed & 0xFF;
+    } else {
+        // 従来のID
+        var id8 = (id + 'AAAAAAAA').substr(0, 8);
+        n1 = halfid2num(id8.substr(0, 4));
+        n2 = halfid2num(id8.substr(4, 4));
+    }
+
     var h1 = n1 % 360;
     var h2 = n2 % 360;
     var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -38,7 +66,7 @@ var colorFromId = function(idstr, count, mode) {
                 break;
             case 'HLS':     // HLS色空間
                 // 輝度L(HLS)：値域0（黒）～0.5（純色）～1（白）
-                var L = isDark ? Math.min(0.1 + count * 0.025, 0.95) : Math.max(0.95 - count * 0.025, 0.1);
+                var L = isDark ? Math.min(0.1 + count * 0.025, 0.8) : Math.max(0.95 - count * 0.025, 0.2);
                 // 彩度S(HLS)：値域0（灰色）～1（純色）
                 var S = Math.min(count * 0.05, 1);
                 return {label : ColorLib.HLS2RGB([h2, 0.6, 0.5]),
@@ -46,7 +74,7 @@ var colorFromId = function(idstr, count, mode) {
                 break;
             case 'L*C*h':   // L*C*h色空間
                 // 明度L*(L*C*h)：値域0（黒）～50（純色）～100（白）
-                var L = isDark ? Math.min(10 + count * 2.5, 100) : Math.max(100 - count * 2.5, 10);
+                var L = isDark ? Math.min(10 + count * 2.5, 80) : Math.max(100 - count * 2.5, 20);
                 // 彩度C*(L*C*h)：値域0（灰色）～100（純色）
                 var C = Math.floor(40 * Math.sin((Math.min(count, 25) * 180 / 50) * Math.PI / 180) + 8);
                 return {label : ColorLib.LCh2RGB([50, 60, h2]),
@@ -58,10 +86,9 @@ var colorFromId = function(idstr, count, mode) {
     return ret;
 };
 
-var styleFromId = function(idstr, count, hissi, mode) {
+var styleFromId = function(id, count, hissi, mode) {
     if (mode == null) mode = 'L*C*h';
-    idstr = idstr.substr(0, 8);
-    var colors = colorFromId(idstr, count, mode);
+    var colors = colorFromId(id, count, mode);
     var f = function (c) {
         var light = c.type == 'L*C*h' ? c.LCh[0]
             : (RGB2LCh([c.r, c.g, c.b]))[0];
@@ -82,10 +109,9 @@ var cssClassFromNum = function(n1, n2) {
         + ('000000' + n2.toString(16)).slice(-6);
 };
 
-var cssClassFromId = function(idstr) {
-    var n1 = halfid2num(idstr.substr(0, 4));
-    var n2 = halfid2num(idstr.substr(4, 4));
-    return cssClassFromNum(n1, n2);
+var cssClassFromId = function(id) {
+    var colors = colorFromId(id, 0);
+    return cssClassFromNum(colors.nums[0], colors.nums[1]);
 };
 
 var toggle = function(idstr, cnt, colorStyle, hissi) {

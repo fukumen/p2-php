@@ -1212,6 +1212,9 @@ class ThreadRead extends Thread {
             if (preg_match ('<(ID: ?)([0-9A-Za-z/.+]+)(?=[^0-9A-Za-z/.+]|$)>', $lar[2], $m)) {
                 $idp[$i] = $m[1];
                 $ids[$i] = $m[2];
+            } elseif (preg_match ('<(”­MŒ³: ?)([0-9a-fA-F.:*]+)>', $lar[2], $m)) {
+                $idp[$i] = $m[1];
+                $ids[$i] = $m[2];
             }
         }
 

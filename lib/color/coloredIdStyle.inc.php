@@ -20,12 +20,11 @@ function coloredIdStyle($idstr, $id, $count=0)
         if (isset($idstyles[$id])) {
             return $idstyles[$id];
         } else {
-            //	    	$alpha=0.8;	// アルファチャネル
             // IDから色の元を抽出
 
             $coldiv=64; // 色相環の分割数
-            if (preg_match('/ID:/',$idstr)) { // IDが使える
-                $rev_id=strrev(substr($id, 0, 8));
+            if (strpos($idstr, 'ID:') === 0) { // IDが使える
+                $rev_id=strrev(str_replace('.', '+', substr($id, 0, 8)));
                 $raw = base64_decode($rev_id);		// 8文字をバイナリデータ6文字分に変換
                 $id_hex = unpack('H12', substr($raw, 0, 6));	// バイナリデータを16進文字列に変換
                 $id_bin=base_convert($id_hex[1],16,2);	// さらに2進文字列に変換
@@ -35,25 +34,30 @@ function coloredIdStyle($idstr, $id, $count=0)
                 }
 
                 $colors[0]=$arr[0];// % $coldiv;
-                $idstr2=preg_split('/:/',$idstr,2); // コロンでID文字列を分割
-                array_shift($idstr2);
 
+                if (!isset($id_color_used[$colors[0]])) {
+                    $id_color_used[$colors[0]] = 0;
+                }
                 if ($id_color_used[$colors[0]]++) {
                     $colors[1]=$colors[0]+($id_color_used[$colors[0]]-1)+1;
-                    $idstr2[1]=substr($idstr2[0],4);
-                    $idstr2[0]=substr($idstr2[0],0,4); // コロンでID文字列を分割
                 }
             } else { //シベリア板タイプ
-                $ip_hex=preg_split('/\\./',$id);
-                //var_dump($ip_hex);echo "<br>";
-                $colors[1]=$ip_hex[1] % $coldiv;
-                $idstr2=preg_split('/:/',$idstr,2); // コロンでID文字列を分割
-                $idstr2[0].=':';
+                if (strpos($id, ':') !== false) {
+                    // IPv6
+                    $s = str_replace(array(':', '*'), '', $id);
+                    $seed = hexdec(substr($s, 0, 8)) & 0x7FFFFFFF;
+                } else {
+                    // IPv4
+                    $n = ip2long($id);
+                    $seed = ($n !== false) ? ($n & 0x7FFFFFFF) : 0;
+                }
+                $colors[0] = $seed % $coldiv;
 
-                if ($id_color_used[$colors[1]]++) {
-                    $colors[2]=$colors[1]+($id_color_used[$colors[1]]-1)+1;
-                    $idstr2[2]=".{$ip_hex[2]}.{$ip_hex[3]}";
-                    $idstr2[1]="{$ip_hex[0]}.{$ip_hex[1]}"; // コロンでID文字列を分割
+                if (!isset($id_color_used[$colors[0]])) {
+                    $id_color_used[$colors[0]] = 0;
+                }
+                if ($id_color_used[$colors[0]]++) {
+                    $colors[1]=$colors[0]+($id_color_used[$colors[0]]-1)+1;
                 }
             }
             $color_param=array();
@@ -92,11 +96,7 @@ function coloredIdStyle($idstr, $id, $count=0)
                 $r=(int)$color_param[$area]['R'];
                 $g=(int)$color_param[$area]['G'];
                 $b=(int)$color_param[$area]['B'];
-                if ($opacity || !$alpha) {
-                    $bcolor[$area]="background-color:rgb({$r},{$g},{$b});";
-                } else {
-                    $bcolor[$area]="background-color:rgba({$r},{$g},{$b},{$alpha});";
-                }
+                $bcolor[$area]="background-color:rgb({$r},{$g},{$b});";
 
                 // 背景色によって文字色を変える
               $y1=158;
@@ -122,10 +122,8 @@ function coloredIdStyle($idstr, $id, $count=0)
                         $bcolor[$area].="color:#fff;";
                     }
                 }
-                $idstr2[$area]="<span style=\"{$bcolor[$area]}{$border}{$uline}{$opacity}\">{$idstr2[$area]}</span>";
             }
 //            var_dump(array('id'=>$id,'bcolor'=>$bcolor));echo "<br>";
-            $idstr=join('',$idstr2);
             $idstyles[$id] = $bcolor;
             /*array(
                 (isset($rgb[1]) ? "{$bcolor[1]}{$border}{$uline}" : ''),
@@ -135,7 +133,7 @@ function coloredIdStyle($idstr, $id, $count=0)
         }
     }
 //    var_dump(array('idstyles'=>$idstyles[$id]));echo "<br>";
-    return $idstyles[$id];
+    return isset($idstyles[$id]) ? $idstyles[$id] : array();
 }
 
 function coloredWatchoiStyle($wid32, $count)

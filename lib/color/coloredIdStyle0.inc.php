@@ -21,16 +21,34 @@ require_once __DIR__ . '/colorchange.inc.php';
  * @param   string  $count  ID出現数
  * @return  array(style1, style2 [, debug])
  */
-function coloredIdStyle0($id, $count)
+function coloredIdStyle0($idstr, $id, $count)
 {
     global $_conf, $STYLE;
 
     // IDから色の元を抽出
     $coldiv=360; // 色相環の分割数
-    $arr1 = unpack('N', pack('H', 0) .
-        base64_decode(str_replace('.', '+', substr($id, 0, 4))));
-    $arr2 = unpack('N', pack('H', 0) .
-        base64_decode(str_replace('.', '+', substr($id, 4, 4))));
+
+    if (strpos($idstr, 'ID:') === 0) {
+        $id8 = substr(str_pad($id, 8, 'A', STR_PAD_RIGHT), 0, 8);
+        $arr1 = unpack('N', pack('H', 0) .
+            base64_decode(str_replace('.', '+', substr($id8, 0, 4))));
+        $arr2 = unpack('N', pack('H', 0) .
+            base64_decode(str_replace('.', '+', substr($id8, 4, 4))));
+    } else {
+        if (strpos($id, ':') !== false) {
+            // IPv6
+            $s = str_replace(array(':', '*'), '', $id);
+            $arr1 = array(1 => hexdec(str_pad(substr($s, 0, 6), 6, '0', STR_PAD_RIGHT)));
+            $arr2 = array(1 => hexdec(str_pad(substr($s, 6, 6), 6, '0', STR_PAD_RIGHT)));
+        } else {
+            // IPv4
+            $n = ip2long($id);
+            $seed = ($n !== false) ? ($n & 0x7FFFFFFF) : 0;
+            $arr1 = array(1 => ($seed >> 7) & 0xFFFFFF);
+            $arr2 = array(1 => $seed & 0x7F);
+        }
+    }
+
     $color=$arr1[1] % $coldiv;
     $color2=$arr2[1] % $coldiv;
 
@@ -51,7 +69,7 @@ function coloredIdStyle0($id, $count)
 
         // 明度V(HSV)：値域0（暗い）～1（明るい）
         $V=1   -$count*0.025;
-        if ($L<0.1) {$L=0.1;}
+        if ($V<0.1) {$V=0.1;}
 
         $color_param=array(
             array($h,$S,$V,$colorMode), // 背景色（ID本体）
@@ -61,7 +79,7 @@ function coloredIdStyle0($id, $count)
     case 1:  // HLS色空間
         // 輝度L(HLS)：値域0（黒）～0.5（純色）～1（白）
         $L=0.95   -$count*0.025;
-        if ($L<0.1) {$L=0.1;}
+        if ($L<0.2) {$L=0.2;}
 
         // 彩度S(HLS)：値域0（灰色）～1（純色）
         $S=$count*0.05;
@@ -75,7 +93,7 @@ function coloredIdStyle0($id, $count)
     case 2:  // L*C*h色空間
         // 明度L*(L*C*h)：値域0（黒）～50（純色）～100（白）
         $L=100   -$count*2.5;
-        if ($L<10) {$L=10;}
+        if ($L<20) {$L=20;}
 
         // 彩度C*(L*C*h)：値域0（灰色）～100（純色）
         $C=floor(40*sin(deg2rad(min($count,25)*180/50)) + 8);

@@ -136,7 +136,11 @@ class ShowThreadPc extends ShowThread
         }
 
         if (($id = $this->thread->ids[$i]) !== null) {
-            $idstr = 'ID:' . $id;
+            if (str_starts_with($this->thread->idp[$i], 'ID:')) {
+                $idstr = 'ID:' . $id;
+            } else {
+                $idstr = '発信元:' . $id;
+            }
             $date_id = str_replace($this->thread->idp[$i] . $id, $idstr, $date_id);
         } else {
             $idstr = null;
@@ -406,7 +410,11 @@ EOJS;
         }
 
         if (($id = $this->thread->ids[$i]) !== null) {
-            $idstr = 'ID:' . $id;
+            if (str_starts_with($this->thread->idp[$i], 'ID:')) {
+                $idstr = 'ID:' . $id;
+            } else {
+                $idstr = '発信元:' . $id;
+            }
             $date_id = str_replace($this->thread->idp[$i] . $id, $idstr, $date_id);
         } else {
             $idstr = null;
@@ -685,13 +693,16 @@ EOP;
             return $idstr;
         }
 
-        if ($_conf['coloredid.enable'] > 0 && preg_match("|^ID: ?[0-9A-Za-z/.+]+|",$idstr)) {
+        // 文字集合のうち「:*」はIPv6形式用
+        if ($_conf['coloredid.enable'] > 0
+            && strlen($id) >= 4
+            && preg_match("<^(?:ID:|発信元:) ?[0-9A-Za-z/.+:*]+>",$idstr)) {
             if ($this->_ids_for_render === null) {
                 $this->_ids_for_render = array();
             }
-            $this->_ids_for_render[substr($id, 0, 8)] = $this->thread->idcount[$id];
+            $this->_ids_for_render[$id] = $this->thread->idcount[$id];
             if ($_conf['coloredid.click'] > 0) {
-                $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedId($id) . '" onClick="idCol.click(\'' . substr($id, 0, 8) . '\', event); return false;" onDblClick="this.onclick(event); return false;">' . $num_ht . '</a>';
+                $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedId($idstr, $id) . '" onClick="idCol.click(\'' . $id . '\', event); return false;" onDblClick="this.onclick(event); return false;">' . $num_ht . '</a>';
             }
             $idstr = $this->_coloredIdStr(
                 $idstr, $id, $_conf['coloredid.click'] > 0 ? true : false);

@@ -303,7 +303,7 @@ class ResFilter
                 $target = preg_replace('| ?ID:[0-9A-Za-z/.+?]+.*$|', '', $date_id);
                 break;
             case self::FIELD_ID:
-                if ($target = preg_replace('|^.*ID:([0-9A-Za-z/.+?]+).*$|', '$1', $date_id)) {
+                if ($target = preg_replace('|^.*ID:([0-9A-Za-z/.+?:*]+).*$|', '$1', $date_id)) {
                     break;
                 } else {
                     return '';
