@@ -1,0 +1,44 @@
+name: Daily Version and Update Check
+
+on:
+  schedule:
+    # UTC 0:00
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout p2-php
+        uses: actions/checkout@v4
+        with:
+          path: p2-php
+
+      - name: Checkout docker-rep2
+        uses: actions/checkout@v4
+        with:
+          repository: fukumen/docker-rep2
+          path: docker-rep2
+
+      - name: Checkout rep2-allinone
+        uses: actions/checkout@v4
+        with:
+          repository: fukumen/rep2-allinone
+          path: rep2-allinone
+
+      - name: Restore Previous Versions Cache
+        uses: actions/cache@v4
+        with:
+          path: p2-php/scripts/prev_versions.json
+          key: php-version-cache-${{ github.run_id }}
+          restore-keys: |
+            php-version-cache-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Version Checker
+        run: python p2-php/scripts/check_versions.py --fail-on-update --only-on-change
