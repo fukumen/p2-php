@@ -28,7 +28,12 @@ var addMimizun = function (aThread) {
 	var amenu = getSPMmenu(aThread);
 	amenu.appendItem('みみずんID検索', function(event) {
 		stophide = true;
-		showHtmlPopUp('mimizun.php?bbs=' + aThread.bbs + '&key=' + aThread.key + '&host=' + aThread.host + '&resnum=' + spmResNum, event ? event : window.event, 0);
+		var url = 'mimizun.php?bbs=' + aThread.bbs + '&key=' + aThread.key + '&host=' + aThread.host + '&resnum=' + spmResNum;
+		if (window.location.protocol === 'https:') {
+			window.open(url, '_blank');
+		} else {
+			showHtmlPopUp(url, event ? event : window.event, 0);
+		}
 	});
 };
 
@@ -36,7 +41,12 @@ var addHissi = function (aThread) {
 	var amenu = getSPMmenu(aThread);
 	amenu.appendItem('必死チェッカー', function(event) {
 		stophide = true;
-		showHtmlPopUp('hissi.php?bbs=' + aThread.bbs + '&key=' + aThread.key + '&host=' + aThread.host + '&resnum=' + spmResNum, event ? event : window.event, 0);
+		var url = 'hissi.php?bbs=' + aThread.bbs + '&key=' + aThread.key + '&host=' + aThread.host + '&resnum=' + spmResNum;
+		if (window.location.protocol === 'https:') {
+			window.open(url, '_blank');
+		} else {
+			showHtmlPopUp(url, event ? event : window.event, 0);
+		}
 	});
 };
 
@@ -44,7 +54,12 @@ var addStalker = function (aThread) {
 	var amenu = getSPMmenu(aThread);
 	amenu.appendItem('IDストーカー', function(event) {
 		stophide = true;
-		showHtmlPopUp('stalker.php?bbs=' + aThread.bbs + '&key=' + aThread.key + '&host=' + aThread.host + '&resnum=' + spmResNum, event ? event : window.event, 0);
+		var url = 'stalker.php?bbs=' + aThread.bbs + '&key=' + aThread.key + '&host=' + aThread.host + '&resnum=' + spmResNum;
+		if (window.location.protocol === 'https:') {
+			window.open(url, '_blank');
+		} else {
+			showHtmlPopUp(url, event ? event : window.event, 0);
+		}
 	});
 };
 
