@@ -216,7 +216,7 @@ $STYLE['live_highlight_word_border'] = "3px #900 double"; // ("3px #900 double")
 $STYLE['live_font-size'] = "10px"; // ("10px") +live 番号 目欄 名前 日付 ID 欄のフォントサイズ
 $STYLE['live2_color'] = "#eee"; // ("#eee") +live Type-Bの 番号 目欄 名前 日付 ID 表示部の背景色
 
-$MYSTYLE['read']['a']['font-size'] = "10px"; // ("10px") スレッド表示 リンクのフォントサイズ
+$MYSTYLE['read']['.message a']['font-size'] = "10px"; // ("10px") スレッド表示 リンクのフォントサイズ
 $MYSTYLE['read']['.thread_title']['font-size'] = "12px"; // ("12px") スレッド表示 スレタイのフォントサイズ
 $MYSTYLE['editpref']['fieldset']['background'] = "#fff"; // 設定管理の fieldset タグ内背景色
 
