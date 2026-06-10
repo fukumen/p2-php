@@ -184,6 +184,51 @@ def get_windows_php_latest_version(official_latest):
         parts[2] -= 1
     return "未提供"
 
+def check_docker_hub_tag(repository, tag):
+    token_url = f"https://auth.docker.io/token?service=registry.docker.io&scope=repository:{repository}:pull"
+    token_data = fetch_json(token_url)
+    if not token_data or 'token' not in token_data:
+        return False
+    token = token_data['token']
+    
+    url = f"https://registry-1.docker.io/v2/{repository}/manifests/{tag}"
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Accept': 'application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json'
+    }
+    
+    req = urllib.request.Request(url, headers=headers, method='HEAD')
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            return response.status == 200
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return False
+        return False
+    except Exception:
+        return False
+
+def get_docker_hub_manifest_digest(repository, tag):
+    token_url = f"https://auth.docker.io/token?service=registry.docker.io&scope=repository:{repository}:pull"
+    token_data = fetch_json(token_url)
+    if not token_data or 'token' not in token_data:
+        return None
+    token = token_data['token']
+    
+    url = f"https://registry-1.docker.io/v2/{repository}/manifests/{tag}"
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Accept': 'application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json'
+    }
+    
+    req = urllib.request.Request(url, headers=headers, method='HEAD')
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            digest = response.headers.get('Docker-Content-Digest')
+            return digest
+    except Exception:
+        return None
+
 def parse_dockerfile_base(path):
     if not os.path.exists(path):
         return {}
@@ -394,33 +439,77 @@ def main():
     rebuild_reasons = []
     # PHP
     target_php_series = d_base_vers.get('php')
-    if target_php_series and ghcr_vers.get('php'):
-        latest_patch_php = php_releases.get(target_php_series)
-        if latest_patch_php and latest_patch_php != ghcr_vers.get('php'):
-            rebuild_reasons.append(f"PHP {target_php_series}系列に最新パッチ {latest_patch_php} が存在（GHCRは {ghcr_vers.get('php')}）")
-            
-    # Alpine
     target_alpine_series = d_base_vers.get('alpine')
-    if target_alpine_series and ghcr_vers.get('alpine'):
-        latest_patch_alpine = alp_branches.get(target_alpine_series) or alp_branches.get('v' + target_alpine_series)
-        if latest_patch_alpine and latest_patch_alpine != ghcr_vers.get('alpine'):
-            rebuild_reasons.append(f"Alpine {target_alpine_series}系列に最新パッチ {latest_patch_alpine} が存在（GHCRは {ghcr_vers.get('alpine')}）")
+    # Check if local base image exists on Docker Hub
+    base_exists = False
+    if target_php_series and target_alpine_series:
+        local_base_tag = f"{target_php_series}-fpm-alpine{target_alpine_series}"
+        base_exists = check_docker_hub_tag("library/php", local_base_tag)
+        if not base_exists:
+            print_warn(f"ローカル設定に対応するベースイメージ php:{local_base_tag} が Docker Hub に存在しません。")
+
+    if base_exists:
+        # PHP
+        if target_php_series and ghcr_vers.get('php') and target_alpine_series:
+            latest_patch_php = php_releases.get(target_php_series)
+            if latest_patch_php and latest_patch_php != ghcr_vers.get('php'):
+                alias_tag = f"{target_php_series}-fpm-alpine{target_alpine_series}"
+                patch_tag = f"{latest_patch_php}-fpm-alpine{target_alpine_series}"
+                
+                # Compare digests to ensure the alias tag is already pointing to the new patch release
+                alias_digest = get_docker_hub_manifest_digest("library/php", alias_tag)
+                patch_digest = get_docker_hub_manifest_digest("library/php", patch_tag)
+                
+                if alias_digest and patch_digest and alias_digest == patch_digest:
+                    rebuild_reasons.append(f"PHP {target_php_series}系列に最新パッチ {latest_patch_php} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('php')}）")
+                else:
+                    print_warn(f"PHP {latest_patch_php} が公式リリースされていますが、Docker Hubのエイリアスイメージ {alias_tag} への反映がまだ完了していません。")
+                
+        # Alpine
+        if target_alpine_series and ghcr_vers.get('alpine') and target_php_series:
+            latest_patch_alpine = alp_branches.get(target_alpine_series) or alp_branches.get('v' + target_alpine_series)
+            if latest_patch_alpine and latest_patch_alpine != ghcr_vers.get('alpine'):
+                if check_docker_hub_tag("library/alpine", latest_patch_alpine):
+                    rebuild_reasons.append(f"Alpine {target_alpine_series}系列に最新パッチ {latest_patch_alpine} が存在（GHCRは {ghcr_vers.get('alpine')}、Docker Hubイメージあり）")
+                else:
+                    print_warn(f"Alpine {latest_patch_alpine} が公式リリースされていますが、Docker Hub に alpine:{latest_patch_alpine} がまだ用意されていません。")
+            
+        # Caddy
+        target_caddy_series = d_vers.get('caddy')
+        if target_caddy_series and ghcr_vers.get('caddy') and caddy_latest:
+            if caddy_latest.startswith(target_caddy_series + '.'):
+                if caddy_latest != ghcr_vers.get('caddy'):
+                    alias_tag = f"{target_caddy_series}-alpine"
+                    patch_tag = f"{caddy_latest}-alpine"
+                    
+                    alias_digest = get_docker_hub_manifest_digest("library/caddy", alias_tag)
+                    patch_digest = get_docker_hub_manifest_digest("library/caddy", patch_tag)
+                    
+                    if alias_digest and patch_digest and alias_digest == patch_digest:
+                        rebuild_reasons.append(f"Caddy {target_caddy_series}系列に最新パッチ {caddy_latest} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('caddy')}）")
+                    else:
+                        print_warn(f"Caddy {caddy_latest} が公式リリースされていますが、Docker Hubのエイリアスイメージ {alias_tag} への反映がまだ完了していません。")
             
     if rebuild_reasons:
-        print_warn("ベースイメージの再ビルドが必要です。")
+        print_warn("ベースイメージまたはCaddyの再ビルドが必要です。")
         for reason in rebuild_reasons:
             print(f"  - {reason}")
     else:
-        print_ok("ベースイメージは最新パッチを維持しています。再ビルドは不要です。")
+        print_ok("ベースイメージおよびCaddyは最新パッチを維持しています。再ビルドは不要です。")
         
     # 2. Dockerfile / Dockerfile.base 更新
     update_reasons = []
     # Alpine series update
-    if alp_latest and target_alpine_series:
+    if alp_latest and target_alpine_series and target_php_series:
         alp_latest_clean = alp_latest.lstrip('v')
         alp_latest_mm = '.'.join(alp_latest_clean.split('.')[:2])
         if alp_latest_mm != target_alpine_series:
-            update_reasons.append(f"Alpine の新系列 {alp_latest_mm} が利用可能（Dockerfile.baseは {target_alpine_series}）")
+            # We must check if the alias tag is available on Docker Hub for building
+            php_tag = f"{target_php_series}-fpm-alpine{alp_latest_mm}"
+            if check_docker_hub_tag("library/php", php_tag):
+                update_reasons.append(f"Alpine の新系列 {alp_latest_mm} が利用可能（Dockerfile.baseは {target_alpine_series}、Docker Hubイメージあり）")
+            else:
+                print_warn(f"Alpine の新系列 {alp_latest_mm} が公式リリースされましたが、Docker Hub に php:{php_tag} がまだ用意されていません。")
     # PHP series update
     latest_php_series = max(php_releases.keys()) if php_releases else None
     if latest_php_series and target_php_series and latest_php_series != target_php_series:
@@ -430,7 +519,16 @@ def main():
     if caddy_latest and target_caddy_series:
         caddy_latest_mm = '.'.join(caddy_latest.split('.')[:2])
         if caddy_latest_mm != target_caddy_series:
-            update_reasons.append(f"Caddy の新系列 {caddy_latest_mm} が利用可能（Dockerfileは {target_caddy_series}）")
+            alias_tag = f"{caddy_latest_mm}-alpine"
+            patch_tag = f"{caddy_latest}-alpine"
+            
+            alias_digest = get_docker_hub_manifest_digest("library/caddy", alias_tag)
+            patch_digest = get_docker_hub_manifest_digest("library/caddy", patch_tag)
+            
+            if alias_digest and patch_digest and alias_digest == patch_digest:
+                update_reasons.append(f"Caddy の新系列 {caddy_latest_mm} が利用可能（Dockerfileは {target_caddy_series}、Docker Hubイメージに反映済み）")
+            else:
+                print_warn(f"Caddy の新系列 {caddy_latest_mm} が公式リリースされましたが、Docker Hubのエイリアスイメージ {alias_tag} への反映がまだ完了していません。")
     # Composer update
     target_composer = d_base_vers.get('composer')
     if composer_latest and target_composer and composer_latest != target_composer:
