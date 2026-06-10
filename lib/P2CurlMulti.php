@@ -33,8 +33,7 @@ class P2CurlMulti
         foreach ($subjects as $key => $subject) {
             list($host, $bbs) = explode("_", $key);
 
-            $scheme = P2Util::selectScheme($host);
-            $url = "{$scheme}://{$host}/{$bbs}/subject.txt";
+            $url = SubjectTxt::getSubjectUrl($host, $bbs);
             $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
 
             if (!$force && file_exists($file) && $time <= filemtime($file)) {
@@ -136,15 +135,16 @@ class P2CurlMulti
             $data = curl_multi_getcontent($ch_array);
             $header_size = $tmp['header_size'];
 
-            if (P2HostMgr::isHostJbbsShitaraba($host) || P2HostMgr::isHostBe2chs($host)) {
-                $data = mb_convert_encoding($data, 'CP932', 'CP51932');
-            }
-
             // 304Ç™óàÇ»Ç©Ç¡ÇΩÇ∆Ç´óp
             if($tmp['http_code']  != "304" && $tmp['before_time'] <= $tmp['after_time']){
                 $body   = substr($data, $header_size);
-                if (file_put_contents($file, $body) === false) {
-                    error_log("cannot write file.[$file]\n");
+                try {
+                    $body   = SubjectTxt::convertSubjectBody($host, $body);
+                    if (file_put_contents($file, $body) === false) {
+                        error_log("cannot write file.[$file]\n");
+                    }
+                } catch (Exception $e) {
+                    error_log($e->getMessage() . " for {$host}_{$bbs}\n");
                 }
             }
         }
@@ -188,6 +188,7 @@ class P2CurlMulti
                     continue;
                 }
 
+                $host = P2HostMgr::normalize5chHost($host);
                 $key = sprintf($makeIdFormat, $host, $bbs);
                 if (isset($subjects[$key])) {
                     continue;
@@ -206,12 +207,14 @@ class P2CurlMulti
                     continue;
                 }
 
-                $key = sprintf($makeIdFormat, $s['host'], $s['bbs']);
+                $host = P2HostMgr::normalize5chHost($s['host']);
+                $bbs = $s['bbs'];
+                $key = sprintf($makeIdFormat, $host, $bbs);
                 if (isset($subjects[$key])) {
                     continue;
                 }
 
-                $subjects[$key] = array($s['host'], $s['bbs']);
+                $subjects[$key] = array($host, $bbs);
             }
 
         // è„ãLà»äO

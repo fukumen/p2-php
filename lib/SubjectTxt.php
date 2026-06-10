@@ -30,17 +30,7 @@ class SubjectTxt
         $this->storage = 'file';
 
         $this->subject_file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
-        if (P2HostMgr::isHostTalk($host)) {
-            $this->subject_url = P2Util::selectScheme($host) . '://' . $host . '/api/boards/' . $bbs . '/threads';
-        } else {
-            $this->subject_url = P2Util::selectScheme($host) . '://' . $host . '/' . $bbs . '/subject.txt';
-
-            // したらばのlivedoor移転に対応。読込先をlivedoorとする。
-            if(P2HostMgr::isHostJbbsShitaraba($host))
-            {
-                $this->subject_url = P2HostMgr::adjustHostJbbs($this->subject_url);
-            }
-        }
+        $this->subject_url = self::getSubjectUrl($this->host, $this->bbs);
 
         // subject.txtをダウンロード＆セットする
         $this->dlAndSetSubject();
@@ -112,19 +102,10 @@ class SubjectTxt
             } elseif ($code == 200 || $code == 206) {
                 //var_dump($req->getResponseHeader());
                 $body = $response->getBody();
-                // したらば or be.2ch.net ならEUCをSJISに変換
-                if (P2HostMgr::isHostJbbsShitaraba($this->host) || P2HostMgr::isHostBe2chs($this->host)) {
-                    $body = mb_convert_encoding($body, 'CP932', 'CP51932');
-                } elseif (P2HostMgr::isHostTalk($this->host)) {
-                    $json = json_decode($body, true);
-                    if (!isset($json['data']['threads'])) {
-                        p2die('talk.jp API Invalid response');
-                    }
-                    $subject_txt = "";
-                    foreach ($json['data']['threads'] as $t) {
-                        $subject_txt .= "{$t['timestamp']}.dat<>". str_replace('<', '&lt;', $t['title']). " ({$t['comment_count']})\n";
-                    }
-                    $body = mb_convert_encoding($subject_txt, 'CP932', 'UTF-8');
+                try {
+                    $body = self::convertSubjectBody($this->host, $body);
+                } catch (Exception $e) {
+                    p2die($e->getMessage());
                 }
                 if (FileCtl::file_write_contents($this->subject_file, $body) === false) {
                     p2die('cannot write file');
@@ -208,6 +189,59 @@ class SubjectTxt
         } else {
             return false;
         }
+    }
+
+    // }}}
+    // {{{ getSubjectUrl()
+
+    /**
+     * ホストとBBS名から、適切なsubject.txt（またはAPI）のURLを生成する
+     *
+     * @param string $host
+     * @param string $bbs
+     * @return string
+     */
+    public static function getSubjectUrl($host, $bbs)
+    {
+        if (P2HostMgr::isHostTalk($host)) {
+            $url = P2Util::selectScheme($host) . '://' . $host . '/api/boards/' . $bbs . '/threads';
+        } else {
+            $url = P2Util::selectScheme($host) . '://' . $host . '/' . $bbs . '/subject.txt';
+
+            if (P2HostMgr::isHostJbbsShitaraba($host)) {
+                $url = P2HostMgr::adjustHostJbbs($url);
+            }
+        }
+        return $url;
+    }
+
+    // }}}
+    // {{{ convertSubjectBody()
+
+    /**
+     * ダウンロードした生データを5ch互換のsubject.txt形式（CP932）に変換する
+     *
+     * @param string $host
+     * @param string $body
+     * @return string
+     * @throws Exception
+     */
+    public static function convertSubjectBody($host, $body)
+    {
+        if (P2HostMgr::isHostJbbsShitaraba($host) || P2HostMgr::isHostBe2chs($host)) {
+            $body = mb_convert_encoding($body, 'CP932', 'CP51932');
+        } elseif (P2HostMgr::isHostTalk($host)) {
+            $json = json_decode($body, true);
+            if ($json === null || !isset($json['data']['threads'])) {
+                throw new Exception('talk.jp API Invalid response');
+            }
+            $subject_txt = "";
+            foreach ($json['data']['threads'] as $t) {
+                $subject_txt .= "{$t['timestamp']}.dat<>". str_replace('<', '&lt;', $t['title']). " ({$t['comment_count']})\n";
+            }
+            $body = mb_convert_encoding($subject_txt, 'CP932', 'UTF-8');
+        }
+        return $body;
     }
 
     // }}}
