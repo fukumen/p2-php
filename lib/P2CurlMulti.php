@@ -6,10 +6,13 @@ class P2CurlMulti
     private $mh;
     private $ch;
     private $file_update;
-    private $mode;
 
-    private function __construct() {
+    public function __construct() {
+        global $_conf;
+
         $this->mh = curl_multi_init();
+        curl_multi_setopt($this->mh, CURLMOPT_MAX_HOST_CONNECTIONS, $_conf['expack.curl_per_host']);
+
         $this->ch = array();
         $this->file_update = array();
     }
@@ -23,131 +26,113 @@ class P2CurlMulti
     }
 
 
-    private function add($subjects, $force = false) {
+    public function add($key, $url, $header = array(), $before_time = 0) {
         global $_conf;
 
-        if(empty($subjects)){ return; }
+        if (empty($url)) { return false; }
+        if (isset($this->ch[$key])) { return false; }
 
-        $time = time() - $_conf['sb_dl_interval'];
+        $host = parse_url($url, PHP_URL_HOST);
 
-        foreach ($subjects as $key => $subject) {
-            list($host, $bbs) = explode("_", $key);
+        $this->ch[$key] = curl_init();
+        $this->file_update[$key] = $before_time;
 
-            $url = SubjectTxt::getSubjectUrl($host, $bbs);
-            $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
+        curl_setopt($this->ch[$key], CURLOPT_URL, $url);
+        curl_setopt($this->ch[$key], CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($this->ch[$key], CURLOPT_TIMEOUT, $_conf['http_read_timeout']);
+        curl_setopt($this->ch[$key], CURLOPT_CONNECTTIMEOUT, $_conf['http_conn_timeout']);
+        curl_setopt($this->ch[$key], CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($this->ch[$key], CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
+        curl_setopt($this->ch[$key], CURLOPT_FILETIME, true);
+        curl_setopt($this->ch[$key], CURLOPT_HTTPHEADER, $header);
+        curl_setopt($this->ch[$key], CURLINFO_HEADER_OUT, true);
+        curl_setopt($this->ch[$key], CURLOPT_HEADER, true);
 
-            if (!$force && file_exists($file) && $time <= filemtime($file)) {
-                continue;
-            }
-
-            $this->ch[$key] = curl_init();
-
-            $this->file_update[$key] = file_exists($file) ? filemtime($file) : 0;
-
-            // dat取得用header生成
-            $header = array();
-            $header[] = "If-Modified-Since: " . gmdate('D, d M Y H:i:s T', $this->file_update[$key]);
-            $header[] = "Connection: close";
-
-            curl_setopt($this->ch[$key], CURLOPT_URL, $url);
-            curl_setopt($this->ch[$key], CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($this->ch[$key], CURLOPT_TIMEOUT, $_conf['http_read_timeout']);
-            curl_setopt($this->ch[$key], CURLOPT_CONNECTTIMEOUT, $_conf['http_conn_timeout']);
-            curl_setopt($this->ch[$key], CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($this->ch[$key], CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
-            curl_setopt($this->ch[$key], CURLOPT_FILETIME, true);
-            curl_setopt($this->ch[$key], CURLOPT_HTTPHEADER, $header);
-            curl_setopt($this->ch[$key], CURLINFO_HEADER_OUT, true);
-            curl_setopt($this->ch[$key], CURLOPT_HEADER, true);
-            curl_setopt($this->ch[$key], CURLOPT_MAXCONNECTS, $_conf['expack.curl_per_host']);
-
-            // User-Agent
-            if(P2HostMgr::isHost2chs($host) && !P2HostMgr::isNotUse2chsAPI($host) && $_conf['2chapi_use']){
-                $user_agent = sprintf ($_conf['2chapi_ua.read'], $_conf['2chapi_appname']);
-            } else {
-                $user_agent = P2Commun::getP2UA(true, P2HostMgr::isHost2chs($host));
-            }
-            curl_setopt($this->ch[$key], CURLOPT_USERAGENT, $user_agent);
-
-            // プロキシ
-            if ($_conf['tor_use'] && P2HostMgr::isHostTor($host, 0)) { // Tor(.onion)はTor用の設定をセット
-                $tor_user_info = sprintf("%s%s@", $_conf['tor_proxy_user'], empty($_conf['tor_proxy_password']) ? "" : ":{$_conf['tor_proxy_password']}");
-                $tor_address   = "{$_conf['tor_proxy_host']}:{$_conf['tor_proxy_port']}";
-                $address = sprintf("http://%s%s", strpos($tor_user_info, "@") === 0 ? "" : $tor_user_info, $tor_address);
-
-                curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
-
-                if($_conf['tor_proxy_mode'] == 'socks5'){
-                    curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
-                }
-
-            } elseif ($_conf['proxy_use']) {
-                $proxy_user_info = sprintf("%s%s@", $_conf['proxy_user'], empty($_conf['proxy_password']) ? "" : ":{$_conf['proxy_password']}");
-                $proxy_address   = "{$_conf['proxy_host']}:{$_conf['proxy_port']}";
-                $address = sprintf("http://%s%s", strpos($proxy_user_info, "@") === 0 ? "" : $proxy_user_info, $proxy_address);
-
-                curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
-
-                if($_conf['proxy_mode'] == 'socks5'){
-                    curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
-                }
-            }
-
-            curl_multi_add_handle($this->mh, $this->ch[$key]);
+        // User-Agent
+        if(P2HostMgr::isHost2chs($host) && !P2HostMgr::isNotUse2chsAPI($host) && $_conf['2chapi_use']){
+            $user_agent = sprintf ($_conf['2chapi_ua.read'], $_conf['2chapi_appname']);
+        } else {
+            $user_agent = P2Commun::getP2UA(true, P2HostMgr::isHost2chs($host));
         }
+        curl_setopt($this->ch[$key], CURLOPT_USERAGENT, $user_agent);
+
+        // プロキシ
+        if ($_conf['tor_use'] && P2HostMgr::isHostTor($host, 0)) { // Tor(.onion)はTor用の設定をセット
+            $tor_user_info = sprintf("%s%s@", $_conf['tor_proxy_user'], empty($_conf['tor_proxy_password']) ? "" : ":{$_conf['tor_proxy_password']}");
+            $tor_address   = "{$_conf['tor_proxy_host']}:{$_conf['tor_proxy_port']}";
+            $address = sprintf("http://%s%s", strpos($tor_user_info, "@") === 0 ? "" : $tor_user_info, $tor_address);
+
+            curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
+
+            if($_conf['tor_proxy_mode'] == 'socks5'){
+                curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+            }
+
+        } elseif ($_conf['proxy_use']) {
+            $proxy_user_info = sprintf("%s%s@", $_conf['proxy_user'], empty($_conf['proxy_password']) ? "" : ":{$_conf['proxy_password']}");
+            $proxy_address   = "{$_conf['proxy_host']}:{$_conf['proxy_port']}";
+            $address = sprintf("http://%s%s", strpos($proxy_user_info, "@") === 0 ? "" : $proxy_user_info, $proxy_address);
+
+            curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
+
+            if($_conf['proxy_mode'] == 'socks5'){
+                curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+            }
+        }
+
+        curl_multi_add_handle($this->mh, $this->ch[$key]);
+        return true;
     }
 
-    private function execute() {
+    public function execute() {
         global $_conf;
 
-        if(is_null($this->mh) && is_null($this->ch)){
-            return;
+        if (empty($this->ch) || !$this->mh) {
+            return false;
         }
 
         // execute
+        $timeout = $_conf['http_conn_timeout'] + $_conf['http_read_timeout'];
         do {
-            curl_multi_exec($this->mh, $running);
-            curl_multi_select($this->mh, $_conf['http_conn_timeout'] + $_conf['http_read_timeout']);
-        } while ($running);
+            $status = curl_multi_exec($this->mh, $running);
+            if ($running) {
+                if (curl_multi_select($this->mh, $timeout) === -1) {
+                    usleep(100);
+                }
+            }
+        } while ($running > 0 && $status === CURLM_OK);
+
+        return $status === CURLM_OK;
     }
 
-    private function getResult() {
+    public function getResult() {
 
-        $eucjp2sjis = null;
+        $results = array();
+
+        if (empty($this->ch)) {
+            return $results;
+        }
 
         foreach ($this->ch as $key => $ch_array) {
-            list($host, $bbs) = explode("_", $key);
-
-            $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
-
-            if(is_null($this->mh)){
-                return;
-            }
-
-            if(empty($ch_array)){
+            if (!$ch_array) {
                 continue;
             }
 
             $tmp = curl_getinfo($ch_array);
             $tmp += array("before_time" =>  $this->file_update[$key], "after_time" => empty($tmp['filetime']) ? time() : $tmp['filetime']);
-        //  $result[$key] = $tmp;
 
             $data = curl_multi_getcontent($ch_array);
             $header_size = $tmp['header_size'];
+            $body = substr($data, $header_size);
 
-            // 304が来なかったとき用
-            if($tmp['http_code']  != "304" && $tmp['before_time'] <= $tmp['after_time']){
-                $body   = substr($data, $header_size);
-                try {
-                    $body   = SubjectTxt::convertSubjectBody($host, $body);
-                    if (file_put_contents($file, $body) === false) {
-                        error_log("cannot write file.[$file]\n");
-                    }
-                } catch (Exception $e) {
-                    error_log($e->getMessage() . " for {$host}_{$bbs}\n");
-                }
-            }
+            $results[$key] = array(
+                'info' => $tmp,
+                'body' => $body,
+                'error' => curl_error($ch_array)
+            );
         }
+        
+        return $results;
     }
 
     // {{{ fetchSubjectTxt()
@@ -231,16 +216,49 @@ class P2CurlMulti
 
         ksort($subjects);
 
-        $self = new self;
+        $self = new self();
+        $time = time() - $_conf['sb_dl_interval'];
 
         // 各 subject.txt へのリクエストをキューに追加
-        $self->add($subjects, $force);
+        foreach (array_keys($subjects) as $key) {
+            list($host, $bbs) = explode("_", $key);
+            $url = SubjectTxt::getSubjectUrl($host, $bbs);
+            $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
+
+            if (!$force && file_exists($file) && $time <= filemtime($file)) {
+                continue;
+            }
+
+            $before_time = file_exists($file) ? filemtime($file) : 0;
+            $header = array();
+            $header[] = "If-Modified-Since: " . gmdate('D, d M Y H:i:s T', $before_time);
+            $header[] = "Connection: close";
+
+            $self->add($key, $url, $header, $before_time);
+        }
 
         // ダウンロードスタート
         $self->execute();
 
         // 各 subject.txt を保存
-        $self->getResult();
+        $results = $self->getResult();
+        foreach ($results as $key => $result) {
+            list($host, $bbs) = explode("_", $key);
+            $file = P2Util::datDirOfHostBbs($host, $bbs) . 'subject.txt';
+            $tmp = $result['info'];
+
+            if ($tmp['http_code'] != "304" && $tmp['before_time'] <= $tmp['after_time']) {
+                $body = $result['body'];
+                try {
+                    $body = SubjectTxt::convertSubjectBody($host, $body);
+                    if (file_put_contents($file, $body) === false) {
+                        error_log("cannot write file.[$file]\n");
+                    }
+                } catch (Exception $e) {
+                    error_log($e->getMessage() . " for {$host}_{$bbs}\n");
+                }
+            }
+        }
 
         // }}}
 

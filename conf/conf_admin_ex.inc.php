@@ -19,10 +19,10 @@ $_conf['expack.zf_path'] = ""; // ("")
 
 // curl による並列ダウンロードを有効にする
 // (off:0, on:1)
-$_conf['expack.use_curl_multi'] = 0; // (1)
+$_conf['expack.use_curl_multi'] = 1; // (1)
 
-// curl による並列ダウンロードの最大持続的接続数
-$_conf['expack.curl_per_host'] = 2; // (1)
+// curl による並列ダウンロードの同一ホストに対する最大同時接続数
+$_conf['expack.curl_per_host'] = 6; // (6)
 
 // pecl_http が利用できる場合、HttpRequestPool による並列ダウンロードを有効にする
 // (off:0, on:1, コマンドラインで実行:2)
