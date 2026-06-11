@@ -296,10 +296,7 @@ EOP;
 // ■新着数を表示する場合
 if ($_conf['enable_menu_new'] == 1 && array_key_exists('new', $_GET) && $_GET['new']) {
     // 並列ダウンロードの設定
-    if ($_conf['expack.use_curl_multi'] != 0 || $_conf['expack.use_pecl_http'] != 0) {
-        if ($_conf['expack.use_pecl_http'] == 1) {
-            P2HttpExt::activate();
-        }
+    if ($_conf['expack.use_curl_multi'] != 0) {
         $GLOBALS['expack.subject.multi-threaded-download.done'] = true;
     }
 
@@ -308,10 +305,6 @@ if ($_conf['enable_menu_new'] == 1 && array_key_exists('new', $_GET) && $_GET['n
     // ダウンロード
     if ($_conf['expack.use_curl_multi'] == 1) {
         P2CurlMulti::fetchSubjectTxt($_conf['favlist_idx']);
-    } elseif ($_conf['expack.use_pecl_http'] == 1) {
-        P2HttpRequestPool::fetchSubjectTxt($_conf['favlist_idx']);
-    } elseif ($_conf['expack.use_pecl_http'] == 2) {
-        P2CommandRunner::fetchSubjectTxt('fav', $_conf);
     }
 
     // 新着数を初期化
@@ -327,10 +320,6 @@ EOP;
     // ダウンロード
     if ($_conf['expack.use_curl_multi'] == 1) {
         P2CurlMulti::fetchSubjectTxt($_conf['recent_idx']);
-    } elseif ($_conf['expack.use_pecl_http'] == 1) {
-        P2HttpRequestPool::fetchSubjectTxt($_conf['recent_idx']);
-    } elseif ($_conf['expack.use_pecl_http'] == 2) {
-        P2CommandRunner::fetchSubjectTxt('recent', $_conf);
     }
 
     // 新着数を初期化
@@ -346,10 +335,6 @@ EOP;
     // ダウンロード
     if ($_conf['expack.use_curl_multi'] == 1) {
         P2CurlMulti::fetchSubjectTxt($_conf['res_hist_idx']);
-    } elseif ($_conf['expack.use_pecl_http'] == 1) {
-        P2HttpRequestPool::fetchSubjectTxt($_conf['res_hist_idx']);
-    } elseif ($_conf['expack.use_pecl_http'] == 2) {
-        P2CommandRunner::fetchSubjectTxt('res_hist', $_conf);
     }
 
     // 新着数を初期化

@@ -15,13 +15,9 @@ define('P2_FETCH_SUBJECT_TXT_DEBUG_OUTPUT_FILE', '/tmp/p2_fetch_subject_txt.log'
 
 require __DIR__ . '/../init.php';
 
-if (!$_conf['expack.use_curl_multi'] && !$_conf['expack.use_pecl_http']) {
-    fwrite(STDERR, 'Setting of expack.use_curl_multi or  expack.use_pecl_http is required.' . PHP_EOL);
+if (!$_conf['expack.use_curl_multi']) {
+    fwrite(STDERR, 'Setting of expack.use_curl_multi is required.' . PHP_EOL);
     exit(1);
-}
-
-if ($_conf['expack.use_pecl_http'] == 1) {
-    P2HttpExt::activate();
 }
 
 // }}}
@@ -139,17 +135,13 @@ if ($mode == 'merge_favita') {
         }
     }
 
-    if($_conf['expack.use_curl_multi'] == 1) {
+    if ($_conf['expack.use_curl_multi'] == 1) {
         P2CurlMulti::fetchSubjectTxt($favitas);
-    } elseif($_conf['expack.use_pecl_http'] == 1) {
-        P2HttpRequestPool::fetchSubjectTxt($favitas);
     }
 
 } else {
-    if($_conf['expack.use_curl_multi'] == 1) {
+    if ($_conf['expack.use_curl_multi'] == 1) {
         P2CurlMulti::fetchSubjectTxt($source);
-    } elseif($_conf['expack.use_pecl_http'] == 1) {
-        P2HttpRequestPool::fetchSubjectTxt($source);
     }
 }
 

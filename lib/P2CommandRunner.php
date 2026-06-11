@@ -31,12 +31,10 @@ class P2CommandRunner
     static public function fetchSubjectTxt($mode, array $_conf)
     {
         // ÉRÉ}ÉìÉhê∂ê¨
-        $args = array(escapeshellarg($_conf['expack.php_cli_path']));
-        if ($_conf['expack.dl_pecl_http']) {
-            $args[] = '-d';
-            $args[] = 'extension=' . escapeshellarg('http.' . PHP_SHLIB_SUFFIX);
-        }
-        $args[] = escapeshellarg(P2_SCRIPT_DIR . DIRECTORY_SEPARATOR . 'fetch-subject-txt.php');
+        $args = array(
+            escapeshellarg($_conf['expack.php_cli_path']),
+            escapeshellarg(P2_SCRIPT_DIR . DIRECTORY_SEPARATOR . 'fetch-subject-txt.php')
+        );
 
         switch ($mode) {
         case 'fav':

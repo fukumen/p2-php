@@ -24,14 +24,6 @@ $_conf['expack.use_curl_multi'] = 1; // (1)
 // curl による並列ダウンロードの同一ホストに対する最大同時接続数
 $_conf['expack.curl_per_host'] = 6; // (6)
 
-// pecl_http が利用できる場合、HttpRequestPool による並列ダウンロードを有効にする
-// (off:0, on:1, コマンドラインで実行:2)
-$_conf['expack.use_pecl_http'] = 0; // (0)
-
-// expack.use_pecl_http が 2 かつCLI用php.iniでhttpエクステンションを
-// ロードするようになっていない場合のみ 1 にする
-$_conf['expack.dl_pecl_http'] = 0; // (0)
-
 // スレタイ検索をdig.2ch.netで行う
 $_conf['test.search_dig2ch'] = 1; // (1)
 

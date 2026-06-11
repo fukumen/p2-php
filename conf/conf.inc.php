@@ -282,13 +282,6 @@ function p2_init()
     $_conf['key_db_path']       = $_conf['db_dir'] . '/p2_keys.sqlite3';
     $_conf['iv2_cache_db_path'] = $_conf['db_dir'] . '/iv2_cache.sqlite3';
 
-    // ï‚ê≥
-    if ($_conf['expack.use_pecl_http'] && !extension_loaded('http')) {
-        if (!($_conf['expack.use_pecl_http'] == 2 && $_conf['expack.dl_pecl_http'])) {
-            $_conf['expack.use_pecl_http'] = 0;
-        }
-    }
-
     // }}}
 
     $_conf['dropbox_auth_json'] = P2_CONFIG_DIR . '/dropbox.json';
