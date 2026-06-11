@@ -30,7 +30,7 @@ class Check extends Command
 
         $php_version = phpversion();
 
-        $required_version = '8.2.0';
+        $required_version = $p2_required_version;
 
         // PHP‚Ìƒo[ƒWƒ‡ƒ“
         $output->writeln('PHP Version:');

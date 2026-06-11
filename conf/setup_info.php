@@ -4,8 +4,7 @@
  */
 
 // 必須バージョン
-$p2_required_version_5_x = '5.6.0';
-$p2_required_version_7_x = '7.0.0';
+$p2_required_version = '8.2.0';
 
 // 必須拡張モジュール
 $p2_required_extensions = array(
