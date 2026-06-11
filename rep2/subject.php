@@ -272,19 +272,19 @@ if (empty($_REQUEST['norefresh']) && !(empty($_REQUEST['refresh']) && isset($_RE
     if ($_conf['expack.use_curl_multi'] == 1) {
         switch ($spmode) {
             case 'fav':
-                P2CurlMulti::fetchSubjectTxt($_conf['favlist_idx']);
+                SubjectTxt::fetchSubjectTxt($_conf['favlist_idx']);
                 $GLOBALS['expack.subject.multi-threaded-download.done'] = true;
                 break;
             case 'recent':
-                P2CurlMulti::fetchSubjectTxt($_conf['recent_idx']);
+                SubjectTxt::fetchSubjectTxt($_conf['recent_idx']);
                 $GLOBALS['expack.subject.multi-threaded-download.done'] = true;
                 break;
             case 'res_hist':
-                P2CurlMulti::fetchSubjectTxt($_conf['res_hist_idx']);
+                SubjectTxt::fetchSubjectTxt($_conf['res_hist_idx']);
                 $GLOBALS['expack.subject.multi-threaded-download.done'] = true;
                 break;
             case 'merge_favita':
-                P2CurlMulti::fetchSubjectTxt($favitas);
+                SubjectTxt::fetchSubjectTxt($favitas);
                 $GLOBALS['expack.subject.multi-threaded-download.done'] = true;
                 break;
         }

@@ -108,7 +108,7 @@ EOP;
             // 新着数を表示する場合・まとめてプリフェッチ
             if ($_conf['enable_menu_new'] && !empty($_GET['new'])) {
                 if ($_conf['expack.use_curl_multi'] == 1) {
-                    P2CurlMulti::fetchSubjectTxt($favitas);
+                    SubjectTxt::fetchSubjectTxt($favitas);
                     $GLOBALS['expack.subject.multi-threaded-download.done'] = true;
                 }
             }

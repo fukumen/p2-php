@@ -161,7 +161,7 @@ class ThreadList
 
             if (empty($_REQUEST['norefresh']) && !(empty($_REQUEST['refresh']) && isset($_REQUEST['word']))) {
                 if ($_conf['expack.use_curl_multi'] == 1) {
-                    P2CurlMulti::fetchSubjectTxt($favitas);
+                    SubjectTxt::fetchSubjectTxt($favitas);
                     $GLOBALS['expack.subject.multi-threaded-download.done'] = true;
                 }
             }

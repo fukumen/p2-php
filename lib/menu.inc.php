@@ -304,7 +304,7 @@ if ($_conf['enable_menu_new'] == 1 && array_key_exists('new', $_GET) && $_GET['n
 
     // ダウンロード
     if ($_conf['expack.use_curl_multi'] == 1) {
-        P2CurlMulti::fetchSubjectTxt($_conf['favlist_idx']);
+        SubjectTxt::fetchSubjectTxt($_conf['favlist_idx']);
     }
 
     // 新着数を初期化
@@ -319,7 +319,7 @@ EOP;
 
     // ダウンロード
     if ($_conf['expack.use_curl_multi'] == 1) {
-        P2CurlMulti::fetchSubjectTxt($_conf['recent_idx']);
+        SubjectTxt::fetchSubjectTxt($_conf['recent_idx']);
     }
 
     // 新着数を初期化
@@ -334,7 +334,7 @@ EOP;
 
     // ダウンロード
     if ($_conf['expack.use_curl_multi'] == 1) {
-        P2CurlMulti::fetchSubjectTxt($_conf['res_hist_idx']);
+        SubjectTxt::fetchSubjectTxt($_conf['res_hist_idx']);
     }
 
     // 新着数を初期化
