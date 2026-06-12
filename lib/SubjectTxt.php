@@ -341,7 +341,6 @@ class SubjectTxt
 
             $before_time = file_exists($file) ? filemtime($file) : 0;
             $header = array();
-            $header[] = "If-Modified-Since: " . gmdate('D, d M Y H:i:s T', $before_time);
             $header[] = "Connection: close";
 
             $self->add($key, $url, $header, $before_time);

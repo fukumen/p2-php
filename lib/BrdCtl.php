@@ -86,7 +86,26 @@ class BrdCtl
         if ($_conf['brdfile_online']) {
             $urls = array_map('trim', explode(',', $_conf['brdfile_online']));
 
-            foreach ($urls as $brdfile_online) {
+            $downloadSpecs = array();
+
+            foreach ($urls as $key => $brdfile_online) {
+                if (empty($brdfile_online)) {
+                    continue;
+                }
+                $cachefile = P2Util::cacheFileForDL($brdfile_online);
+                if (empty($_GET['nr']) || !file_exists($cachefile)) {
+                    $cache_time = $_conf['menu_dl_interval'] * 3600;
+                    $downloadSpecs[$key] = array(
+                        'url'        => $brdfile_online,
+                        'localfile'  => $cachefile,
+                        'cache_time' => $cache_time,
+                    );
+                }
+            }
+
+            $downloadResults = !empty($downloadSpecs) ? P2CurlMulti::fileDownloadParallel($downloadSpecs) : array();
+
+            foreach ($urls as $key => $brdfile_online) {
                 if (empty($brdfile_online)) {
                     continue;
                 }
@@ -97,28 +116,22 @@ class BrdCtl
                 $read_html_flag = false;
                 $format = null;
 
-                // DLする、ただしnorefreshならDLしない
-                if (empty($_GET['nr']) || !file_exists($cachefile)) {
-                    //echo "DL!<br>";//
-                    $cache_time = $_conf['menu_dl_interval'] * 3600;
-                    $brdfile_online_res = P2Commun::fileDownload($brdfile_online, $cachefile, $cache_time);
-                    if (isset($brdfile_online_res) && $brdfile_online_res->getStatus() != 304) {
-                        $contentType = $brdfile_online_res->getHeader('Content-Type');
-                        if (!empty($contentType)) {
-                            if (is_array($contentType)) {
-                                $contentType = $contentType[0];
-                            }
-                            if (preg_match('/text\/html|application\/xhtml\+xml/i', $contentType)) {
-                                $isNewDL = true;
-                                $format = 'html';
-                            } elseif (preg_match('/application\/json/i', $contentType)) {
-                                $isNewDL = true;
-                                $format = 'json';
-                            }
+                // DLした結果の判定
+                $response = P2CurlMulti::getResponse($downloadResults, $key);
+                if ($response && $response->getStatus() != 304) {
+                    $contentType = $response->getHeader('content-type');
+                    if (!empty($contentType)) {
+                        if (is_array($contentType)) {
+                            $contentType = $contentType[0];
+                        }
+                        if (preg_match('/text\/html|application\/xhtml\+xml/i', $contentType)) {
+                            $isNewDL = true;
+                            $format = 'html';
+                        } elseif (preg_match('/application\/json/i', $contentType)) {
+                            $isNewDL = true;
+                            $format = 'json';
                         }
                     }
-
-                    unset($brdfile_online_res);
                 }
 
                 // 更新されていたら新規キャッシュ作成

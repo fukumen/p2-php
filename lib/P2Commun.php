@@ -228,6 +228,8 @@ class P2Commun
             if (FileCtl::file_write_contents($localfile, $body) === false) {
                 p2die('cannot write file.');
             }
+        } else {
+            @touch($localfile);
         }
 
         return $response;

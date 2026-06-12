@@ -266,9 +266,6 @@ class P2CurlRequest
         curl_close($ch);
 
         if ($result === false) {
-            if (class_exists('HTTP_Request2_Exception')) {
-                throw new HTTP_Request2_Exception("cURL Error: " . $error);
-            }
             throw new Exception("cURL Error: " . $error);
         }
 

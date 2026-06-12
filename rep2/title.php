@@ -321,13 +321,19 @@ function checkUpdatan2($repo_type, $run_id)
     }
 
     try {
-        $req = P2Commun::createHTTPRequest ("https://api.github.com/repos/{$github_repo}/actions/workflows/{$workflow_file}/runs?status=success&per_page=1", HTTP_Request2::METHOD_GET);
-        $response = P2Commun::getHTTPResponse($req);
-        $code = $response->getStatus();
-        if ($code == 200) {
-            $json = json_decode($response->getBody(), true);
+        $requests = array(
+            'repo' => "https://api.github.com/repos/{$github_repo}/actions/workflows/{$workflow_file}/runs?status=success&per_page=1",
+            'rep2' => 'https://api.github.com/repos/fukumen/p2-php/actions/workflows/trigger-docker.yml/runs?status=success&per_page=1'
+        );
+
+        $responses = P2CurlMulti::httpRequestsParallel($requests);
+
+        $repo_res = P2CurlMulti::getResponse($responses, 'repo');
+        if ($repo_res && $repo_res->getStatus() == 200) {
+            $json = json_decode($repo_res->getBody(), true);
             if (isset($json['workflow_runs'][0]['id'])) {
                 $latest_run_id = $json['workflow_runs'][0]['id'];
+                
                 if ($latest_run_id > $run_id) {
                     $docker_msg = isset($json['workflow_runs'][0]['head_commit']['message']) ? $json['workflow_runs'][0]['head_commit']['message'] : '';
                     $docker_msg = (string)strtok($docker_msg, "\r\n");
@@ -340,13 +346,12 @@ function checkUpdatan2($repo_type, $run_id)
                         $docker_date = $dt->format('Y-m-d H:i');
                     }
 
-                    $req2 = P2Commun::createHTTPRequest ('https://api.github.com/repos/fukumen/p2-php/actions/workflows/trigger-docker.yml/runs?status=success&per_page=1', HTTP_Request2::METHOD_GET);
-                    $response2 = P2Commun::getHTTPResponse($req2);
+                    $rep2_res = P2CurlMulti::getResponse($responses, 'rep2');
                     $rep2_msg = '';
                     $rep2_date = '';
                     $rep2_hash = '';
-                    if ($response2->getStatus() == 200) {
-                        $json2 = json_decode($response2->getBody(), true);
+                    if ($rep2_res && $rep2_res->getStatus() == 200) {
+                        $json2 = json_decode($rep2_res->getBody(), true);
                         $rep2_msg = isset($json2['workflow_runs'][0]['head_commit']['message']) ? $json2['workflow_runs'][0]['head_commit']['message'] : '';
                         $rep2_msg = (string)strtok($rep2_msg, "\r\n");
                         $rep2_msg = p2h(mb_convert_encoding($rep2_msg, 'Shift_JIS', 'UTF-8'));
@@ -358,6 +363,7 @@ function checkUpdatan2($repo_type, $run_id)
                             $rep2_date = $dt->format('Y-m-d H:i');
                         }
                     }
+
                     $github_url = P2Util::throughIme('https://github.com/' . $github_repo . '/actions/runs/' . $latest_run_id);
                     return <<<EOP
 <br>
