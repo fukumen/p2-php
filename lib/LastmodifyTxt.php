@@ -215,6 +215,141 @@ class LastmodifyTxt
     }
 
     // }}}
+
+    /**
+     * lastmodify.txtを一括ダウンロード&保存する
+     *
+     * @param array|string $subjects
+     * @param bool $force
+     * @return void
+     */
+    static public function fetchLastmodifyTxt($subjects, $force = false)
+    {
+        global $_conf;
+
+        $makeIdFormat = "%s_%s";
+
+        // {{{ ダウンロード対象を設定
+
+        // お気に板等の.idx形式のファイルをパース
+        if (is_string($subjects)) {
+            $lines = FileCtl::file_read_lines($subjects, FILE_IGNORE_NEW_LINES);
+            if (!$lines) {
+                return;
+            }
+
+            $subjects = array();
+
+            foreach ($lines as $l) {
+                $la = explode('<>', $l);
+                if (count($la) < 12) {
+                    continue;
+                }
+
+                $host = $la[10];
+                $bbs = $la[11];
+                if ($host === '' || $bbs === '') {
+                    continue;
+                }
+
+                $host = P2HostMgr::normalize5chHost($host);
+                $key = sprintf($makeIdFormat, $host, $bbs);
+                if (isset($subjects[$key])) {
+                    continue;
+                }
+
+                $subjects[$key] = array($host, $bbs);
+            }
+
+        // [host, bbs] の連想配列を検証
+        } elseif (is_array($subjects)) {
+            $originals = $subjects;
+            $subjects = array();
+
+            foreach ($originals as $s) {
+                if (!is_array($s) || !isset($s['host']) || !isset($s['bbs'])) {
+                    continue;
+                }
+
+                $host = P2HostMgr::normalize5chHost($s['host']);
+                $bbs = $s['bbs'];
+                $key = sprintf($makeIdFormat, $host, $bbs);
+                if (isset($subjects[$key])) {
+                    continue;
+                }
+
+                $subjects[$key] = array($host, $bbs);
+            }
+
+        // 上記以外
+        } else {
+            return;
+        }
+
+        if (!count($subjects)) {
+            return;
+        }
+
+        // }}}
+        // {{{
+
+        ksort($subjects);
+
+        $self = new P2CurlMulti();
+        $time = time() - $_conf['sb_dl_interval'];
+
+        // 各 lastmodify.txt へのリクエストをキューに追加
+        foreach (array_keys($subjects) as $key) {
+            list($host, $bbs) = explode("_", $key);
+            
+            $normalized_host = P2HostMgr::normalize5chHost($host);
+            if (!P2HostMgr::isHost2chs($normalized_host) || P2HostMgr::isHostHeadline($normalized_host)) {
+                continue; // 2ch/5ch系のみ
+            }
+
+            $file = P2Util::datDirOfHostBbs($host, $bbs) . 'lastmodify.txt';
+            if (!$force && file_exists($file) && $time <= filemtime($file)) {
+                continue;
+            }
+
+            $before_time = file_exists($file) ? filemtime($file) : 0;
+            $header = array();
+            $header[] = "Connection: close";
+            $url = P2Util::selectScheme($normalized_host) . '://' . $normalized_host . '/' . $bbs . '/lastmodify.txt';
+
+            $self->add($key, $url, $header, $before_time);
+        }
+
+        // ダウンロードスタート
+        $self->execute();
+
+        // 各 lastmodify.txt を保存
+        $results = $self->getResult();
+        foreach ($results as $key => $result) {
+            list($host, $bbs) = explode("_", $key);
+            $file = P2Util::datDirOfHostBbs($host, $bbs) . 'lastmodify.txt';
+            $tmp = $result['info'];
+
+            if ($tmp['http_code'] != "304" && $tmp['before_time'] <= $tmp['after_time']) {
+                $body = $result['body'];
+                try {
+                    $normalized_host = P2HostMgr::normalize5chHost($host);
+                    if (P2HostMgr::isHostJbbsShitaraba($normalized_host) || P2HostMgr::isHostBe2chs($normalized_host)) {
+                        $body = mb_convert_encoding($body, 'CP932', 'CP51932');
+                    }
+                    if (file_put_contents($file, $body) === false) {
+                        error_log("cannot write file.[$file]\n");
+                    }
+                } catch (Exception $e) {
+                    error_log($e->getMessage() . " for {$host}_{$bbs} (lastmodify)\n");
+                }
+            }
+        }
+
+        // }}}
+
+        return ;
+    }
 }
 
 // }}}

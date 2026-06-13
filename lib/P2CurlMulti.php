@@ -124,7 +124,7 @@ class P2CurlMulti
             }
 
             $tmp = curl_getinfo($ch_array);
-            $tmp += array("before_time" =>  $this->file_update[$key], "after_time" => empty($tmp['filetime']) ? time() : $tmp['filetime']);
+            $tmp += array("before_time" =>  $this->file_update[$key], "after_time" => (empty($tmp['filetime']) || $tmp['filetime'] === -1) ? time() : $tmp['filetime']);
 
             $data = curl_multi_getcontent($ch_array);
             $header_size = $tmp['header_size'];

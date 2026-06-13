@@ -109,6 +109,7 @@ EOP;
             if ($_conf['enable_menu_new'] && !empty($_GET['new'])) {
                 if ($_conf['expack.use_curl_multi'] == 1) {
                     SubjectTxt::fetchSubjectTxt($favitas);
+                    LastmodifyTxt::fetchLastmodifyTxt($favitas);
                     $GLOBALS['expack.subject.multi-threaded-download.done'] = true;
                 }
             }

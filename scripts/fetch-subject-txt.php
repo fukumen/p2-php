@@ -137,11 +137,13 @@ if ($mode == 'merge_favita') {
 
     if ($_conf['expack.use_curl_multi'] == 1) {
         SubjectTxt::fetchSubjectTxt($favitas);
+        LastmodifyTxt::fetchLastmodifyTxt($favitas);
     }
 
 } else {
     if ($_conf['expack.use_curl_multi'] == 1) {
         SubjectTxt::fetchSubjectTxt($source);
+        LastmodifyTxt::fetchLastmodifyTxt($source);
     }
 }
 
