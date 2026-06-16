@@ -29,7 +29,7 @@ var ipoputil = {};
  * @return {String}
  */
 ipoputil.getZ = function(obj) {
-	return (10 + _IRESPOPG.serial).toString();
+	return (200 + _IRESPOPG.serial).toString();
 };
 
 // }}}
@@ -172,7 +172,7 @@ ipoputil.popup = function(url, evt) {
 	var popnum = _IRESPOPG.serial;
 	var popid = '_respop' + popnum;
 	var req = new XMLHttpRequest();
-	req.open('GET', url + '&ajax=true&respop_id=' + popnum, true);
+	req.open('GET', url + '&ajax=1&respop_id=' + popnum, true);
 	req.withCredentials = true;
 	req.onreadystatechange = function() {
 		if (this.readyState == 4) {

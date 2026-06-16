@@ -345,6 +345,28 @@ $conf_user_rad['coloredid.label'] = array('1' => 'する', '0' => 'しない');
 $conf_user_def['machibbs.disphost.enable'] = 1;
 $conf_user_rad['machibbs.disphost.enable'] = array('1' => 'する', '0' => 'しない');
 
+// スレ表示の非同期(Ajax)モード
+$conf_user_def['smartphone.readajax.enable'] = 1; // (1)
+$conf_user_rad['smartphone.readajax.enable'] = array('1' => 'する', '0' => 'しない');
+// 後方遅延読み込み件数（0で機能OFF）
+$conf_user_def['smartphone.lazyload.prev'] = 15; // (15)
+$conf_user_rules['smartphone.lazyload.prev'] = array('notIntExceptMinusToDef');
+// 前方遅延読み込み件数（0で機能OFF）
+$conf_user_def['smartphone.lazyload.next'] = 30; // (30)
+$conf_user_rules['smartphone.lazyload.next'] = array('notIntExceptMinusToDef');
+// 先行読み込み件数
+$conf_user_def['smartphone.preload.num'] = 30; // (30)
+$conf_user_rules['smartphone.preload.num'] = array('emptyToDef', 'notIntExceptMinusToDef');
+// 先行読み込み開始タイミング件数
+$conf_user_def['smartphone.preload.timing'] = 10; // (10)
+$conf_user_rules['smartphone.preload.timing'] = array('emptyToDef', 'notIntExceptMinusToDef');
+// 既読位置の保存間隔（単位:秒）
+$conf_user_def['smartphone.preload.readnum_timer'] = 30; // (30)
+$conf_user_rules['smartphone.preload.readnum_timer'] = array('emptyToDef', 'notIntExceptMinusToDef');
+// スレ非同期読み込みのタイムアウト時間（単位:秒）
+$conf_user_def['smartphone.readajax.timeout'] = 20; // (20)
+$conf_user_rules['smartphone.readajax.timeout'] = array('emptyToDef', 'notIntExceptMinusToDef');
+
 // }}}
 // {{{ NG/あぼーん
 

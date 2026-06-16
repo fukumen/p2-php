@@ -1051,7 +1051,7 @@ class ThreadRead extends Thread {
             // léwíËÇ™Ç†ÇÍÇŒ
             if (substr ($n[0], 0, 1) === 'l') {
                 $ln = intval (substr ($n[0], 1));
-                if ($_conf['ktai']) {
+                if ($_conf['ktai'] && (!isset($_GET['ajax']) || $_GET['ajax'] != 1)) {
                     if ($ln > $_conf['mobile.rnum_range']) {
                         $ln = $_conf['mobile.rnum_range'];
                     }
@@ -1129,7 +1129,7 @@ class ThreadRead extends Thread {
             // print_r("$start, $to, {$GLOBALS['rnum_all_range']}");
         } else {
             // ågë—óp
-            if ($_conf['ktai']) {
+            if ($_conf['ktai'] && (!isset($_GET['ajax']) || $_GET['ajax'] != 1)) {
                 // ï\é¶êîêßå¿
                 /*
                  * if ($start + $_conf['mobile.rnum_range'] -1 <= $to) {

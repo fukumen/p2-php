@@ -18,42 +18,47 @@ if ($do_filtering) {
 // }}}
 // {{{ ツールバーを表示
 
-echo '<div class="ntoolbar" id="footer"><div class="ntoolbar" id="pager">';
-echo '<table><tbody><tr>';
-
-// {{{ ページャ
-
-// 前のページ
-echo '<td>';
-if ($read_navi_previous_url) {
-    echo toolbar_i_standard_button('img/gp3-prev.png', null, $read_navi_previous_url);
+if ($is_readajax_active) {
+    echo '<div id="sentinel-bottom"></div>';
+    echo '<div class="ntoolbar" id="footer">';
 } else {
-    echo toolbar_i_disabled_button('img/gp3-prev.png', null);
+    echo '<div class="ntoolbar" id="footer"><div class="ntoolbar" id="pager">';
+    echo '<table><tbody><tr>';
+
+    // {{{ ページャ
+
+    // 前のページ
+    echo '<td>';
+    if ($read_navi_previous_url) {
+        echo toolbar_i_standard_button('img/gp3-prev.png', null, $read_navi_previous_url);
+    } else {
+        echo toolbar_i_disabled_button('img/gp3-prev.png', null);
+    }
+    echo '</td>';
+
+    // ページ番号を直接指定
+    echo '<td colspan="2">';
+    echo get_read_jump($aThread, '', true);
+    echo '</td>';
+
+    // 次のページ
+    echo '<td>';
+    if ($read_navi_next_url) {
+        echo toolbar_i_standard_button('img/gp4-next.png', null, $read_navi_next_url);
+    } else {
+        echo toolbar_i_disabled_button('img/gp4-next.png', null);
+    }
+    echo '</td>';
+
+    // 上へ
+    echo '<td>';
+    echo toolbar_i_standard_button('img/gp1-up.png', null, '#header');
+    echo '</td>';
+
+    // }}}
+
+    echo '</tr></tbody></table></div>';
 }
-echo '</td>';
-
-// ページ番号を直接指定
-echo '<td colspan="2">';
-echo get_read_jump($aThread, '', true);
-echo '</td>';
-
-// 次のページ
-echo '<td>';
-if ($read_navi_next_url) {
-    echo toolbar_i_standard_button('img/gp4-next.png', null, $read_navi_next_url);
-} else {
-    echo toolbar_i_disabled_button('img/gp4-next.png', null);
-}
-echo '</td>';
-
-// 上へ
-echo '<td>';
-echo toolbar_i_standard_button('img/gp1-up.png', null, '#header');
-echo '</td>';
-
-// }}}
-
-echo '</tr></tbody></table></div>';
 
 // {{{書き込みフォーム
 if ($_conf['bottom_res_form']) {
@@ -90,13 +95,18 @@ EOP;
 
 echo '<table><tbody><tr>';
 
-// 新着
 echo '<td>';
-if (!$aThread->diedat) {
-    $escaped_url = "{$_conf['read_php']}?{$host_bbs_key_q}&amp;ls={$aThread->rescount}-n&amp;nt={$newtime}{$_conf['k_at_a']}";
-    echo toolbar_i_standard_button('img/glyphish/icons2/01-refresh.png', '新着', $escaped_url);
+if ($is_readajax_active) {
+    // ページ指定
+    echo get_read_jump($aThread, '', true);
 } else {
-    echo toolbar_i_disabled_button('img/glyphish/icons2/01-refresh.png', '新着');
+    // 新着
+    if (!$aThread->diedat) {
+        $escaped_url = "{$_conf['read_php']}?{$host_bbs_key_q}&amp;ls={$aThread->rescount}-n&amp;nt={$newtime}{$_conf['k_at_a']}";
+        echo toolbar_i_standard_button('img/glyphish/icons2/01-refresh.png', '新着', $escaped_url);
+    } else {
+        echo toolbar_i_disabled_button('img/glyphish/icons2/01-refresh.png', '新着');
+    }
 }
 echo '</td>';
 

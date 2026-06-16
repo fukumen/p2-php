@@ -35,66 +35,70 @@ function get_read_jump(ThreadRead $aThread, $label, $use_onchange)
  */
 function _get_read_jump(ThreadRead $aThread, $use_onchange)
 {
-    global $_conf;
+    global $_conf, $is_readajax_active;
 
-    $rpp = (int)$_conf['mobile.rnum_range'];
+    $rpp = $is_readajax_active ? 100 : (int)$_conf['mobile.rnum_range'];
 
     if ($rpp < 1) {
         $options = '<option value="1">$_conf[&#39;mobile.rnum_range&#39;] の値が不正です</option>';
     } else {
-        //if ($aThread->resrange['start'] != 1 && $aThread->resrange['start'] % $rpp) {
-        if (($aThread->resrange['start'] - 1) % $rpp) {
-            $ls = p2h($aThread->ls);
-            $options = "<option value=\"{$ls}\" selected>{$ls}</option>";
+        if ($is_readajax_active) {
+            // Ajaxモード時はPHP側では常に最初のページのoptionのみを仮出力する（残りはJS側で動的に全生成）
+            $options = '<option value="" selected>移動...</option>';
         } else {
-            $options = '';
-        }
-
-        /*$optgroup = $rpp * 5;
-        if ($optgroup >= $aThread->rescount) {
-            $optgroup = 0; 
-        }*/
-
-        $rescount = $aThread->rescount;
-        $pages = ceil($rescount / $rpp);
-
-        for ($i = 0; $i < $pages; $i++) {
-            $j = $i + 1;
-            $k = $i * $rpp + 1;
-            $l = $j * $rpp + 1;
-            if ($l > $rescount) {
-                $l = $rescount;
+            if (($aThread->resrange['start'] - 1) % $rpp) {
+                $ls = p2h($aThread->ls);
+                $options = "<option value=\"{$ls}\" selected>{$ls}</option>";
+            } else {
+                $options = '';
             }
 
-            /*if ($k > 1) {
-                $k--;
+            /*$optgroup = $rpp * 5;
+            if ($optgroup >= $aThread->rescount) {
+                $optgroup = 0; 
             }*/
 
-            /*if ($optgroup && $i % $optgroup == 0) {
-                if ($i) {
-                    $options .= '</optgroup>';
+            $rescount = $aThread->rescount;
+            $pages = ceil($rescount / $rpp);
+
+            for ($i = 0; $i < $pages; $i++) {
+                $j = $i + 1;
+                $k = $i * $rpp + 1;
+                $l = $j * $rpp + 1;
+                if ($l > $rescount) {
+                    $l = $rescount;
                 }
-                $options .= "<optgroup label=\"{$j}-\">";
+
+                /*if ($k > 1) {
+                    $k--;
+                }*/
+
+                /*if ($optgroup && $i % $optgroup == 0) {
+                    if ($i) {
+                        $options .= '</optgroup>';
+                    }
+                    $options .= "<optgroup label=\"{$j}-\">";
+                }*/
+
+                if ($k == $l) {
+                    $m = (string)$k;
+                    $n = "{$m}n";
+                } else {
+                    $m = "{$k}-";
+                    $n = "{$m}{$l}n";
+                }
+
+                if ($k == $aThread->resrange['start']) {
+                    $options .= "<option value=\"{$n}\" selected>{$m}</option>";
+                } else {
+                    $options .= "<option value=\"{$n}\">{$m}</option>";
+                }
+            }
+
+            /*if ($optgroup) {
+                $options .= '</optgroup>';
             }*/
-
-            if ($k == $l) {
-                $m = (string)$k;
-                $n = "{$m}n";
-            } else {
-                $m = "{$k}-";
-                $n = "{$m}{$l}n";
-            }
-
-            if ($k == $aThread->resrange['start']) {
-                $options .= "<option value=\"{$n}\" selected>{$m}</option>";
-            } else {
-                $options .= "<option value=\"{$n}\">{$m}</option>";
-            }
         }
-
-        /*if ($optgroup) {
-            $options .= '</optgroup>';
-        }*/
     }
 
     if ($use_onchange) {
@@ -221,7 +225,13 @@ EOP;
  */
 function _get_read_jump_js(ThreadRead $aThread, $options)
 {
-    global $_conf;
+    global $_conf, $is_readajax_active;
+
+    if ($is_readajax_active) {
+        return <<<EOP
+<select id="read-jump-select" class="form-control" onchange="iutil.readajax.onJumpChange(this);">{$options}</select>
+EOP;
+    }
 
     return <<<EOP
 <select class="form-control" onchange="location.href = '{$_conf['read_php']}?host={$aThread->host}&amp;bbs={$aThread->bbs}&amp;key={$aThread->key}&amp;ls=' + this.options[this.selectedIndex].value + '&amp;offline=1{$_conf['k_at_a']}';">{$options}</select>

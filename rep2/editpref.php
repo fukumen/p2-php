@@ -520,6 +520,14 @@ EOP;
 EOP;
     }
 
+    if ($_conf['iphone']) {
+        echo <<<EOP
+<hr>
+<p>デバッグツール</p>
+<a href="show_log.php{$_conf['k_at_q']}" class="button">デバッグログ表示</a><br>
+EOP;
+    }
+
     // }}}
 
 }

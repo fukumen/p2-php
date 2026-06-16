@@ -385,7 +385,7 @@ EOP;
 
         // SPM
         $msg_id = $res_id . '_msg';
-        if (!empty($_GET['ajax']) && isset($_GET['respop_id'])) {
+        if (isset($_GET['ajax']) && $_GET['ajax'] == 1 && isset($_GET['respop_id'])) {
             $spm_msg_id = sprintf('_respop%d_', $_GET['respop_id']) . $msg_id;
         } else {
             $spm_msg_id = $msg_id;

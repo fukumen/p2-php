@@ -439,7 +439,7 @@ abstract class ShowThread
         $datlines = $aThread->datlines;
         $count = count($datlines);
 
-        $buf['body'] = $is_fragment ? '' : "<div class=\"thread\">\n";
+        $buf['body'] = $is_fragment ? '' : "<div class=\"thread\" id=\"thread\">\n";
         $buf['q'] = '';
 
         // ‚Ü‚¸ 1 ‚ð•\Ž¦

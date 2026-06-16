@@ -370,6 +370,31 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('coloredid.coloring.type', 'カラーリングのタイプ（thermon版はPHPで着色(coloredid.click=しない)の場合のみ有効）'),
         array('coloredid.label', 'IDのラベルに色を付ける'),
         array('machibbs.disphost.enable', 'まちBBSでリモートホスト名を表示'),
+        'スマホ設定',
+        array('smartphone.readajax.enable', <<< 'EOS'
+スレ表示の非同期(Ajax)モード<details><summary style="display:list-item">詳細</summary>
+【動作】<br>
+1. 既読位置からmobile.rnum_range分読み込んでスレ表示開始<br>
+2. スレ表示開始時点で遅延読み込み起動<br>
+3. スクロールして読み込み済みからpreload.timing手前のレスを表示すると先行読み込み起動<br>
+4. 最新のレスまでスクロールすると新着チェックのプレースホルダーが表示されるのでタップすると読み込みを起動
+既読位置は画面に表示している一番下のレス番号になる<br>
+レスフィルター、新着まとめ読み、スレ一覧は従来通りのUI<br><br>
+【制約】<br>
+画面遷移時以降に新規書き込みされたレスを非同期で読んだ場合、<br>
+非同期で読んだレスのIDやワッチョイのカウント数はその時点（全文を再集計した値）が反映されるが、<br>
+非同期で読む以前に読み込み済みのレスの表示にはカウント数が反映されない<br>
+PCのLiveモードのAjaxは全レス置き換えするのでこの制約はない<br><br>
+【ログ】<br>
+スマホの[設定管理]-[デバッグログ表示]でログ種別に「非同期スレ表示」選択するとログが表示される。</details>
+EOS
+),
+        array('smartphone.lazyload.prev', '後方遅延読み込み件数（0で機能OFF）'),
+        array('smartphone.lazyload.next', '前方遅延読み込み件数（0で機能OFF）'),
+        array('smartphone.preload.num', '先行読み込み件数'),
+        array('smartphone.preload.timing', '先行読み込み開始タイミング件数'),
+        array('smartphone.preload.readnum_timer', '既読位置の保存間隔（単位:秒）<br>タブを閉じたりブラウザバック時に既読位置は保存しており保険的なタイマー'),
+        array('smartphone.readajax.timeout', 'スレ非同期読み込みのタイムアウト時間（単位:秒）'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }

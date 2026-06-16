@@ -32,7 +32,7 @@ if ($_conf['iphone']) {
 //================================================================
 $newtime = date('gis');  // 同じリンクをクリックしても再読込しない仕様に対抗するダミークエリー
 // $_today = date('y/m/d');
-$is_ajax = !empty($_GET['ajax']);
+$is_ajax = isset($_GET['ajax']) && $_GET['ajax'] == 1;
 
 //=================================================
 // スレの指定
@@ -58,6 +58,7 @@ if (array_key_exists('rf', $_REQUEST) && is_array($_REQUEST['rf'])) {
 } else {
     $resFilter = ResFilter::restore();
 }
+$is_readajax_active = ($_conf['iphone'] && $_conf['smartphone.readajax.enable'] == 1 && !$do_filtering);
 
 //=================================================
 // あぼーん&NGワード設定読み込み
@@ -439,6 +440,9 @@ if ($aThread->rescount) {
     // 検索の時は、既読数を更新しない
     if ((isset($GLOBALS['word']) && strlen($GLOBALS['word']) > 0) || $is_ajax) {
         $aThread->readnum = $idx_data[5];
+    // smartphone.readajax.enableが有効のときはsaveReadnumに既読位置の更新を任せる
+    } else if ($is_readajax_active) {
+        $aThread->readnum = min($aThread->rescount, max(0, $idx_data[5], $aThread->resrange['start']));
     } else {
         $aThread->readnum = min($aThread->rescount, max(0, $idx_data[5], $aThread->resrange['to']));
     }

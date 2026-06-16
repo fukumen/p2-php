@@ -68,6 +68,7 @@ if ($do_filtering) {
 // {{{ ヘッダ要素
 
 $_conf['extra_headers_ht'] .= <<<EOS
+<script type="text/javascript" src="js/debug_log.js?{$_conf['p2_version_id']}"></script>
 <script type="text/javascript" src="js/jquery.skOuterClick.js?{$_conf['p2_version_id']}"></script>
 <script type="text/javascript" src="js/respopup_iphone.js?{$_conf['p2_version_id']}"></script>
 <script type="text/javascript" src="js/preview_video.js?{$_conf['p2_version_id']}"></script>
@@ -163,9 +164,53 @@ EOS;
 EOS;
 }
 // }}}
+// {{{ preload
+if ($is_readajax_active) {
+    $_ra_host = StrCtl::toJavaScript($aThread->host);
+    $_ra_bbs = StrCtl::toJavaScript($aThread->bbs);
+    $_ra_key = StrCtl::toJavaScript($aThread->key);
+    $_ra_ls = StrCtl::toJavaScript($aThread->ls);   // デバッグ用
+    $_ra_prev = intval($_conf['smartphone.lazyload.prev']);
+    $_ra_next = intval($_conf['smartphone.lazyload.next']);
+    $_ra_num = intval($_conf['smartphone.preload.num']);
+    $_ra_timing = intval($_conf['smartphone.preload.timing']);
+    $_ra_readnum_timer = intval($_conf['smartphone.preload.readnum_timer']);
+    $_ra_fetch_timeout = intval($_conf['smartphone.readajax.timeout']);
+    $_ra_rescount = intval($aThread->rescount);
+    $_ra_datochiok = $aThread->datochiok ? 1 : 0;
+    $_ra_rpp = 100;
+    $_conf['extra_headers_ht'] .= <<<EOS
+<script type="text/javascript" src="js/iphone_readajax.js?{$_conf['p2_version_id']}"></script>
+<script type="text/javascript">
+//<![CDATA[
+var iutil_preload_config = {
+    'host': '{$_ra_host}',
+    'bbs': '{$_ra_bbs}',
+    'key': '{$_ra_key}',
+    'ls': '{$_ra_ls}',
+    'prev': '{$_ra_prev}',
+    'next': '{$_ra_next}',
+    'num': '{$_ra_num}',
+    'timing': '{$_ra_timing}',
+    'readnum_timer': '{$_ra_readnum_timer}',
+    'fetch_timeout': '{$_ra_fetch_timeout}',
+    'rescount': '{$_ra_rescount}',
+    'datochiok': '{$_ra_datochiok}',
+    'rpp': '{$_ra_rpp}'
+};
+//]]>
+</script>
+EOS;
+}
+
 // }}}
 // {{{ HTMLプリント
 
+if ($is_readajax_active) {
+    $body_class = 'nopad readajax';
+} else {
+    $body_class = 'nopad';
+}
 //!empty($_GET['nocache']) and P2Util::header_nocache();
 echo $_conf['doctype'];
 echo <<<EOP
@@ -176,7 +221,7 @@ echo <<<EOP
 {$_conf['extra_headers_ht']}
 <title>{$ptitle_ht}</title>
 </head>
-<body class="nopad">
+<body class="{$body_class}">
 <div class="ntoolbar" id="header">
 
 EOP;
@@ -208,8 +253,10 @@ echo <<<EOP
 EOP;
 
 // >>1に移動
-$escaped_url = "{$_conf['read_php']}?{$host_bbs_key_q}&amp;ls=1-{$rnum_range}{$offline_q}{$_conf['k_at_a']}";
-echo toolbar_i_menuItem('img/glyphish/icons2/63-runner.png', '&gt;&gt;1に移動', $escaped_url);
+if (!$is_readajax_active) {
+    $escaped_url = "{$_conf['read_php']}?{$host_bbs_key_q}&amp;ls=1-{$rnum_range}{$offline_q}{$_conf['k_at_a']}";
+    echo toolbar_i_menuItem('img/glyphish/icons2/63-runner.png', '&gt;&gt;1に移動', $escaped_url);
+}
 
 // 類似スレ検索
 $escaped_url = "{$_conf['subject_php']}?{$host_bbs_key_q}&amp;itaj_en="
@@ -345,14 +392,15 @@ echo <<<EOP
 <td colspan="4" id="thread_title"><div>
 {$aThread->ttitle_hd}
 </div></td>
-<td>
 EOP;
 
-// 下へ
-echo toolbar_i_standard_button('img/gp2-down.png', null, '#footer');
+if (!$is_readajax_active) {
+    echo '<td>';
+    echo toolbar_i_standard_button('img/gp2-down.png', null, '#footer');
+    echo '</td>';
+}
 
 echo <<<EOP
-</td>
 </tr></tbody></table></div>
 EOP;
 
@@ -409,6 +457,10 @@ echo <<<EOP
 </div>
 
 EOP;
+
+if ($is_readajax_active) {
+    echo '<div id="sentinel-top"></div>';
+}
 // end toolbar
 
 // }}}

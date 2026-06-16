@@ -239,6 +239,16 @@ function httpcmd_set_readnum($host, $bbs, $key, $readnum)
 
     $aThread = new Thread();
     $aThread->setThreadPathInfo($host, $bbs, $key);
+
+    if (!file_exists($aThread->keyidx)) {
+        return false;
+    }
+
+    // iphone_preload.jsでクリティカルな使い方をするhttpcmd_set_readnumでのみP2Lockを行う。
+    // 他のP2Util::recKeyIdxの使用箇所でもRMWになっており本来はP2Lockが必要だが、
+    // datのダウンロードが間に入っているケースもあり、一律の対応は困難と判断しこの対応とする。
+    $lock = new P2Lock($aThread->keyidx, false);
+
     $lines = FileCtl::file_read_lines($aThread->keyidx, FILE_IGNORE_NEW_LINES);
     if (!$lines) {
         return false;

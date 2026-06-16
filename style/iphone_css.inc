@@ -694,6 +694,32 @@ body.nopad {
     padding: 0;
 }
 
+body.readajax {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+body.readajax #header,
+body.readajax #footer {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+
+body.readajax #thread {
+    flex-grow: 1;
+    overflow-y: auto;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.readajax #sentinel-top,
+body.readajax #sentinel-bottom {
+    flex-shrink: 0;
+}
+
 div.info {
     margin: 0;
     padding: 5px 10px;
@@ -732,6 +758,7 @@ div.ntoolbar#header {
 }
 
 div.ntoolbar#footer {
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 h1.ptitle {
