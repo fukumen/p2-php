@@ -25,6 +25,10 @@ iutil.readajax = {
 	'readnumTimer': null,		// 既読保存タイマー
 	'firstResnum': 0,			// 読み込み済みの最初のレス番号
 	'lastResnum': 0,			// 読み込み済みの最後のレス番号
+	'threadElement': null,		// スレッド表示コンテナのDOM要素
+	'sentinelTop': null,		// 上部センチネルのDOM要素
+	'sentinelBottom': null,		// 下部センチネルのDOM要素
+	'newresElements': null,		// 未読のnewres要素を保持するオブジェクト (キー: レス番号, 値: span要素)
 
 	// ==========================================
 	// 初期化ロジック
@@ -45,9 +49,36 @@ iutil.readajax = {
 		this.config.timing = parseInt(this.config.timing, 10);
 		this.config.readnum_timer = parseInt(this.config.readnum_timer, 10);
 		this.config.fetch_timeout = parseInt(this.config.fetch_timeout, 10);
+		this.config.realtimedisp_readnum = parseInt(this.config.realtimedisp_readnum, 10);
 		this.config.rescount = parseInt(this.config.rescount, 10);
 		this.config.datochiok = parseInt(this.config.datochiok, 10);
 		this.config.rpp = parseInt(this.config.rpp, 10);
+
+		// DOM要素のキャッシュ
+		this.threadElement = document.getElementById('thread');
+		this.sentinelTop = document.getElementById('sentinel-top');
+		this.sentinelBottom = document.getElementById('sentinel-bottom');
+		if (!this.threadElement || !this.sentinelTop || !this.sentinelBottom) {
+			return;
+		}
+
+		// 初期表示されている newres 要素を収集
+		this.newresElements = {};
+		var newresEls = document.getElementsByClassName('newres');
+		for (var j = 0; j < newresEls.length; j++) {
+			var span = newresEls[j];
+			var num = parseInt(span.textContent || span.innerText, 10);
+			if (!isNaN(num)) {
+				this.newresElements[num] = span;
+			}
+		}
+
+		var keys = Object.keys(this.newresElements).map(function(k) { return parseInt(k, 10); });
+		if (keys.length > 0) {
+			var minNewresNum = Math.min.apply(null, keys);
+			this.lastSavedReadnum = minNewresNum;
+			this.maxVisibleResnum = minNewresNum - 1;
+		}
 
 		if (document.body) {
 			document.body.style.overflowAnchor = 'none';
@@ -97,88 +128,86 @@ iutil.readajax = {
 			};
 		}
 		var self = this;
-		// 初回スクロール時に既読オブザーバーを動的初期化する
-		// （スクロール開始時は確実にレイアウトが確定しており、高さが取得できるため）
-		var thread = document.getElementById('thread');
-		var handleScroll = function() {
+		// 初回スクロール時、またはページ読み込み完了時に既読オブザーバーを動的初期化する
+		// （レイアウト確定後に安全に高さを取得して交差監視を開始するため）
+		var thread = this.threadElement;
+		var startObserver = function() {
 			self.setupObserverResnum();
-			if (thread) {
-				thread.removeEventListener('scroll', handleScroll, false);
-			}
+			thread.removeEventListener('scroll', startObserver, false);
+			window.removeEventListener('load', startObserver, false);
 		};
-		if (thread) {
-			thread.addEventListener('scroll', handleScroll, false);
+		thread.addEventListener('scroll', startObserver, false);
+		window.addEventListener('load', startObserver, false);
 
-			// 引っ張って新規をチェック
-			var startY = 0;
-			var isPulling = false;
-			var pullThreshold = 100;
-			var originalText = '';
-			var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-			
-			thread.addEventListener('touchstart', function(e) {
-				if (self.placeholders.next && self.placeholders.next.state === 'check_new') {
-					if (thread.scrollHeight - thread.scrollTop <= thread.clientHeight + 1) {
-						startY = e.touches[0].clientY;
-						isPulling = true;
-						originalText = self.placeholders.next.element.innerHTML;
-						
-						if (!isIOS) {
-							thread.style.transition = 'none';
-						}
-					}
-				}
-			}, { passive: true });
-			
-			thread.addEventListener('touchmove', function(e) {
-				if (!isPulling) return;
-				var currentY = e.touches[0].clientY;
-				var distance = startY - currentY;
-				if (distance <= 0) {
-					isPulling = false;
-					if (self.placeholders.next && self.placeholders.next.state === 'check_new') {
-						self.placeholders.next.element.innerHTML = originalText;
-					}
-					if (!isIOS) {
-						thread.style.transform = '';
-					}
-				} else if (self.placeholders.next && self.placeholders.next.state === 'check_new') {
-					if (distance > pullThreshold) {
-						self.placeholders.next.element.innerHTML = '離して新着をチェック...';
-					} else {
-						self.placeholders.next.element.innerHTML = 'さらに引いて新着をチェック...';
-					}
+		// 引っ張って新規をチェック
+		var startY = 0;
+		var isPulling = false;
+		var pullThreshold = 100;
+		var originalText = '';
+		var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+		
+		thread.addEventListener('touchstart', function(e) {
+			if (self.placeholders.next && self.placeholders.next.state === 'check_new') {
+				if (thread.scrollHeight - thread.scrollTop <= thread.clientHeight + 1) {
+					startY = e.touches[0].clientY;
+					isPulling = true;
+					originalText = self.placeholders.next.element.innerHTML;
 					
 					if (!isIOS) {
-						var translateY = distance * 0.4;
-						thread.style.transform = 'translateY(-' + translateY + 'px)';
+						thread.style.transition = 'none';
 					}
 				}
-			}, { passive: true });
-			
-			var endPull = function(e) {
-				if (!isPulling) return;
-				var currentY = e.changedTouches[0].clientY;
-				var distance = startY - currentY;
-				
-				if (!isIOS) {
-					thread.style.transition = 'transform 0.3s ease-out';
-					thread.style.transform = '';
-				}
-				
-				if (distance > pullThreshold && self.placeholders.next && self.placeholders.next.state === 'check_new') {
-					self.placeholders.next.element.innerHTML = '読み込み中...';
-					self.loadNew();
-				} else if (self.placeholders.next && self.placeholders.next.state === 'check_new') {
+			}
+		}, { passive: true });
+		
+		thread.addEventListener('touchmove', function(e) {
+			if (!isPulling) return;
+			var currentY = e.touches[0].clientY;
+			var distance = startY - currentY;
+			if (distance <= 0) {
+				isPulling = false;
+				if (self.placeholders.next && self.placeholders.next.state === 'check_new') {
 					self.placeholders.next.element.innerHTML = originalText;
 				}
-				isPulling = false;
-				startY = 0;
-			};
+				if (!isIOS) {
+					thread.style.transform = '';
+				}
+			} else if (self.placeholders.next && self.placeholders.next.state === 'check_new') {
+				if (distance > pullThreshold) {
+					self.placeholders.next.element.innerHTML = '離して新着をチェック...';
+				} else {
+					self.placeholders.next.element.innerHTML = 'さらに引いて新着をチェック...';
+				}
+				
+				if (!isIOS) {
+					var translateY = distance * 0.4;
+					thread.style.transform = 'translateY(-' + translateY + 'px)';
+				}
+			}
+		}, { passive: true });
+		
+		var endPull = function(e) {
+			if (!isPulling) return;
+			var currentY = e.changedTouches[0].clientY;
+			var distance = startY - currentY;
 			
-			thread.addEventListener('touchend', endPull);
-			thread.addEventListener('touchcancel', endPull);
-		}
+			if (!isIOS) {
+				thread.style.transition = 'transform 0.3s ease-out';
+				thread.style.transform = '';
+			}
+			
+			if (distance > pullThreshold && self.placeholders.next && self.placeholders.next.state === 'check_new') {
+				self.placeholders.next.element.innerHTML = '読み込み中...';
+				self.loadNew();
+			} else if (self.placeholders.next && self.placeholders.next.state === 'check_new') {
+				self.placeholders.next.element.innerHTML = originalText;
+			}
+			isPulling = false;
+			startY = 0;
+		};
+		
+		thread.addEventListener('touchend', endPull);
+		thread.addEventListener('touchcancel', endPull);
 		
 		if (prev > 0 && this.prevRange) {
 			this.loadRange('prev', this.prevRange, false, false, true);
@@ -314,8 +343,8 @@ iutil.readajax = {
 
 	'setupObserverTop': function() {
 		var self = this;
-		var thread = document.getElementById('thread');
-		if (!this.observerTop && thread) {
+		var thread = this.threadElement;
+		if (!this.observerTop) {
 			this.observerTop = new IntersectionObserver(function(entries) {
 				entries.forEach(function(entry) {
 					if (entry.isIntersecting) {
@@ -331,16 +360,13 @@ iutil.readajax = {
 				'threshold': 0
 			});
 		}
-		var sentinelTop = document.getElementById('sentinel-top');
-		if (sentinelTop) {
-			this.observerTop.observe(sentinelTop);
-		}
+		this.observerTop.observe(this.sentinelTop);
 	},
 
 	'setupObserverBottom': function() {
 		var self = this;
-		var thread = document.getElementById('thread');
-		if (!this.observerBottom && thread) {
+		var thread = this.threadElement;
+		if (!this.observerBottom) {
 			this.observerBottom = new IntersectionObserver(function(entries) {
 				entries.forEach(function(entry) {
 					if (entry.isIntersecting) {
@@ -356,10 +382,7 @@ iutil.readajax = {
 				'threshold': 0
 			});
 		}
-		var sentinelBottom = document.getElementById('sentinel-bottom');
-		if (sentinelBottom) {
-			this.observerBottom.observe(sentinelBottom);
-		}
+		this.observerBottom.observe(this.sentinelBottom);
 	},
 
 	'setupObserverResnum': function() {
@@ -367,21 +390,19 @@ iutil.readajax = {
 		if (this.observerResnum) {
 			return;
 		}
-		var thread = document.getElementById('thread');
-		if (thread) {
-			this.observerResnum = new IntersectionObserver(function(entries) {
-				entries.forEach(function(entry) {
-					if (entry.isIntersecting) {
-						self.onVisibleResnum(entry.target);
-					}
-				});
-			}, {
-				'root': thread,
-				'threshold': 0,
-				'rootMargin': '2px 0px 2px 0px'
+		var thread = this.threadElement;
+		this.observerResnum = new IntersectionObserver(function(entries) {
+			entries.forEach(function(entry) {
+				if (entry.isIntersecting) {
+					self.onVisibleResnum(entry.target);
+				}
 			});
-			this.observeResElements(thread);
-		}
+		}, {
+			'root': thread,
+			'threshold': 0,
+			'rootMargin': '2px 0px 2px 0px'
+		});
+		this.observeResElements(thread);
 	},
 
 	'observeResElements': function(container) {
@@ -392,22 +413,41 @@ iutil.readajax = {
 		for (var i = 0; i < resEls.length; i++) {
 			this.observerResnum.observe(resEls[i]);
 		}
+
+		var newresEls = container.getElementsByClassName('newres');
+		for (var j = 0; j < newresEls.length; j++) {
+			var span = newresEls[j];
+			var num = parseInt(span.textContent || span.innerText, 10);
+			if (!isNaN(num)) {
+				this.newresElements[num] = span;
+			}
+		}
+
+		// カプセル化されたオブジェクト経由で下部プレースホルダーを取得し、監視に登録
+		if (this.placeholders.next && this.placeholders.next.element) {
+			this.observerResnum.observe(this.placeholders.next.element);
+		}
 	},
 
 	'onVisibleResnum': function(elem) {
-		var numMatch = elem.id.match(/^r(\d+)$/);
-		if (!numMatch) {
-			return;
+		var num = 0;
+		if (this.placeholders.next && elem === this.placeholders.next.element) {
+			num = this.lastResnum + 1;
+		} else {
+			var numMatch = elem.id.match(/^r(\d+)$/);
+			if (numMatch) {
+				num = parseInt(numMatch[1], 10);
+			}
 		}
-		var num = parseInt(numMatch[1], 10);
-		// 次のレス(num)が見え始めたので、その手前(num - 1)までは完全に読めているとみなす
-		var readNum = Math.max(0, num - 1);
-		if (readNum > this.maxVisibleResnum) {
-			this.maxVisibleResnum = readNum;
+
+		if (num > 0) {
+			var readNum = (num === 1) ? 1 : (num - 1);
+			if (readNum > this.maxVisibleResnum) {
+				this.maxVisibleResnum = readNum;
+				this.clearReadNewres(readNum);
+			}
 		}
-		if (this.observerResnum) {
-			this.observerResnum.unobserve(elem);
-		}
+		this.observerResnum.unobserve(elem);
 	},
 
 	// ==========================================
@@ -514,10 +554,10 @@ iutil.readajax = {
 	'onLoaded': function(html, direction, range, isNew) {
 		var isPrev = (direction === 'prev');
 		var phCurrent = isPrev ? this.placeholders.prev : this.placeholders.next;
-		var thread = document.getElementById('thread');
+		var thread = this.threadElement;
 		
-		if (!thread || !html) {
-			P2DebugLogger.log('readajax', 'onLoaded: empty html or thread not found. direction=' + direction + ', isNew=' + isNew);
+		if (!html) {
+			P2DebugLogger.log('readajax', 'onLoaded: empty html. direction=' + direction + ', isNew=' + isNew);
 			phCurrent.showEnd();
 			this.pendingJumpRes = null;
 			return;
@@ -622,23 +662,16 @@ iutil.readajax = {
 	// ==========================================
 	'scrollToTop': function() {
 		P2DebugLogger.log('readajax', 'scrollToTop');
-		var thread = document.getElementById('thread');
-		if (thread) {
-			thread.scrollTop = 0;
-		}
+		this.threadElement.scrollTop = 0;
 	},
 
 	'scrollToBottom': function() {
 		P2DebugLogger.log('readajax', 'scrollToBottom');
-		var thread = document.getElementById('thread');
-		if (thread) {
-			thread.scrollTop = thread.scrollHeight;
-		}
+		this.threadElement.scrollTop = this.threadElement.scrollHeight;
 	},
 
 	'scrollToElement': function(elem) {
-		var thread = document.getElementById('thread');
-		if (!thread) return;
+		var thread = this.threadElement;
 		var offset = elem.offsetTop;
 		var parent = elem.offsetParent;
 		while (parent && parent !== thread) {
@@ -650,37 +683,31 @@ iutil.readajax = {
 	},
 
 	'repositionSentinels': function() {
-		var thread = document.getElementById('thread');
-		if (!thread) {
-			return;
-		}
+		var thread = this.threadElement;
 		var timing = this.config ? this.config.timing : 0;
-		var sentinelTop = document.getElementById('sentinel-top');
-		var sentinelBottom = document.getElementById('sentinel-bottom');
+		var sentinelTop = this.sentinelTop;
+		var sentinelBottom = this.sentinelBottom;
 		var resEls = thread.getElementsByClassName('res');
 
-		if (sentinelTop) {
-			var targetTop = thread.firstChild;
-			// まだ上に読み込む余地がある場合のみ、timing件手前に配置する
-			if (this.prevRange && timing > 0 && resEls.length > timing) {
-				targetTop = resEls[timing];
-			}
-			if (sentinelTop !== targetTop && (sentinelTop.parentNode !== thread || sentinelTop.nextSibling !== targetTop)) {
-				thread.insertBefore(sentinelTop, targetTop);
-			}
+		var targetTop = thread.firstChild;
+		// まだ上に読み込む余地がある場合のみ、timing件手前に配置する
+		if (this.prevRange && timing > 0 && resEls.length > timing) {
+			targetTop = resEls[timing];
 		}
-		if (sentinelBottom) {
-			var targetBottom = null;
-			// まだ下に読み込む余地がある場合のみ、timing件手前に配置する
-			if (this.nextRange && timing > 0 && resEls.length > timing) {
-				targetBottom = resEls[resEls.length - timing];
-			}
-			if (sentinelBottom !== targetBottom && (sentinelBottom.parentNode !== thread || sentinelBottom.nextSibling !== targetBottom)) {
-				if (targetBottom) {
-					thread.insertBefore(sentinelBottom, targetBottom);
-				} else {
-					thread.appendChild(sentinelBottom);
-				}
+		if (sentinelTop !== targetTop && (sentinelTop.parentNode !== thread || sentinelTop.nextSibling !== targetTop)) {
+			thread.insertBefore(sentinelTop, targetTop);
+		}
+
+		var targetBottom = null;
+		// まだ下に読み込む余地がある場合のみ、timing件手前に配置する
+		if (this.nextRange && timing > 0 && resEls.length > timing) {
+			targetBottom = resEls[resEls.length - timing];
+		}
+		if (sentinelBottom !== targetBottom && (sentinelBottom.parentNode !== thread || sentinelBottom.nextSibling !== targetBottom)) {
+			if (targetBottom) {
+				thread.insertBefore(sentinelBottom, targetBottom);
+			} else {
+				thread.appendChild(sentinelBottom);
 			}
 		}
 	},
@@ -688,22 +715,22 @@ iutil.readajax = {
 	// ==========================================
 	// 既読管理・同期
 	// ==========================================
+	'clearReadNewres': function(readNum) {
+		if (this.config.realtimedisp_readnum == 0) {
+			return;
+		}
+		for (var num in this.newresElements) {
+			var n = parseInt(num, 10);
+			if (n <= readNum) {
+				this.newresElements[num].classList.remove('newres');
+				delete this.newresElements[num];
+			}
+		}
+	},
+
 	'saveReadnum': async function(isUrgent) {
 		if (!this.config) {
 			return;
-		}
-		
-		var thread = document.getElementById('thread');
-		if (thread) {
-			// スクロールが最下部に達している場合は、最後のレスまで読んだとみなして補正する
-			var scrollHeight = thread.scrollHeight;
-			var scrollPos = thread.clientHeight + thread.scrollTop;
-			if (!this.nextRange && scrollPos >= scrollHeight - 10) {
-				var lastResnum = this.lastResnum;
-				if (lastResnum > this.maxVisibleResnum) {
-					this.maxVisibleResnum = lastResnum;
-				}
-			}
 		}
 
 		if (this.maxVisibleResnum <= this.lastSavedReadnum) {
@@ -817,8 +844,7 @@ iutil.ReadAjaxPlaceholder = function(type, readajax) {
 };
 
 iutil.ReadAjaxPlaceholder.prototype._ensureElement = function() {
-	var thread = document.getElementById('thread');
-	if (!thread) return false;
+	var thread = this.readajax.threadElement;
 
 	if (!this.element) {
 		this.element = document.getElementById(this.id);
@@ -834,6 +860,11 @@ iutil.ReadAjaxPlaceholder.prototype._ensureElement = function() {
 			thread.insertBefore(this.element, thread.firstChild);
 		} else {
 			thread.appendChild(this.element);
+		}
+
+		// 要素が新規生成され、かつ監視オブザーバーが稼働していれば監視に追加
+		if (this.readajax.observerResnum) {
+			this.readajax.observerResnum.observe(this.element);
 		}
 	}
 	return true;

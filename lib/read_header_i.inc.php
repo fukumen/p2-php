@@ -176,6 +176,7 @@ if ($is_readajax_active) {
     $_ra_timing = intval($_conf['smartphone.preload.timing']);
     $_ra_readnum_timer = intval($_conf['smartphone.preload.readnum_timer']);
     $_ra_fetch_timeout = intval($_conf['smartphone.readajax.timeout']);
+    $_ra_realtimedisp_readnum = intval($_conf['smartphone.realtimedisp.readnum']);
     $_ra_rescount = intval($aThread->rescount);
     $_ra_datochiok = $aThread->datochiok ? 1 : 0;
     $_ra_rpp = 100;
@@ -194,6 +195,7 @@ var iutil_preload_config = {
     'timing': '{$_ra_timing}',
     'readnum_timer': '{$_ra_readnum_timer}',
     'fetch_timeout': '{$_ra_fetch_timeout}',
+    'realtimedisp_readnum': '{$_ra_realtimedisp_readnum}',
     'rescount': '{$_ra_rescount}',
     'datochiok': '{$_ra_datochiok}',
     'rpp': '{$_ra_rpp}'

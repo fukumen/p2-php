@@ -366,6 +366,9 @@ $conf_user_rules['smartphone.preload.readnum_timer'] = array('emptyToDef', 'notI
 // スレ非同期読み込みのタイムアウト時間（単位:秒）
 $conf_user_def['smartphone.readajax.timeout'] = 20; // (20)
 $conf_user_rules['smartphone.readajax.timeout'] = array('emptyToDef', 'notIntExceptMinusToDef');
+// レス番号の色を新規から既読へリアルタイムに更新する
+$conf_user_def['smartphone.realtimedisp.readnum'] = 0; // (0)
+$conf_user_rad['smartphone.realtimedisp.readnum'] = array('1' => 'する', '0' => 'しない');
 
 // }}}
 // {{{ NG/あぼーん

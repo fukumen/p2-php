@@ -395,6 +395,7 @@ EOS
         array('smartphone.preload.timing', '先行読み込み開始タイミング件数'),
         array('smartphone.preload.readnum_timer', '既読位置の保存間隔（単位:秒）<br>タブを閉じたりブラウザバック時に既読位置は保存しており保険的なタイマー'),
         array('smartphone.readajax.timeout', 'スレ非同期読み込みのタイムアウト時間（単位:秒）'),
+        array('smartphone.realtimedisp.readnum', 'レス番号の色を新規から既読へリアルタイムに更新する'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }
