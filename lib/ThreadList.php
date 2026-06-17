@@ -269,7 +269,8 @@ class ThreadList
         default:
             if (!$this->spmode) {
                 $aSubjectTxt = new SubjectTxt($this->host, $this->bbs);
-                if (P2HostMgr::isHost2chs($this->host) && !P2HostMgr::isHostHeadline($this->host)) {
+                if (!empty($aSubjectTxt->subject_lines) && P2HostMgr::isHost2chs($this->host) && !P2HostMgr::isHostHeadline($this->host)) {
+                    $threads = array();
                     // subject.txt を lastmodify.txt 形式に変換つつマージ
                     //   本来｢subject.txt を lastmodify.txt 形式に変換｣するのは SubjectTxt クラスの中で行ったほうが
                     //   将来的にいいかもしれないがとりあえずここでやる
@@ -288,17 +289,19 @@ class ThreadList
                     }
 
                     $aLastmodify = new LastmodifyTxt($this->host, $this->bbs);
-                    foreach($aLastmodify->lastmodify_lines as $l){
-                        if (!preg_match('/^(([0-9]+)\.(?:dat|cgi))<>(.+?)<>(\d+)<>(\d+)<>(\d+)<>(\d+)<>(.+?)<>(.+?)<>/', $l, $matches)) {
-                            continue;
-                        }
+                    if (!empty($aLastmodify->lastmodify_lines)) {
+                        foreach($aLastmodify->lastmodify_lines as $l){
+                            if (!preg_match('/^(([0-9]+)\.(?:dat|cgi))<>(.+?)<>(\d+)<>(\d+)<>(\d+)<>(\d+)<>(.+?)<>(.+?)<>/', $l, $matches)) {
+                                continue;
+                            }
 
-                        $key = $matches[2];
-                        array_splice($matches, 0, 5); // subject.txt に含まれているデータは捨てる
-                        $threads[$key]['param'] = implode('<>', $matches);  // extend
+                            $key = $matches[2];
+                            array_splice($matches, 0, 5); // subject.txt に含まれているデータは捨てる
+                            $threads[$key]['param'] = implode('<>', $matches);  // extend
+                        }
                     }
 
-                    unset($aSubjectTxt->subject_lines);
+                    $aSubjectTxt->subject_lines = array();
                     foreach($threads as $l){
                         $aSubjectTxt->subject_lines[] = implode('<>', $l) . "<>\n";
                     }
