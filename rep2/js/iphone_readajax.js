@@ -76,7 +76,7 @@ iutil.readajax = {
 		var keys = Object.keys(this.newresElements).map(function(k) { return parseInt(k, 10); });
 		if (keys.length > 0) {
 			var minNewresNum = Math.min.apply(null, keys);
-			this.lastSavedReadnum = minNewresNum;
+			this.lastSavedReadnum = minNewresNum - 1;
 			this.maxVisibleResnum = minNewresNum - 1;
 		}
 
@@ -729,11 +729,10 @@ iutil.readajax = {
 	},
 
 	'saveReadnum': async function(isUrgent) {
-		if (!this.config) {
-			return;
-		}
-
 		if (this.maxVisibleResnum <= this.lastSavedReadnum) {
+			if (isUrgent) {
+				P2DebugLogger.log('readajax', 'saveReadnum skipped (no update): maxVisible=' + this.maxVisibleResnum + ', lastSaved=' + this.lastSavedReadnum);
+			}
 			return;
 		}
 		
@@ -771,7 +770,7 @@ iutil.readajax = {
 	// 内部状態更新 (補助ロジック)
 	// ==========================================
 	'updatePrevRangeAfterLoad': function(range) {
-		if (!range || !this.config) return;
+		if (!range) return;
 		var num = this.config.num;
 		if (range.start > 1 && num > 0) {
 			this.prevRange = {
@@ -784,7 +783,6 @@ iutil.readajax = {
 	},
 
 	'updateNextRangeAfterLoad': function(range, isNew, loadedCount) {
-		if (!this.config) return;
 		var num = this.config.num;
 
 		if (isNew) {
