@@ -29,6 +29,7 @@ iutil.readajax = {
 	'sentinelTop': null,		// 上部センチネルのDOM要素
 	'sentinelBottom': null,		// 下部センチネルのDOM要素
 	'newresElements': null,		// 未読のnewres要素を保持するオブジェクト (キー: レス番号, 値: span要素)
+	'threadCleared': false,		// clearThread() でスレッドをクリアした直後か
 
 	// ==========================================
 	// 初期化ロジック
@@ -48,6 +49,7 @@ iutil.readajax = {
 		this.config.num = parseInt(this.config.num, 10);
 		this.config.timing = parseInt(this.config.timing, 10);
 		this.config.readnum_timer = parseInt(this.config.readnum_timer, 10);
+		this.config.jumpjdg = parseInt(this.config.jumpjdg, 10);
 		this.config.fetch_timeout = parseInt(this.config.fetch_timeout, 10);
 		this.config.realtimedisp_readnum = parseInt(this.config.realtimedisp_readnum, 10);
 		this.config.rescount = parseInt(this.config.rescount, 10);
@@ -272,14 +274,33 @@ iutil.readajax = {
 
 		if (val === 'latest') {
 			var targetRes = Math.max(this.config.rescount, this.lastResnum);
-			if (targetRes > this.lastResnum) {
-				this.pendingJumpRes = targetRes;
+			if (targetRes <= this.lastResnum) {
 				this.scrollToBottom();
-				this.loadNew();
+				return;
+			}
+			this.pendingJumpRes = targetRes;
+			var jumpStart = Math.max(1, targetRes - this.config.num + 1);
+			P2DebugLogger.log('readajax', 'onJumpChange (latest): targetRes=' + targetRes + ', jumpStart=' + jumpStart);
 
-				// プレースホルダー挿入されていたときのために再度スクロール
-				this.scrollToBottom();
+			var firstRes = this.firstResnum;
+			var lastRes = this.lastResnum;
+			if (firstRes === 0 || lastRes === 0) return;
+
+			var gap = jumpStart - lastRes;
+			if (gap > this.config.jumpjdg) {
+				this.clearThread();
+				var range = {
+					'start': jumpStart,
+					'to': jumpStart + this.config.num - 1
+				};
+				this.loadRange('next', range, false, true, false);
 			} else {
+				this.scrollToBottom();
+				var range = {
+					'start': lastRes + 1,
+					'to': jumpStart + this.config.num - 1
+				};
+				this.loadRange('next', range, false, true, false);
 				this.scrollToBottom();
 			}
 			return;
@@ -309,24 +330,44 @@ iutil.readajax = {
 		P2DebugLogger.log('readajax', 'onJumpChange: target outside current range, triggering loadRange. direction=' + (jumpStart < firstRes ? 'prev' : 'next'));
 
 		if (jumpStart < firstRes) {
-			var range = {
-				'start': jumpStart,
-				'to': firstRes - 1
-			};
-			this.scrollToTop();
-			this.loadRange('prev', range, false, true, false);
+			var gap = firstRes - jumpStart;
+			if (gap > this.config.jumpjdg) {
+				this.clearThread();
+				var range = {
+					'start': jumpStart,
+					'to': jumpStart + this.config.num - 1
+				};
+				this.loadRange('next', range, false, true, false);
+			} else {
+				var range = {
+					'start': jumpStart,
+					'to': firstRes - 1
+				};
+				this.scrollToTop();
+				this.loadRange('prev', range, false, true, false);
+			}
 		} else {
-			var num = this.config.num;
-			var jumpEnd = jumpStart + num - 1;
-			var range = {
-				'start': lastRes + 1,
-				'to': jumpEnd
-			};
-			this.scrollToBottom();
-			this.loadRange('next', range, false, true, false);
+			var gap = jumpStart - lastRes;
+			if (gap > this.config.jumpjdg) {
+				this.clearThread();
+				var range = {
+					'start': jumpStart,
+					'to': jumpStart + this.config.num - 1
+				};
+				this.loadRange('next', range, false, true, false);
+			} else {
+				var num = this.config.num;
+				var jumpEnd = jumpStart + num - 1;
+				var range = {
+					'start': lastRes + 1,
+					'to': jumpEnd
+				};
+				this.scrollToBottom();
+				this.loadRange('next', range, false, true, false);
 
-			// プレースホルダー挿入されていたときのために再度スクロール
-			this.scrollToBottom();
+				// プレースホルダー挿入されていたときのために再度スクロール
+				this.scrollToBottom();
+			}
 		}
 	},
 
@@ -337,8 +378,44 @@ iutil.readajax = {
 
 		var nextStart = lastResnum + 1;
 		P2DebugLogger.log('readajax', 'loadNew: start=' + nextStart);
-		var range = { 'start': nextStart, 'to': null };
+		var range = { 'start': nextStart, 'to': nextStart + this.config.num - 1 };
 		this.loadRange('next', range, true, true, false);
+	},
+
+	'clearThread': function() {
+		if (this.abortNext) {
+			this.abortNext.abort();
+			this.abortNext = null;
+		}
+		if (this.abortPrev) {
+			this.abortPrev.abort();
+			this.abortPrev = null;
+		}
+		if (this.observerTop) {
+			this.observerTop.disconnect();
+			this.observerTop = null;
+		}
+		if (this.observerBottom) {
+			this.observerBottom.disconnect();
+			this.observerBottom = null;
+		}
+		while (this.threadElement.firstChild) {
+			this.threadElement.removeChild(this.threadElement.firstChild);
+		}
+		this.threadElement.appendChild(this.sentinelTop);
+		this.threadElement.appendChild(this.sentinelBottom);
+		this.firstResnum = 0;
+		this.lastResnum = 0;
+		this.newresElements = {};
+		this.prevRange = null;
+		this.nextRange = null;
+		this.placeholders.prev.state = 'init';
+		this.placeholders.prev.element = null;
+		this.placeholders.next.state = 'init';
+		this.placeholders.next.element = null;
+		this.maxVisibleResnum = 0;
+		this.threadCleared = true;
+		P2DebugLogger.log('readajax', 'clearThread: thread cleared');
 	},
 
 	'setupObserverTop': function() {
@@ -597,6 +674,19 @@ iutil.readajax = {
 				this.lastResnum = latestResnum;
 				this.updateJumpSelect();
 			}
+			if (this.threadCleared) {
+				var earliestResnum = 0;
+				for (var i = 0; i < resEls.length; i++) {
+					var match = resEls[i].id.match(/^r(\d+)$/);
+					if (match) {
+						earliestResnum = parseInt(match[1], 10);
+						break;
+					}
+				}
+				if (earliestResnum > 0) {
+					this.firstResnum = earliestResnum;
+				}
+			}
 		} else {
 			var earliestResnum = 0;
 			for (var i = 0; i < resEls.length; i++) {
@@ -646,6 +736,12 @@ iutil.readajax = {
 			this.setupObserverTop();
 		} else {
 			this.setupObserverBottom();
+		}
+
+		if (this.threadCleared) {
+			this.threadCleared = false;
+			this.updatePrevRangeAfterLoad(range);
+			this.setupObserverTop();
 		}
 
 		if (this.pendingJumpRes) {
@@ -790,10 +886,14 @@ iutil.readajax = {
 		} else {
 			var requestedCount = range ? (range.to - range.start + 1) : 0;
 			if (range && range.to && loadedCount === requestedCount && num > 0) {
-				this.nextRange = {
-					'start': range.to + 1,
-					'to': range.to + num
-				};
+				if (!range.to || !this.config.rescount || range.to < this.config.rescount) {
+					this.nextRange = {
+						'start': range.to + 1,
+						'to': range.to + num
+					};
+				} else {
+					this.nextRange = null;
+				}
 			} else {
 				this.nextRange = null;
 			}

@@ -363,6 +363,9 @@ $conf_user_rules['smartphone.preload.timing'] = array('emptyToDef', 'notIntExcep
 // 既読位置の保存間隔（単位:秒）
 $conf_user_def['smartphone.preload.readnum_timer'] = 30; // (30)
 $conf_user_rules['smartphone.preload.readnum_timer'] = array('emptyToDef', 'notIntExceptMinusToDef');
+// ジャンプ先を表示するときにこの件数を超えて読み込みが必要なら読み込み分を捨てる
+$conf_user_def['smartphone.preload.jumpjdg'] = 100; // (100)
+$conf_user_rules['smartphone.preload.jumpjdg'] = array('emptyToDef', 'notIntExceptMinusToDef');
 // スレ非同期読み込みのタイムアウト時間（単位:秒）
 $conf_user_def['smartphone.readajax.timeout'] = 20; // (20)
 $conf_user_rules['smartphone.readajax.timeout'] = array('emptyToDef', 'notIntExceptMinusToDef');

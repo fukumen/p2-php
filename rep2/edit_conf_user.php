@@ -394,6 +394,7 @@ EOS
         array('smartphone.preload.num', '先行読み込み件数'),
         array('smartphone.preload.timing', '先行読み込み開始タイミング件数'),
         array('smartphone.preload.readnum_timer', '既読位置の保存間隔（単位:秒）<br>タブを閉じたりブラウザバック時に既読位置は保存しており保険的なタイマー'),
+        array('smartphone.preload.jumpjdg', 'ジャンプ先を表示するときにこの件数を超えて読み込みが必要なら読み込み分を捨てる<br>上方向にジャンプした場合、smartphone.preload.readnum_timerが発火しているとsmartphone.realtimedisp.readnumオフでも既読表示となる制約あり'),
         array('smartphone.readajax.timeout', 'スレ非同期読み込みのタイムアウト時間（単位:秒）'),
         array('smartphone.realtimedisp.readnum', 'レス番号の色を新規から既読へリアルタイムに更新する'),
     );
