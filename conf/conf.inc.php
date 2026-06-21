@@ -10,9 +10,9 @@ $_conf = array(
     'p2version' => '260101.0028',   // rep2ÇÃÉoÅ[ÉWÉáÉì
 );
 
-$_conf['p2ua'] = "{$_conf['p2name']}/{$_conf['p2version']}";
+$_conf['p2ua'] = "{$_conf['p2name']}/" . substr($_conf['p2version'], 0, 2);
 
-define('P2_VERSION_ID', sprintf('%u', crc32($_conf['p2ua'])));
+define('P2_VERSION_ID', sprintf('%u', crc32("{$_conf['p2name']}/{$_conf['p2version']}")));
 
 $_conf['jquery_version'] = '3.7.1';
 
