@@ -70,14 +70,6 @@ if (!isset($ttitle)) {
 if (!empty($_POST['fix_source'])) {
     // タブをスペースに
     $MESSAGE = tab2space($MESSAGE);
-    // 特殊文字を実体参照に
-    $MESSAGE = strtr(p2h($MESSAGE), array(
-        '&quot;' => '&#34;', // "
-        '&amp;'  => '&#38;', // &
-        '&apos;' => '&#39;', // '
-        '&lt;'   => '&#60;', // <
-        '&gt;'   => '&#62;', // >
-    ));
     // 自動URLリンク回避
     $MESSAGE = str_replace('tp://', 't&#112;://', $MESSAGE);
     // 行頭のスペースを実体参照に
@@ -427,7 +419,7 @@ if ($_conf['res_write_rec']) {
     P2Util::transResHistLogPhpToDat();
 
     $date_and_id = date('y/m/d H:i');
-    $message = htmlspecialchars(mb_convert_encoding($MESSAGE, 'CP932', 'UTF-8,CP932'), ENT_NOQUOTES, 'CP932');
+    $message = str_replace('<', '&lt;', mb_convert_encoding($MESSAGE, 'CP932', 'UTF-8,CP932'));
     $message = preg_replace('/\\r\\n|\\r|\\n/', '<br>', $message);
 
     FileCtl::make_datafile($_conf['res_hist_dat']); // なければ生成

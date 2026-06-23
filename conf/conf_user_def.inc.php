@@ -550,9 +550,9 @@ $conf_user_def['my_FROM'] = ""; // ("")
 // レス書き込み時のデフォルトのmail
 $conf_user_def['my_mail'] = "sage"; // ("sage")
 
-// PC閲覧時、ソースコードのコピペに適した補正をするチェックボックスを表示（する:1, しない:0, pc鯖のみ:2）
+// PC閲覧時、ソースコードのコピペに適した補正をするチェックボックスを表示（する:1, しない:0）
 $conf_user_def['editor_srcfix'] = 0; // (0)
-$conf_user_rad['editor_srcfix'] = array('1' => 'する', '0' => 'しない', '2' => 'pc鯖のみ');
+$conf_user_rad['editor_srcfix'] = array('1' => 'する', '0' => 'しない');
 
 // 新しいスレッドを取得した時に表示するレス数(全て表示する場合:"all")
 $conf_user_def['get_new_res'] = 200; // (200)
