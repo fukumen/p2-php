@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
     var limelight;
     document.removeEventListener(event.type, arguments.callee, false);
     limelight = new Limelight({ 'savable': true, 'title': true });
+    window.limelight = limelight;
     limelight.bind();
     window._IRESPOPG.callbacks.push(function(container) {
         limelight.bind(null, container, true);

@@ -706,13 +706,16 @@ iutil.readajax = {
 		P2DebugLogger.log('readajax', 'onLoaded success. direction=' + direction + ', count=' + resEls.length + ', lastResnum=' + this.lastResnum);
 		var loadedCount = resEls.length;
 
+		var insertedNodes = [];
 		if (isPrev) {
 			var oldScrollHeight = thread.scrollHeight;
 			var firstChild = thread.firstChild;
 			var child = tempDiv.firstChild;
 			while (child) {
+				var nextChild = child.nextSibling;
 				thread.insertBefore(child, firstChild);
-				child = tempDiv.firstChild;
+				insertedNodes.push(child);
+				child = nextChild;
 			}
 			var newScrollHeight = thread.scrollHeight;
 			var insertedHeight = newScrollHeight - oldScrollHeight;
@@ -720,8 +723,16 @@ iutil.readajax = {
 		} else {
 			var child = tempDiv.firstChild;
 			while (child) {
+				var nextChild = child.nextSibling;
 				thread.appendChild(child);
-				child = tempDiv.firstChild;
+				insertedNodes.push(child);
+				child = nextChild;
+			}
+		}
+
+		if (window.limelight && typeof window.limelight.bind === 'function') {
+			for (var i = 0; i < insertedNodes.length; i++) {
+				window.limelight.bind(null, insertedNodes[i], false);
 			}
 		}
 
