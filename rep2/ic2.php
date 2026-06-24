@@ -154,28 +154,46 @@ class IC2TempFile
 }
 
 // }}}
+// {{{ IC2TempDirLock
+
+class IC2TempDirLock
+{
+    private $_dirname = null;
+
+    public function __construct($dirname)
+    {
+        $this->_dirname = $dirname;
+    }
+
+    public function __destruct()
+    {
+        if ($this->_dirname !== null && is_dir($this->_dirname)) {
+            @rmdir($this->_dirname);
+        }
+    }
+}
+
+// }}}
 // {{{ sleep
 
 if ($doDL) {
-    // 同じ画像のURIに対するクエリが（ほぼ）同時に発行されたときの重複GETを防ぐ
-    // sleepした時間はプロセスの実行時間に含まれないので独自にタイマーを用意する（無限ループ回避）
-    $dl_lock_file = $_conf['tmp_dir'] . DIRECTORY_SEPARATOR . 'ic2_lck_' . md5($uri);
-    if (file_exists($dl_lock_file)) {
-        $offtimer = ini_get('max_execution_time');
-        if ($offtimer == 0) {
-            $offtimer = 30;
-        }
-        while (file_exists($dl_lock_file)) {
-            sleep(1); // 1秒停止
-            $offtimer--;
-            if ($offtimer < 0) {
-                ic2_error(504);
-            }
+    // mkdir()はアトミックな「存在しなければ作成」操作。
+    // これにより複数リクエストの同時到達でも排他が成立する
+    $dl_lock_dir = $_conf['tmp_dir'] . DIRECTORY_SEPARATOR . 'ic2_lck_' . md5($uri);
+    $offtimer = ini_get('max_execution_time');
+    if ($offtimer == 0) {
+        $offtimer = 30;
+    }
+    while (!@mkdir($dl_lock_dir, 0777)) {
+        sleep(1);
+        $offtimer--;
+        if ($offtimer < 0) {
+            ic2_error(504);
         }
     }
 
-    // テンポラリファイルを作成、終了時に自動削除
-    $dl_lock_obj = new IC2TempFile($dl_lock_file);
+    // ロックディレクトリを作成、終了時に自動削除
+    $dl_lock_obj = new IC2TempDirLock($dl_lock_dir);
 }
 
 // }}}

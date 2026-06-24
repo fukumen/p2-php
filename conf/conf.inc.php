@@ -7,7 +7,7 @@
 // バージョン情報
 $_conf = array(
     'p2name'    => 'rep2-expack_allinone',   // rep2の名前
-    'p2version' => '260101.0028',   // rep2のバージョン
+    'p2version' => '260101.0029',   // rep2のバージョン
 );
 
 $_conf['p2ua'] = "{$_conf['p2name']}/" . substr($_conf['p2version'], 0, 2);

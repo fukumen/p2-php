@@ -926,7 +926,7 @@ EOP;
      * @param   bool            $marker
      * @return  string
      */
-    static public function iframePopup($url, $str, $attr = '', $mode = null, $marker = false)
+    static public function iframePopup($url, $str, $attr = '', $mode = null, $marker = false, $extra = '')
     {
         global $_conf;
 
@@ -962,9 +962,17 @@ EOP;
         // リンクの属性にHTMLポップアップ用のイベントハンドラを加える
         $pop_attr = $attr;
         if ($_conf['iframe_popup_event'] == 1) {
-            $pop_attr .= " onclick=\"stophide=true; showHtmlPopUp('{$pop_url}',event,0" . ($marker ? ' ,this' : '') . "); return false;\"";
+            if ($extra !== '') {
+                $pop_attr .= " onclick=\"{$extra}; stophide=true; showHtmlPopUp('{$pop_url}',event,0" . ($marker ? ' ,this' : '') . "); return false;\"";
+            } else {
+                $pop_attr .= " onclick=\"stophide=true; showHtmlPopUp('{$pop_url}',event,0" . ($marker ? ' ,this' : '') . "); return false;\"";
+            }
         } else {
-            $pop_attr .= " onmouseover=\"showHtmlPopUp('{$pop_url}',event,{$_conf['iframe_popup_delay']}" . ($marker ? ' ,this' : '') . ")\"";
+            if ($extra !== '') {
+                $pop_attr .= " onmouseover=\"{$extra}; showHtmlPopUp('{$pop_url}',event,{$_conf['iframe_popup_delay']}" . ($marker ? ' ,this' : '') . ")\"";
+            } else {
+                $pop_attr .= " onmouseover=\"showHtmlPopUp('{$pop_url}',event,{$_conf['iframe_popup_delay']}" . ($marker ? ' ,this' : '') . ")\"";
+            }
         }
         $pop_attr .= " onmouseout=\"offHtmlPopUp()\"";
 
@@ -1027,7 +1035,7 @@ EOP;
     /**
      * 画像をHTMLポップアップ&ポップアップウインドウサイズに合わせる
      */
-    public function imageHtmlPopup($img_url, $img_tag, $link_str)
+    public function imageHtmlPopup($img_url, $img_tag, $link_str, $extra = '')
     {
         global $_conf;
 
@@ -1038,7 +1046,7 @@ EOP;
         }
 
         $pops = ($_conf['iframe_popup'] == 1) ? $img_tag . $link_str : array($link_str, $img_tag);
-        return self::iframePopup(array($img_url, $popup_url), $pops, $_conf['ext_win_target_at'], null, true);
+        return self::iframePopup(array($img_url, $popup_url), $pops, $_conf['ext_win_target_at'], null, true, $extra);
     }
 
     // }}}
@@ -1502,16 +1510,16 @@ EOJS;
             }
 
             // 表示モード
-            if ($show_thumb) {
-                $img_tag = "<img class=\"thumbnail\" src=\"{$thumb_url}\" {$thumb_size} hspace=\"4\" vspace=\"4\" align=\"middle\">";
-                if ($_conf['iframe_popup']) {
-                    $view_img = $this->imageHtmlPopup($img_url, $img_tag, '');
-                } else {
-                    $view_img = "<a href=\"{$img_url}\"{$_conf['ext_win_target_at']}>{$img_tag}</a>";
-                }
+            $img_src = $show_thumb ? $thumb_url : $tmp_thumb;
+            $img_size = $show_thumb ? $thumb_size : 'width="32" height="32"';
+            $img_tag = "<img id=\"{$thumb_id}\" class=\"thumbnail\" src=\"{$img_src}\" {$img_size} hspace=\"4\" vspace=\"4\" align=\"middle\">";
+            if ($_conf['iframe_popup']) {
+                $extra = $show_thumb ? '' : "loadThumb('{$thumb_url}','{$thumb_id}')";
+                $view_img = $this->imageHtmlPopup($img_url, $img_tag, '', $extra);
+            } elseif ($show_thumb) {
+                $view_img = "<a href=\"{$img_url}\"{$_conf['ext_win_target_at']}>{$img_tag}</a>";
             } else {
-                $img_tag = "<img id=\"{$thumb_id}\" class=\"thumbnail\" src=\"{$tmp_thumb}\" width=\"32\" height=\"32\" hspace=\"4\" vspace=\"4\" align=\"middle\">";
-                $view_img = "<a href=\"{$img_url}\" onclick=\"return loadThumb('{$thumb_url}','{$thumb_id}')\"{$_conf['ext_win_target_at']}>{$img_tag}</a><a href=\"{$img_url}\"{$_conf['ext_win_target_at']}></a>";
+                $view_img = "<a href=\"{$img_url}\" onclick=\"return loadThumb('{$thumb_url}','{$thumb_id}')\"{$_conf['ext_win_target_at']}>{$img_tag}</a>";
             }
 
             $view_img .= '<img class="ic2-info-opener" src="img/s2a.png" width="16" height="16" onclick="ic2info.show('

@@ -20,6 +20,9 @@ function loadThumb(thumb_url, thumb_id)
 	if (!tmp_thumb) {
 		return true;
 	}
+	if (tmp_thumb.src.indexOf('/ic_load') === -1) {
+		return true;
+	}
 
 	var thumb = document.createElement('img');
 	thumb.className = 'thumbnail';
@@ -27,6 +30,7 @@ function loadThumb(thumb_url, thumb_id)
 	thumb.setAttribute('hspace', 4);
 	thumb.setAttribute('vspace', 4);
 	thumb.setAttribute('align', 'middle');
+	thumb.setAttribute('id', thumb_id);
 
 	tmp_thumb.parentNode.replaceChild(thumb, tmp_thumb);
 
