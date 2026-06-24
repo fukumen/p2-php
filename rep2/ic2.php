@@ -643,7 +643,6 @@ function ic2_checkSizeOvered($tmpfile, $params)
     }
 
     if ($isError) {
-        ic2_aborn($params);
         ic2_error('x03', $errmsg);
     }
 
