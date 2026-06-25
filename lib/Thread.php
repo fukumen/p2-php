@@ -427,7 +427,7 @@ class Thread
             return true;
         }
 
-        if (preg_match('/^([0-9]+)\.(?:dat|cgi)<>(.+?)<>(\d+)<>(\d+)<>(\d+)<>(\d+)<>(.+?)<>(.+?)<>/', $l, $matches)) {
+        if (preg_match('/^([0-9]+)\.(?:dat|cgi)<>(.+?)<>(\d+)<>(\d*)<>(\d*)<>(\d*)<>(.*?)<>(.*?)<>/', $l, $matches)) {
             $this->isonline = true;
             $this->key = $matches[1];
             $this->setTtitle(rtrim($matches[2]));
