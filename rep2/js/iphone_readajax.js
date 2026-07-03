@@ -744,6 +744,19 @@ iutil.readajax = {
 		}
 
 		this.repositionSentinels();
+
+		if (isPrev ? !!this.prevRange : !!this.nextRange) {
+			var self = this;
+			phCurrent.showError(function() {
+				var r = isPrev ? self.prevRange : self.nextRange;
+				if (r) {
+					self.loadRange(direction, r, false, true, false);
+				}
+			});
+		} else {
+			phCurrent.showEnd();
+		}
+
 		if (isPrev) {
 			this.setupObserverTop();
 		} else {
@@ -911,9 +924,6 @@ iutil.readajax = {
 			}
 		}
 
-		if (!this.nextRange) {
-			this.placeholders.next.showEnd();
-		}
 	},
 
 	'updateJumpSelect': function() {
