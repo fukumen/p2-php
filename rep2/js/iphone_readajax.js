@@ -573,8 +573,9 @@ iutil.readajax = {
 		}
 
 		var rangeStr = rangeStrForView + 'n';
+		var forcedView = this.config.b ? '&b=' + encodeURIComponent(this.config.b) : '';
 		var uri = 'read.php?ajax=1&host=' + this.config.host + '&bbs=' + this.config.bbs
-			+ '&key=' + this.config.key + '&ls=' + rangeStr;
+			+ '&key=' + this.config.key + '&ls=' + rangeStr + forcedView;
 
 		var ac = new AbortController();
 		if (isPrev) {

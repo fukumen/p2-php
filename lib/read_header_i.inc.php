@@ -171,6 +171,7 @@ if ($is_readajax_active) {
     $_ra_bbs = StrCtl::toJavaScript($aThread->bbs);
     $_ra_key = StrCtl::toJavaScript($aThread->key);
     $_ra_ls = StrCtl::toJavaScript($aThread->ls);   // デバッグ用
+    $_ra_b = $_conf['view_forced_by_query'] ? StrCtl::toJavaScript($_conf['b']) : '';
     $_ra_prev = intval($_conf['smartphone.lazyload.prev']);
     $_ra_next = intval($_conf['smartphone.lazyload.next']);
     $_ra_num = intval($_conf['smartphone.preload.num']);
@@ -191,6 +192,7 @@ var iutil_preload_config = {
     'bbs': '{$_ra_bbs}',
     'key': '{$_ra_key}',
     'ls': '{$_ra_ls}',
+    'b': '{$_ra_b}',
     'prev': '{$_ra_prev}',
     'next': '{$_ra_next}',
     'num': '{$_ra_num}',
