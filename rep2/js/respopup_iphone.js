@@ -80,22 +80,15 @@ ipoputil.getDeactivator = function(obj, key) {
  * @return void
  * @todo use asynchronous request
  */
-ipoputil.callback = function(req, url, popid, yOffset) {
+ipoputil.callback = function(req, url, popid, clientY, pageY) {
 	var container = document.createElement('div');
 	var closer = document.createElement('img');
+	var is_readajax = typeof iutil_preload_config !== 'undefined';
 
 	container.id = popid;
 	container.className = 'respop';
 	container.innerHTML = req.responseText;
-	/*
-	var rx = req.responseXML;
-	while (rx.hasChildNodes()) {
-		container.appendChild(document.importNode(rx.removeChild(rx.firstChild), true));
-	}
-	*/
-	container.style.top = yOffset.toString() + 'px';
 	container.style.zIndex = ipoputil.getZ();
-	//container.onclick = ipoputil.getActivator(container);
 
 	closer.className = 'close-button';
 	closer.setAttribute('src', 'img/iphone/close.png');
@@ -104,8 +97,31 @@ ipoputil.callback = function(req, url, popid, yOffset) {
 		ipoputil.getDeactivator(container, url);
 	});
 
-	container.appendChild(closer);
-	document.body.appendChild(container);
+	if (is_readajax) {
+		var thread = document.getElementById('thread');
+		var yOffset = Math.max(10, (clientY - thread.getBoundingClientRect().top) + thread.scrollTop - 20);
+		container.style.top = yOffset + 'px';
+		container.appendChild(closer);
+		thread.appendChild(container);
+		var bottom = yOffset + container.offsetHeight;
+		var limit = thread.scrollTop + thread.clientHeight;
+		if (bottom > limit - 10) {
+			container.style.top = Math.max(thread.scrollTop + 10, limit - container.offsetHeight - 10) + 'px';
+		}
+	} else {
+		var yOffset = Math.max(10, pageY - 20);
+		container.style.top = yOffset + 'px';
+		container.appendChild(closer);
+		document.body.appendChild(container);
+		var scrollY = window.scrollY;
+		var bottom = yOffset + container.offsetHeight;
+		var limit = scrollY + window.innerHeight;
+		if (bottom > limit - 10) {
+			container.style.top = Math.max(10, limit - container.offsetHeight - 10) + 'px';
+		}
+	}
+
+	var scrollToRes = parseInt(container.style.top, 10);
 
 	//iutil.modifyInternalLink(container);
 	iutil.modifyExternalLink(container);
@@ -126,7 +142,11 @@ ipoputil.callback = function(req, url, popid, yOffset) {
 		anchor.setAttribute('href', '#' + popid);
 		anchor.onclick = function(evt){
 			iutil.stopEvent(evt || window.event);
-			scrollTo(0, yOffset - 10);
+			if (is_readajax) {
+				document.getElementById('thread').scrollTop = Math.max(0, scrollToRes - 10);
+			} else {
+				scrollTo(0, scrollToRes - 10);
+			}
 			return false;
 		};
 		anchor.appendChild(document.createTextNode('£'));
@@ -159,11 +179,31 @@ ipoputil.callback = function(req, url, popid, yOffset) {
  * @return void
  */
 ipoputil.popup = function(url, evt) {
-	var yOffset = Math.max(10, iutil.getPageY(evt) - 20);
+	var pos = iutil.getTouch(evt) || evt;
+	var clientY = pos.clientY;
+	var pageY   = pos.pageY;
 
 	if (_IRESPOPG.hash[url]) {
 		_IRESPOPG.serial++;
-		_IRESPOPG.hash[url].style.top = yOffset.toString() + 'px';
+		if (typeof iutil_preload_config !== 'undefined') {
+			var thread = document.getElementById('thread');
+			var yOffset = Math.max(10, (clientY - thread.getBoundingClientRect().top) + thread.scrollTop - 20);
+			_IRESPOPG.hash[url].style.top = yOffset + 'px';
+			var bottom = yOffset + _IRESPOPG.hash[url].offsetHeight;
+			var limit = thread.scrollTop + thread.clientHeight;
+			if (bottom > limit - 10) {
+				_IRESPOPG.hash[url].style.top = Math.max(thread.scrollTop + 10, limit - _IRESPOPG.hash[url].offsetHeight - 10) + 'px';
+			}
+		} else {
+			var yOffset = Math.max(10, pageY - 20);
+			_IRESPOPG.hash[url].style.top = yOffset + 'px';
+			var scrollY = window.scrollY;
+			var bottom = yOffset + _IRESPOPG.hash[url].offsetHeight;
+			var limit = scrollY + window.innerHeight;
+			if (bottom > limit - 10) {
+				_IRESPOPG.hash[url].style.top = Math.max(10, limit - _IRESPOPG.hash[url].offsetHeight - 10) + 'px';
+			}
+		}
 		_IRESPOPG.hash[url].style.zIndex = ipoputil.getZ();
 		return false;
 	}
@@ -177,7 +217,7 @@ ipoputil.popup = function(url, evt) {
 	req.onreadystatechange = function() {
 		if (this.readyState == 4) {
 			if (this.status == 200) {
-				ipoputil.callback(this, url, popid, yOffset);
+				ipoputil.callback(this, url, popid, clientY, pageY);
 			}
 		}
 	};

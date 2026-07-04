@@ -415,6 +415,8 @@ div.respop {
     left: 0;
     margin: 0;
     padding: 12px 6px 0 14px;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 div.respop > div.res {
