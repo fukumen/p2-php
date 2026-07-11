@@ -63,9 +63,7 @@ echo <<<IP2HOST
             let scroll_top = $(window).scrollTop();
             let wh = $(window).height();
             if (!scroll_replace || (scroll_replace && header_top > scroll_top && header_top < scroll_top + wh)) {
-                let res_header_tmp = res_header.clone();
-                res_header_tmp.find('b').text('');
-                let ip_addr = res_header_tmp.html().match(/.+? \[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[\]| ]/);
+                let ip_addr = res_header.html().match(/watchoicss-[^\]]*\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\]/);
                 if (ip_addr == null) {
                     return true;
                 };
@@ -145,10 +143,7 @@ echo <<<IP2HOST
                 res_header.parent().find('.message').hide();
                 res_header.parent().hide();
             } else {
-                let b_text = res_header.find('b').text();
-                res_header.find('b').text('');
-                res_header.html(res_header.html().replace(/ \[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})([\]| ])/, ' ['+ret_host+'$2'));
-                res_header.find('b').text(b_text);
+                res_header.html(res_header.html().replace(/(watchoicss-[^\]]*)\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\]/, '$1['+ret_host+']'));
             }
         }).fail(function(XMLHttpRequest, textStatus, errorThrown){
             //alert(errorThrown);
