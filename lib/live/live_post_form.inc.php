@@ -73,12 +73,37 @@ EOP;
 EOP;
 }
 
+// 名前コマンド読み込み
+$commands_name = array();
+$cmd_file = $_conf['pref_dir'] . '/p2_commands_name.txt';
+$content = FileCtl::file_read_contents($cmd_file);
+if ($content !== false) {
+    foreach (explode("\n", $content) as $line) {
+        $trimmed = trim($line);
+        if ($trimmed !== '') {
+            $commands_name[] = $trimmed;
+        }
+    }
+}
+$html_cmd_options = '';
+foreach ($commands_name as $cmd) {
+    $html_cmd_options .= '<option value="' . p2h($cmd) . '">' . p2h($cmd) . "</option>\n";
+}
+if (!$_conf['ktai'] || $_conf['iphone']) {
+    $htm['name_select_html'] = '<select id="name_cmd_select" style="display:inline-block;width:auto;" onchange="document.getElementById(\'FROM\').value=this.value;">' . "\n" .
+        '<option value="">コマンド</option>' . "\n" .
+        $html_cmd_options . '</select>' . "\n";
+} else {
+    $htm['name_select_html'] = '';
+}
+
 // 文字コード判定用文字列を先頭に仕込むことでmb_convert_variables()の自動判定を助ける
 $htm['post_form'] = <<<EOP
 <form id="resform" method="POST" action="./post.php" accept-charset="{$_conf['accept_charset']}"{$onsubmit_at}>
 <b class="thre_title" title="{$ttitle}">&nbsp;{$ttitle_pfi}&nbsp;</b>
 {$htm['maru_post']}
 {$htm['name_label']}<input id="FROM" name="FROM" type="text" value="{$hd['FROM']}"{$name_size_at}{$htm['name_extra_at']}>
+{$htm['name_select_html']}
 {$htm['mail_label']}<input id="mail" name="mail" type="text" value="{$hd['mail']}" size ="10" {$on_check_sage}{$htm['mail_extra_at']}>
 {$htm['sage_cb']}
 {$htm['options']}

@@ -445,6 +445,16 @@ EOP;
     }
 
     // }}}
+    // コマンド編集
+    echo "<tr><td>\n\n";
+    echo <<<EOP
+<fieldset>
+<legend>コマンド編集</legend>
+    <a href="edit_commands_name.php{$_conf['k_at_q']}" target="_self">名前</a>
+</fieldset>
+EOP;
+    echo "</td></tr>\n\n";
+
     // +Wiki
     // {{{ PC - +Wiki
     echo "<tr><td>\n\n";
@@ -522,6 +532,9 @@ EOP;
 
     if ($_conf['iphone']) {
         echo <<<EOP
+<hr>
+<p>コマンド編集</p>
+<a href="edit_commands_name.php{$_conf['k_at_q']}" class="button">名前</a><br>
 <hr>
 <p>デバッグツール</p>
 <a href="show_log.php{$_conf['k_at_q']}" class="button">デバッグログ表示</a><br>

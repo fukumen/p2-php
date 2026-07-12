@@ -30,7 +30,7 @@ if ($_conf['ktai']) {
     	$htm['k_br'] = '';
         $htm['name_label'] = '';
         $htm['mail_label'] = '';
-        $htm['name_extra_at'] = ' class="form-control form-group" placeholder="名前(省略可)" autocorrect="off" autocapitalize="off"';
+        $htm['name_extra_at'] = ' class="form-control form-group" placeholder="名前(省略可)" autocorrect="off" autocapitalize="off" style="display:inline-block;width:auto;"';
         $htm['mail_extra_at'] = ' class="form-control form-group" placeholder="メール(省略可)" autocorrect="off" autocapitalize="off"';
         $htm['msg_extra_at'] = ' class="form-control form-group" placeholder="本文" autocorrect="off" autocapitalize="off"';
 
@@ -102,6 +102,30 @@ EOP;
 EOP;
 }
 
+// 名前コマンド読み込み
+$commands_name = array();
+$cmd_file = $_conf['pref_dir'] . '/p2_commands_name.txt';
+$content = FileCtl::file_read_contents($cmd_file);
+if ($content !== false) {
+    foreach (explode("\n", $content) as $line) {
+        $trimmed = trim($line);
+        if ($trimmed !== '') {
+            $commands_name[] = $trimmed;
+        }
+    }
+}
+$html_cmd_options = '';
+foreach ($commands_name as $cmd) {
+    $html_cmd_options .= '<option value="' . p2h($cmd) . '">' . p2h($cmd) . "</option>\n";
+}
+if (!$_conf['ktai'] || $_conf['iphone']) {
+    $htm['name_select_html'] = '<select id="name_cmd_select" style="display:inline-block;width:auto;" onchange="document.getElementById(\'FROM\').value=this.value;">' . "\n" .
+        '<option value="">コマンド</option>' . "\n" .
+        $html_cmd_options . '</select>' . "\n";
+} else {
+    $htm['name_select_html'] = '';
+}
+
 // 文字コード判定用文字列を先頭に仕込むことでmb_convert_variables()の自動判定を助ける
 $htm['post_form'] = <<<EOP
 {$htm['disable_js']}
@@ -109,7 +133,7 @@ $htm['post_form'] = <<<EOP
 <form id="resform" method="POST" action="./post.php" accept-charset="{$_conf['accept_charset']}"{$onsubmit_at}>
 {$htm['subject']}
 {$htm['maru_post']}
-{$htm['name_label']}<input id="FROM" name="FROM" type="text" value="{$hd['FROM']}"{$name_size_at}{$htm['name_extra_at']}>{$htm['k_br']}
+{$htm['name_label']}<input id="FROM" name="FROM" type="text" value="{$hd['FROM']}"{$name_size_at}{$htm['name_extra_at']}>{$htm['name_select_html']}{$htm['k_br']}
 {$htm['mail_label']}<input id="mail" name="mail" type="text" value="{$hd['mail']}"{$mail_size_at}{$on_check_sage}{$htm['mail_extra_at']}>{$htm['k_br']}
 {$htm['sage_cb']}
 {$htm['options']}
