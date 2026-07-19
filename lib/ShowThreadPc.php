@@ -697,10 +697,6 @@ EOP;
         if ($_conf['coloredid.enable'] > 0
             && strlen($id) >= 4
             && preg_match("<^(?:ID:|”­MŒ³:) ?[0-9A-Za-z/.+:*]+>",$idstr)) {
-            if ($this->_ids_for_render === null) {
-                $this->_ids_for_render = array();
-            }
-            $this->_ids_for_render[$id] = $this->thread->idcount[$id];
             if ($_conf['coloredid.click'] > 0) {
                 $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedId($idstr, $id) . '" onClick="idCol.click(\'' . $id . '\', event); return false;" onDblClick="this.onclick(event); return false;">' . $num_ht . '</a>';
             }
@@ -763,10 +759,6 @@ EOP;
 
         if ($_conf['coloredid.enable'] > 0) {
             $wid32 = substr(md5($wid), 0, 8);
-            if ($this->_watchois_for_render === null) {
-                $this->_watchois_for_render = array();
-            }
-            $this->_watchois_for_render[$wid32] = $count;
 
             if ($_conf['coloredid.click'] > 0) {
                 $num_ht = '<a href="javascript:void(0);" class="' . self::cssClassedWatchoi($wid32) . '" onClick="watchoiCol.click(\'' . $wid32 . '\', event); return false;" onDblClick="this.onclick(event); return false;">' . $num_ht . '</a>';

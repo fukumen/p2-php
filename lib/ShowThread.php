@@ -302,16 +302,6 @@ abstract class ShowThread
 
     /**
      * IDとワッチョイに色を付ける
-     * 出力予定のID(重複のみ)のリスト(8桁)
-     * 出力予定のワッチョイ(重複のみ)のリスト(32bit整数のhex)
-     *
-     * @var array
-     */
-    protected $_ids_for_render;
-    protected $_watchois_for_render;
-
-    /**
-     * IDとワッチョイに色を付ける
      * ID重複数の平均値、トップ入賞までの重複数値
      * ワッチョイ重複数の平均値、トップ入賞までの重複数値
      * @var int
@@ -2508,9 +2498,11 @@ abstract class ShowThread
     public function getIdsForRenderJson()
     {
         $ret = array();
-        if ($this->_ids_for_render) {
-            foreach ($this->_ids_for_render as $id => $count) {
-                $ret[] = "'{$id}':{$count}";
+        if ($this->thread && $this->thread->idcount) {
+            foreach ($this->thread->idcount as $id => $count) {
+                if (strlen($id) >= 4) {
+                    $ret[] = "'{$id}':{$count}";
+                }
             }
         }
         return '{' . join(',', $ret) . '}';
@@ -2698,9 +2690,10 @@ EOJS;
     public function getWatchoisForRenderJson()
     {
         $ret = array();
-        if ($this->_watchois_for_render) {
-            foreach ($this->_watchois_for_render as $wid => $count) {
-                $ret[] = "'{$wid}':{$count}";
+        if ($this->thread && $this->thread->watchoicount) {
+            foreach ($this->thread->watchoicount as $wid => $count) {
+                $hash = substr(md5($wid), 0, 8);
+                $ret[] = "'{$hash}':{$count}";
             }
         }
         return '{' . join(',', $ret) . '}';
