@@ -211,6 +211,17 @@ if ($_conf['coloredid.enable'] > 0 && $_conf['coloredid.click'] > 0) {
     <script type="text/javascript" src="js/coloredId.js?{$_conf['p2_version_id']}"></script>
 EOP;
 }
+if ($_conf['expack.am.enabled'] && $STYLE['aa_textar_webfont']) {
+    echo <<<EOP
+<style type="text/css">
+@font-face {
+  font-family: 'Textar';
+  src: url('https://yamacraft.github.io/textar-font/fonts/textar-min.woff') format('woff'),
+       url('https://yamacraft.github.io/textar-font/fonts/textar-min.ttf') format('truetype');
+}
+</style>
+EOP;
+}
 
 $onload_script = '';
 $bodyadd = '';
