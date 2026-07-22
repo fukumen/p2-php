@@ -73,6 +73,12 @@ $ta_num = 0;
 $aThreadList = new ThreadList();
 $aThreadList->setSpMode($mode);
 
+if ($mode == 'fav') {
+    if ($set > 0) {
+        $_conf['favlist_idx'] = $_conf['pref_dir'] . DIRECTORY_SEPARATOR . sprintf('p2_favlist%d.idx', $set);
+    }
+}
+
 // ソースリスト読込
 $lines = $aThreadList->readList();
 
