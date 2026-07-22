@@ -421,13 +421,15 @@ def main():
     for platform, ver in static_php_latest.items():
         print(f"  - {platform}: {ver}")
         
-    # Windows PHP (from windows.php.net)
+    # Windows PHP (from windows.php.net) - also used for caching
     target_php_series = d_base_vers.get('php') or '8.5'
     latest_official_php = php_releases.get(target_php_series)
+    win_latest_for_cache = "未提供"
     if latest_official_php:
         win_latest = get_windows_php_latest_version(latest_official_php)
         print(f"windows.php.net 提供の最新 PHP バージョン ({target_php_series}系列):")
         print(f"  - Windows (NTS):   {win_latest}")
+        win_latest_for_cache = win_latest
     
     # --- 判定セクション ---
     print_bold("\n=== 4. 更新要否判定 ===")
@@ -448,6 +450,9 @@ def main():
         if not base_exists:
             print_warn(f"ローカル設定に対応するベースイメージ php:{local_base_tag} が Docker Hub に存在しません。")
 
+    # Collect Docker Hub digests for both decisions and caching (avoid duplicate calls)
+    docker_hub_digests = {}
+    
     if base_exists:
         # PHP
         if target_php_series and ghcr_vers.get('php') and target_alpine_series:
@@ -456,9 +461,12 @@ def main():
                 alias_tag = f"{target_php_series}-fpm-alpine{target_alpine_series}"
                 patch_tag = f"{latest_patch_php}-fpm-alpine{target_alpine_series}"
                 
-                # Compare digests to ensure the alias tag is already pointing to the new patch release
                 alias_digest = get_docker_hub_manifest_digest("library/php", alias_tag)
                 patch_digest = get_docker_hub_manifest_digest("library/php", patch_tag)
+                docker_hub_digests['php_alias_digest'] = alias_digest
+                docker_hub_digests['php_patch_digest'] = patch_digest
+                docker_hub_digests['php_alias_tag'] = alias_tag
+                docker_hub_digests['php_patch_tag'] = patch_tag
                 
                 if alias_digest and patch_digest and alias_digest == patch_digest:
                     rebuild_reasons.append(f"PHP {target_php_series}系列に最新パッチ {latest_patch_php} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('php')}）")
@@ -469,7 +477,10 @@ def main():
         if target_alpine_series and ghcr_vers.get('alpine') and target_php_series:
             latest_patch_alpine = alp_branches.get(target_alpine_series) or alp_branches.get('v' + target_alpine_series)
             if latest_patch_alpine and latest_patch_alpine != ghcr_vers.get('alpine'):
-                if check_docker_hub_tag("library/alpine", latest_patch_alpine):
+                alpine_exists = check_docker_hub_tag("library/alpine", latest_patch_alpine)
+                docker_hub_digests['alpine_patch_tag'] = latest_patch_alpine
+                docker_hub_digests['alpine_patch_exists'] = alpine_exists
+                if alpine_exists:
                     rebuild_reasons.append(f"Alpine {target_alpine_series}系列に最新パッチ {latest_patch_alpine} が存在（GHCRは {ghcr_vers.get('alpine')}、Docker Hubイメージあり）")
                 else:
                     print_warn(f"Alpine {latest_patch_alpine} が公式リリースされていますが、Docker Hub に alpine:{latest_patch_alpine} がまだ用意されていません。")
@@ -484,6 +495,10 @@ def main():
                     
                     alias_digest = get_docker_hub_manifest_digest("library/caddy", alias_tag)
                     patch_digest = get_docker_hub_manifest_digest("library/caddy", patch_tag)
+                    docker_hub_digests['caddy_alias_digest'] = alias_digest
+                    docker_hub_digests['caddy_patch_digest'] = patch_digest
+                    docker_hub_digests['caddy_alias_tag'] = alias_tag
+                    docker_hub_digests['caddy_patch_tag'] = patch_tag
                     
                     if alias_digest and patch_digest and alias_digest == patch_digest:
                         rebuild_reasons.append(f"Caddy {target_caddy_series}系列に最新パッチ {caddy_latest} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('caddy')}）")
@@ -524,6 +539,10 @@ def main():
             
             alias_digest = get_docker_hub_manifest_digest("library/caddy", alias_tag)
             patch_digest = get_docker_hub_manifest_digest("library/caddy", patch_tag)
+            docker_hub_digests['caddy_alias_digest'] = alias_digest
+            docker_hub_digests['caddy_patch_digest'] = patch_digest
+            docker_hub_digests['caddy_alias_tag'] = alias_tag
+            docker_hub_digests['caddy_patch_tag'] = patch_tag
             
             if alias_digest and patch_digest and alias_digest == patch_digest:
                 update_reasons.append(f"Caddy の新系列 {caddy_latest_mm} が利用可能（Dockerfileは {target_caddy_series}、Docker Hubイメージに反映済み）")
@@ -578,6 +597,76 @@ def main():
     else:
         print_ok("rep2-allinone の Makefile 指定バージョンはすべて最新です。")
         
+    # Build local config snapshot for change detection
+    local_config = {
+        'docker_php': d_base_vers.get('php'),
+        'docker_alpine': d_base_vers.get('alpine'),
+        'docker_composer': d_base_vers.get('composer'),
+        'docker_caddy': d_vers.get('caddy'),
+        'aio_php_default': makefile_vers.get('php_default'),
+        'aio_php_windows': makefile_vers.get('php_windows'),
+        'aio_caddy': makefile_vers.get('caddy'),
+        'aio_composer': makefile_vers.get('composer'),
+    }
+    
+    # Build Docker Hub reflection status snapshot (reuse digests from decision section)
+    docker_hub_status = {}
+    if base_exists and target_php_series and target_alpine_series:
+        alias_tag = f"{target_php_series}-fpm-alpine{target_alpine_series}"
+        latest_patch_php = php_releases.get(target_php_series)
+        if latest_patch_php:
+            patch_tag = f"{latest_patch_php}-fpm-alpine{target_alpine_series}"
+            docker_hub_status['php_alias_tag'] = alias_tag
+            docker_hub_status['php_patch_tag'] = patch_tag
+        else:
+            docker_hub_status['php_alias_tag'] = alias_tag
+        
+        # Alpine: reuse result from decision section (L478)
+        alpine_patch_tag = docker_hub_digests.get('alpine_patch_tag')
+        alpine_patch_exists = docker_hub_digests.get('alpine_patch_exists', False)
+        if alpine_patch_tag:
+            docker_hub_status['alpine_patch_tag'] = alpine_patch_tag
+            docker_hub_status['alpine_patch_exists'] = alpine_patch_exists
+        
+        target_caddy_series = d_vers.get('caddy')
+        if target_caddy_series and caddy_latest:
+            alias_tag_c = f"{target_caddy_series}-alpine"
+            patch_tag_c = f"{caddy_latest}-alpine"
+            docker_hub_status['caddy_alias_tag'] = alias_tag_c
+            docker_hub_status['caddy_patch_tag'] = patch_tag_c
+    
+    # Merge digests collected during decision section
+    docker_hub_status.update(docker_hub_digests)
+    
+    # Build GHCR image version snapshot
+    ghcr_snapshot = {
+        'php': ghcr_vers.get('php'),
+        'alpine': ghcr_vers.get('alpine'),
+        'caddy': ghcr_vers.get('caddy'),
+    }
+    
+    # Build binary availability snapshot
+    static_bin_status = {}
+    if static_php_files:
+        # Determine latest available version per platform from static-php.dev
+        def find_latest_static(pattern, files):
+            max_ver = None
+            for f in files:
+                fn = f.get('name', '')
+                m = re.match(pattern, fn)
+                if m:
+                    v = m.group(1)
+                    if max_ver is None or tuple(int(x) for x in re.findall(r'\d+', v)) > tuple(int(x) for x in re.findall(r'\d+', max_ver)):
+                        max_ver = v
+            return max_ver or "none"
+        
+        static_bin_status['linux'] = find_latest_static(r'php-([0-9.]+)-(?:cli|fpm)-linux-x86_64\.tar\.gz', static_php_files)
+        static_bin_status['macos'] = find_latest_static(r'php-([0-9.]+)-(?:cli|fpm)-macos-x86_64\.tar\.gz', static_php_files)
+        # Windows: reuse result from display section (L428)
+        static_bin_status['windows'] = win_latest_for_cache
+    else:
+        static_bin_status = {'linux': 'none', 'macos': 'none', 'windows': 'none'}
+    
     # Cache and comparison logic
     versions_changed = True
     if args.only_on_change:
@@ -586,7 +675,11 @@ def main():
             'alpine': alp_latest,
             'php_series': php_releases,
             'caddy': caddy_latest,
-            'composer': composer_latest
+            'composer': composer_latest,
+            'local_config': local_config,
+            'static_bin_status': static_bin_status,
+            'docker_hub_status': docker_hub_status,
+            'ghcr_snapshot': ghcr_snapshot,
         }
         
         if os.path.exists(cache_file):
