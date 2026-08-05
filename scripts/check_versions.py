@@ -372,7 +372,7 @@ def main():
         ghcr_vers = {}
         
     # Fetch static php files list once
-    static_php_url = "https://dl.static-php.dev/static-php-cli/common/?format=json"
+    static_php_url = "https://dl.static-php.dev/v3/php-bin/common/?format=json"
     static_php_files = fetch_json(static_php_url)
     
     # Fetch Official Upstreams
