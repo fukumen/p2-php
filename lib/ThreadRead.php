@@ -1183,9 +1183,7 @@ class ThreadRead extends Thread {
 
         $this->rescount = sizeof ($this->datlines);
 
-        if ($_conf['flex_idpopup'] || $_conf['ngaborn_chain'] || $_conf['ngaborn_frequent'] || $_conf['coloredid.enable'] || ($_conf['ktai'] && ($_conf['mobile.clip_unique_id'] || $_conf['mobile.underline_id']))) {
-            $this->_setIdCount ();
-        }
+        $this->_setIdCount ();
         $this->_setWatchoiCount();
 
         return true;

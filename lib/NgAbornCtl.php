@@ -220,6 +220,9 @@ class NgAbornCtl {
      */
     static public function ngAbornAdd($code, $word) {
         global $ngaborns;
+        if ($word === null || $word === '') {
+            return false;
+        }
         foreach ($ngaborns[$code]['data'] as $data) {
             if ($data['cond'] === $word) {
                 return false; //Œ©‚Â‚©‚Á‚½‚ç’Ç‰Á‚¹‚¸‚É”²‚¯‚é

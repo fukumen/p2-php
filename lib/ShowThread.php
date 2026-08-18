@@ -774,7 +774,7 @@ abstract class ShowThread
 
         if ($_conf['ngaborn_auto']) {//自動あぼーん
             // 自動あぼーんID
-            if ($this->ngAbornCheck('aborn_auto', $date_id) !== false) {
+            if ($this->ngAbornCheck('aborn_auto', $id) !== false) {
                 $ngaborns_hits['aborn_auto']++;
                 return $this->_markNgAborn($i, self::ABORN, false);
             }
@@ -811,7 +811,7 @@ abstract class ShowThread
         }
 
         // あぼーんID
-        if ($this->ngAbornCheck('aborn_id', $date_id) !== false) {
+        if ($this->ngAbornCheck('aborn_id', $id) !== false) {
             $ngaborns_hits['aborn_id']++;
             return $this->_markNgAborn($i, self::ABORN, false);
         }
@@ -842,7 +842,7 @@ abstract class ShowThread
 
         if ($_conf['ngaborn_auto']) {//自動あぼーん
             // 自動NGIDを先にNGする
-            if ($this->ngAbornCheck('ng_auto', $date_id) !== false) {
+            if ($this->ngAbornCheck('ng_auto', $id) !== false) {
                 $ngaborns_hits['ng_auto']++;
                 $type |= $this->_markNgAborn($i, self::NG_ID, false);
                 $autong_done = true; //自動NGIDの対象になったレスは意味が無いのでNGIDに追加しない
@@ -870,7 +870,7 @@ abstract class ShowThread
         }
 
         // NGIDチェック
-        if ($this->ngAbornCheck('ng_id', $date_id) !== false) {
+        if ($this->ngAbornCheck('ng_id', $id) !== false) {
             $ngaborns_hits['ng_id']++;
             $type |= $this->_markNgAborn($i, self::NG_ID, false);
         }
@@ -1004,8 +1004,8 @@ abstract class ShowThread
                         //$GLOBALS['debug'] && $GLOBALS['profiler']->leaveSection('ngAbornCheck()');
                         return $v['cond'];
                     }
-                // +Wiki:BEあぼーん(完全一致)
-                } elseif ($code == 'aborn_be' || $code == 'ng_be') {
+                // IDとBEは完全一致
+                } elseif (in_array($code, array('aborn_be', 'ng_be', 'aborn_id', 'ng_id', 'aborn_auto', 'ng_auto', 'highlight_id'))) {
                     if ($resfield == $v['word']) {
                         $this->ngAbornUpdate($code, $k);
                         //$GLOBALS['debug'] && $GLOBALS['profiler']->leaveSection('ngAbornCheck()');

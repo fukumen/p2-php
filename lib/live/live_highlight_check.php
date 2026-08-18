@@ -31,7 +31,7 @@ if ($this->ngAbornCheck('highlight_mail', $mail) !== false) {
 }
 
 // ハイライトIDチェック
-if ($this->ngAbornCheck('highlight_id', $date_id) !== false) {
+if ($this->ngAbornCheck('highlight_id', $id) !== false) {
 	$ngaborns_hits['highlight_id']++;
 	$type |= $this->_markHighlight($i, self::HIGHLIGHT_ID, false);
 }
