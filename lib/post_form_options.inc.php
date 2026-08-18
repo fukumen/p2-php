@@ -399,8 +399,10 @@ if ($upload_mode !== null) {
         $upload_multiple = 'multiple';
         $upload_name = 'upload[]';
     }
-    $upload_token = sha1(P2Commun::getP2UA(false,false) . microtime());
-    $_SESSION['upload_token'] = $upload_token;
+    if (!isset($_SESSION['upload_token'])) {
+        $_SESSION['upload_token'] = sha1(P2Commun::getP2UA(false,false) . microtime());
+    }
+    $upload_token = $_SESSION['upload_token'];
         $upload_form = <<<EOP
 <input id="fileupload" type="file" name="{$upload_name}" data-url="upload.php?mode={$upload_mode}&amp;token={$upload_token}" {$upload_multiple}>
 <script src="js/jquery.ui.widget.js"></script>
