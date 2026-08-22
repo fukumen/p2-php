@@ -14,6 +14,18 @@ COLOR_RED = "\033[31m"
 COLOR_YELLOW = "\033[33m"
 COLOR_CYAN = "\033[36m"
 
+STATIC_PHP_LIST_URL = "https://dl.static-php.dev/v3/php-bin/common/?format=json"
+WINDOWS_PHP_URL_TEMPLATE = "https://windows.php.net/downloads/releases/php-{version}-nts-Win32-vs17-x64.zip"
+AIO_RELEASE_API_URL = "https://api.github.com/repos/fukumen/rep2-allinone/releases/tags/latest"
+
+PLATFORMS = {
+    'linux-x86_64':   ('static',  'linux',  'x86_64',  'Linux x86_64'),
+    'linux-aarch64':  ('static',  'linux',  'aarch64', 'Linux aarch64'),
+    'macos-x86_64':   ('static',  'macos',  'x86_64',  'macOS x86_64'),
+    'macos-aarch64':  ('static',  'macos',  'aarch64', 'macOS aarch64'),
+    'windows-x86_64': ('windows', None,     None,      'Windows x64'),
+}
+
 def print_bold(text):
     print(f"{COLOR_BOLD}{text}{COLOR_RESET}")
 
@@ -98,72 +110,74 @@ def get_ghcr_versions():
         
     return versions
 
-def check_static_php_binaries(version, files):
-    if not files:
-        return False, {}
-        
-    required_patterns = {
-        'Linux x86_64 CLI': rf"php-{re.escape(version)}-cli-linux-x86_64\.tar\.gz",
-        'Linux x86_64 FPM': rf"php-{re.escape(version)}-fpm-linux-x86_64\.tar\.gz",
-        'macOS x86_64 CLI': rf"php-{re.escape(version)}-cli-macos-x86_64\.tar\.gz",
-        'macOS x86_64 FPM': rf"php-{re.escape(version)}-fpm-macos-x86_64\.tar\.gz"
-    }
-    
-    available_files = [f.get('name', '') for f in files if not f.get('is_dir')]
-    checked_status = {}
-    found_count = 0
-    for name, pattern in required_patterns.items():
-        matched = False
-        for f in available_files:
-            if re.match(pattern, f):
-                matched = True
-                found_count += 1
+def get_aio_release_assets():
+    data = fetch_json(AIO_RELEASE_API_URL)
+    if not data or 'assets' not in data:
+        return None
+    return [a.get('name', '') for a in data['assets']]
+
+def parse_aio_built_versions(asset_names):
+    """Release 成果物ファイル名から {platform_key: {'php': ver, 'caddy': ver}} を抽出する"""
+    # rpm のみ Caddy とタイムスタンプの区切りが "." のため、Caddy を遅延マッチにしてタイムスタンプを分離する
+    pat_deb = re.compile(r'^rep2-allinone_[\d.]+-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)(?:\+\d+)?_(?P<arch>amd64|arm64)\.deb$')
+    pat_rpm = re.compile(r'^rep2-allinone-[\d.]+-php(?P<php>[0-9.]+)\.caddy(?P<caddy>[0-9.]+?)\.\d+\.(?P<arch>x86_64|aarch64)\.rpm$')
+    pat_mac = re.compile(r'^rep2-allinone-[\d.]+-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)(?:\+\d+)?-macos-(?P<arch>x86_64|arm64)\.tar\.gz$')
+    pat_zip = re.compile(r'^rep2-allinone-[\d.]+-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)(?:\+\d+)?-windows-(?P<arch>x86_64|arm64)\.zip$')
+    arch_map = {'amd64': 'x86_64', 'arm64': 'aarch64'}
+    built = {}
+    for name in asset_names or []:
+        for pattern, os_name in ((pat_deb, 'linux'), (pat_rpm, 'linux'),
+                                 (pat_mac, 'macos'), (pat_zip, 'windows')):
+            m = pattern.match(name)
+            if m:
+                arch = arch_map.get(m.group('arch'), m.group('arch'))
+                built[f"{os_name}-{arch}"] = {'php': m.group('php'), 'caddy': m.group('caddy')}
                 break
-        checked_status[name] = matched
-        
-    # Check Windows ZIP existence from windows.php.net via HEAD request
-    win_url = f"https://windows.php.net/downloads/releases/php-{version}-nts-Win32-vs17-x64.zip"
-    win_available = False
+    return built
+
+def get_static_php_available_set(files):
+    """dl.static-php.dev の一覧から {platform_key: {'cli': set(versions), 'fpm': set(versions)}} を返す"""
+    available = {key: {'cli': set(), 'fpm': set()}
+                 for key, (kind, _, _, _) in PLATFORMS.items() if kind == 'static'}
+    pat = re.compile(r'^php-([0-9.]+)-(cli|fpm)-(linux|macos)-(x86_64|aarch64)\.tar\.gz$')
+    for f in files or []:
+        m = pat.match(f.get('name', ''))
+        if not m:
+            continue
+        ver, sapi, plat_os, plat_arch = m.groups()
+        key = f"{plat_os}-{plat_arch}"
+        if key in available:
+            available[key][sapi].add(ver)
+    return available
+
+def check_windows_php_zip(version):
+    url = WINDOWS_PHP_URL_TEMPLATE.format(version=version)
     try:
-        req = urllib.request.Request(win_url, method='HEAD')
+        req = urllib.request.Request(url, method='HEAD')
         req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) VersionChecker')
         with urllib.request.urlopen(req, timeout=5) as resp:
-            if resp.status == 200:
-                win_available = True
+            return resp.status == 200
     except Exception:
-        win_available = False
-        
-    checked_status['Windows x64 NTS'] = win_available
-    
-    is_available = checked_status.get('Linux x86_64 CLI', False) and checked_status.get('Linux x86_64 FPM', False) and checked_status.get('Windows x64 NTS', False)
-    return is_available, checked_status
+        return False
 
-def get_static_php_latest_versions(files):
-    if not files:
-        return {}
-        
-    patterns = {
-        'Linux (CLI/FPM)': r'php-([0-9.]+)-(?:cli|fpm)-linux-x86_64\.tar\.gz',
-        'macOS (CLI/FPM)': r'php-([0-9.]+)-(?:cli|fpm)-macos-x86_64\.tar\.gz'
-    }
-    
-    latest_versions = {}
-    
-    def parse_version(v):
-        return tuple(int(x) for x in re.findall(r'\d+', v))
-        
-    for name, pattern in patterns.items():
-        max_ver = None
-        for f in files:
-            file_name = f.get('name', '')
-            m = re.match(pattern, file_name)
-            if m:
-                ver_str = m.group(1)
-                if max_ver is None or parse_version(ver_str) > parse_version(max_ver):
-                    max_ver = ver_str
-        latest_versions[name] = max_ver or "未提供"
-        
-    return latest_versions
+def find_latest_static_version(platform_key, available):
+    vers = available.get(platform_key, {}).get('cli', set()) | available.get(platform_key, {}).get('fpm', set())
+    if not vers:
+        return None
+    return max(vers, key=lambda v: tuple(int(x) for x in re.findall(r'\d+', v)))
+
+def check_binaries_for_platform(version, platform_key, available):
+    """platform_key が必要とする上流バイナリが提供済みか。(bool, 未提供ラベルのリスト) を返す"""
+    kind, _, _, label = PLATFORMS[platform_key]
+    missing = []
+    if kind == 'windows':
+        if not check_windows_php_zip(version):
+            missing.append("Windows x64 NTS")
+    else:
+        for sapi in ('cli', 'fpm'):
+            if version not in available[platform_key][sapi]:
+                missing.append(f"{label} {sapi.upper()}")
+    return len(missing) == 0, missing
 
 def get_windows_php_latest_version(official_latest):
     if not official_latest:
@@ -265,10 +279,10 @@ def parse_makefile(path):
             m = re.match(r'^([A-Z0-9_]+)\s*=\s*([0-9.]+)', line.strip())
             if m:
                 var_name, value = m.group(1), m.group(2)
-                if var_name == 'PHP_VERSION_DEFAULT':
-                    versions['php_default'] = value
-                elif var_name == 'PHP_VERSION_WINDOWS':
-                    versions['php_windows'] = value
+                # PHP_VERSION は linux-arm64 向けの上書き定義が後続にあるため先勝ちとする
+                if var_name == 'PHP_VERSION':
+                    if 'php_default' not in versions:
+                        versions['php_default'] = value
                 elif var_name == 'CADDY_VERSION':
                     versions['caddy'] = value
                 elif var_name == 'COMPOSER_VERSION':
@@ -356,9 +370,9 @@ def main():
     print(f"  - Caddy 系列:    {d_vers.get('caddy', '未設定')}")
     print(f"rep2-allinone (Makefile):")
     print(f"  - PHP (Default): {makefile_vers.get('php_default', '未設定')}")
-    print(f"  - PHP (Windows): {makefile_vers.get('php_windows', '未設定')}")
     print(f"  - Composer 指定: {makefile_vers.get('composer', '未設定')}")
     print(f"  - Caddy 指定:    {makefile_vers.get('caddy', '未設定')}")
+    print(f"  ※ rep2-allinone の PHP/Caddy 更新判定は GitHub Release 公開済みパッケージとの比較で行います")
     
     # Fetch GHCR versions
     print_bold("\n=== 2. GHCRビルド済みイメージ (rep2:latest) の取得 ===")
@@ -372,8 +386,8 @@ def main():
         ghcr_vers = {}
         
     # Fetch static php files list once
-    static_php_url = "https://dl.static-php.dev/v3/php-bin/common/?format=json"
-    static_php_files = fetch_json(static_php_url)
+    static_php_files = fetch_json(STATIC_PHP_LIST_URL)
+    static_php_available = get_static_php_available_set(static_php_files)
     
     # Fetch Official Upstreams
     print_bold("\n=== 3. 公式最新リリースバージョンの取得 ===")
@@ -417,9 +431,11 @@ def main():
     
     # Static PHP
     print(f"dl.static-php.dev 提供の最新 PHP バージョン:")
-    static_php_latest = get_static_php_latest_versions(static_php_files)
-    for platform, ver in static_php_latest.items():
-        print(f"  - {platform}: {ver}")
+    for key, (_, _, _, label) in PLATFORMS.items():
+        if key == 'windows-x86_64':
+            continue
+        ver = find_latest_static_version(key, static_php_available)
+        print(f"  - {label}: {ver or '未提供'}")
         
     # Windows PHP (from windows.php.net) - also used for caching
     target_php_series = d_base_vers.get('php') or '8.5'
@@ -564,28 +580,58 @@ def main():
     print_bold("\n[rep2-allinone 判定]")
     aio_update_reasons = []
     
-    # PHP
-    aio_php = makefile_vers.get('php_default')
-    if aio_php:
-        aio_php_series = '.'.join(aio_php.split('.')[:2])
-        latest_patch_php = php_releases.get(aio_php_series)
-        if latest_patch_php and latest_patch_php != aio_php:
-            # Check if static binary exists for latest patch
-            bin_available, bin_details = check_static_php_binaries(latest_patch_php, static_php_files)
-            if bin_available:
-                aio_update_reasons.append(f"PHP {aio_php_series}系列に最新パッチ {latest_patch_php} が存在（Makefileは {aio_php}、staticバイナリ提供あり）")
-            else:
-                print_warn(f"PHP {latest_patch_php} が公式リリースされていますが、dl.static-php.dev にバイナリがまだ用意されていません。")
-                print(f"  バイナリ確認状況:")
-                for k, v in bin_details.items():
-                    print(f"    - {k}: {'提供あり' if v else '未提供'}")
-                
-    # Caddy
-    aio_caddy = makefile_vers.get('caddy')
-    if caddy_latest and aio_caddy and caddy_latest != aio_caddy:
-        aio_update_reasons.append(f"Caddy の最新バージョン {caddy_latest} がリリース（Makefileは {aio_caddy}）")
+    # GitHub Release (latest) から公開済みパッケージの実ビルドバージョンを取得
+    asset_names = get_aio_release_assets()
+    aio_built = {}
+    if asset_names is None:
+        print_err("rep2-allinone の latest リリース情報の取得に失敗しました。allinone の PHP/Caddy 判定をスキップします。")
+    else:
+        aio_built = parse_aio_built_versions(asset_names)
+        print("GitHub Release (latest) 公開済みパッケージ:")
+        for key in sorted(aio_built):
+            print(f"  - {key}: PHP {aio_built[key]['php']} / Caddy {aio_built[key]['caddy']}")
+        unparsed_platforms = [key for key in PLATFORMS if key not in aio_built]
+        if unparsed_platforms:
+            print_warn(f"成果物名から判別できなかったプラットフォームがあります: {', '.join(unparsed_platforms)}")
+    
+    # PHP: プラットフォーム別に「実ビルド vs 公式最新パッチ vs 必要バイナリの提供状況」
+    for key in sorted(aio_built):
+        if key not in PLATFORMS:
+            print_warn(f"{key}: 本チェッカーが判別できないプラットフォームの成果物です。更新判定の対象外とします")
+            continue
+        built_php = aio_built[key]['php']
+        series = '.'.join(built_php.split('.')[:2])
+        latest_patch_php = php_releases.get(series)
+        if not latest_patch_php or latest_patch_php == built_php:
+            continue
+        bin_available, missing = check_binaries_for_platform(latest_patch_php, key, static_php_available)
+        if bin_available:
+            aio_update_reasons.append(f"{key}: PHP {series}系列に最新パッチ {latest_patch_php} が存在し、必要なバイナリも提供済み（公開済みパッケージは {built_php}）")
+        else:
+            print_warn(f"{key}: PHP {latest_patch_php} が公式リリースされていますが、必要なバイナリが未提供のため更新判定を見送ります（公開済みは {built_php}）")
+            print(f"  バイナリ確認状況:")
+            for item in missing:
+                print(f"    - {item}: 未提供")
+            
+    # Caddy: プラットフォーム別に「実ビルド vs 公式最新」
+    if caddy_latest:
+        caddy_latest_series = '.'.join(caddy_latest.split('.')[:2])
+        if not aio_built:
+            # フォールバック: 成果物が1つも取れない場合は従来どおり Makefile 指定と比較
+            aio_caddy = makefile_vers.get('caddy')
+            if aio_caddy and caddy_latest != aio_caddy:
+                aio_update_reasons.append(f"Caddy の最新バージョン {caddy_latest} がリリース（Makefileは {aio_caddy}）")
+        else:
+            for key in sorted(aio_built):
+                built_caddy = aio_built[key]['caddy']
+                built_series = '.'.join(built_caddy.split('.')[:2])
+                if built_series == caddy_latest_series:
+                    if built_caddy != caddy_latest:
+                        aio_update_reasons.append(f"{key}: Caddy {built_series}系列に最新 {caddy_latest} が存在（公開済みパッケージは {built_caddy}）")
+                else:
+                    print_warn(f"{key}: 公開済み Caddy {built_caddy} は最新系列 {caddy_latest_series} と異なります")
         
-    # Composer
+    # Composer（成果物名に現れないため Makefile 指定との直接比較。docker-rep2 の Composer 判定と同じモデル）
     aio_composer = makefile_vers.get('composer')
     if composer_latest and aio_composer and composer_latest != aio_composer:
         aio_update_reasons.append(f"Composer の最新バージョン {composer_latest} がリリース（Makefileは {aio_composer}）")
@@ -604,9 +650,9 @@ def main():
         'docker_composer': d_base_vers.get('composer'),
         'docker_caddy': d_vers.get('caddy'),
         'aio_php_default': makefile_vers.get('php_default'),
-        'aio_php_windows': makefile_vers.get('php_windows'),
         'aio_caddy': makefile_vers.get('caddy'),
         'aio_composer': makefile_vers.get('composer'),
+        'aio_built_php': {key: aio_built[key]['php'] for key in aio_built},
     }
     
     # Build Docker Hub reflection status snapshot (reuse digests from decision section)
@@ -648,24 +694,15 @@ def main():
     # Build binary availability snapshot
     static_bin_status = {}
     if static_php_files:
-        # Determine latest available version per platform from static-php.dev
-        def find_latest_static(pattern, files):
-            max_ver = None
-            for f in files:
-                fn = f.get('name', '')
-                m = re.match(pattern, fn)
-                if m:
-                    v = m.group(1)
-                    if max_ver is None or tuple(int(x) for x in re.findall(r'\d+', v)) > tuple(int(x) for x in re.findall(r'\d+', max_ver)):
-                        max_ver = v
-            return max_ver or "none"
-        
-        static_bin_status['linux'] = find_latest_static(r'php-([0-9.]+)-(?:cli|fpm)-linux-x86_64\.tar\.gz', static_php_files)
-        static_bin_status['macos'] = find_latest_static(r'php-([0-9.]+)-(?:cli|fpm)-macos-x86_64\.tar\.gz', static_php_files)
+        for key in PLATFORMS:
+            if key == 'windows-x86_64':
+                continue
+            static_bin_status[key] = find_latest_static_version(key, static_php_available) or 'none'
         # Windows: reuse result from display section (L428)
         static_bin_status['windows'] = win_latest_for_cache
     else:
-        static_bin_status = {'linux': 'none', 'macos': 'none', 'windows': 'none'}
+        static_bin_status = {key: 'none' for key in PLATFORMS}
+        static_bin_status['windows'] = win_latest_for_cache
     
     # Cache and comparison logic
     versions_changed = True
