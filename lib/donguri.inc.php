@@ -65,21 +65,8 @@ class Donguri {
      */
     private function _read_cookie()
     {
-        // cookie 読み込み
-        if ($this->cookies = CookieDataStore::get($this->cookie_key)) {
-            if (is_array($this->cookies)) {
-                if (array_key_exists('expires', $this->cookies)) {
-                    // 期限切れなら破棄
-                    if (time() > strtotime($this->cookies['expires'])) {
-                        CookieDataStore::delete($this->cookie_key);
-                        $this->cookies = null;
-                    }
-                }
-            } else {
-                CookieDataStore::delete($this->cookie_key);
-                $this->cookies = null;
-            }
-        } else {
+        $this->cookies = CookieDataStore::loadActive($this->cookie_key);
+        if (!$this->cookies) {
             $this->cookies = null;
         }
         $this->_update_cookie_sts();
@@ -98,10 +85,8 @@ class Donguri {
         $msg = null;
 
         $req = P2Commun::createHTTPRequest ($this->base_url, HTTP_Request2::METHOD_GET);
-        foreach ($this->cookies as $cname => $cvalue) {
-            if ($cname != 'expires') {
-                $req->addCookie($cname,$cvalue);
-            }
+        foreach ($this->cookies as $cname => $c) {
+            $req->addCookie($cname, $c['value']);
         }
         $response = P2Commun::getHTTPResponse($req);
 
@@ -160,18 +145,16 @@ class Donguri {
         // Cookieを取得
         $response_cookies = $response->getCookies();
         if ($response_cookies) {
-            foreach ($response_cookies as $c) {
-                if (!$this->cookies) {
-                    $this->cookies = array();
-                }
-                if (isset($c['expires']) && time() > strtotime($c['expires'])) {
-                    unset($this->cookies[$c['name']]);
-                } else {
-                    $this->cookies[ $c['name'] ] = $c['value'];
-                }
+            if (!$this->cookies) {
+                $this->cookies = array();
             }
+            CookieDataStore::mergeResponse($this->cookies, $response_cookies);
             // cookie 保存
-            CookieDataStore::set($this->cookie_key, $this->cookies);
+            if ($this->cookies) {
+                CookieDataStore::set($this->cookie_key, $this->cookies);
+            } else {
+                CookieDataStore::delete($this->cookie_key);
+            }
         }
 
         $this->_update_cookie_sts();
@@ -227,10 +210,8 @@ class Donguri {
             }
             if (!$msg) {
                 $req = P2Commun::createHTTPRequest ($donguri->base_url . 'login', HTTP_Request2::METHOD_POST);
-                foreach ($donguri->cookies as $cname => $cvalue) {
-                    if ($cname != 'expires') {
-                        $req->addCookie($cname,$cvalue);
-                    }
+                foreach ($donguri->cookies as $cname => $c) {
+                    $req->addCookie($cname, $c['value']);
                 }
                 if ($sid) {
                     // upliftのsidは無しでもログイン出来るようだが、ログインしているなら付ける
@@ -277,10 +258,8 @@ class Donguri {
             $detail = null;
             if ($donguri->cookie_sts == 2) {
                 $req = P2Commun::createHTTPRequest ($donguri->base_url . "logout", HTTP_Request2::METHOD_GET);
-                foreach ($donguri->cookies as $cname => $cvalue) {
-                    if ($cname != 'expires') {
-                        $req->addCookie($cname,$cvalue);
-                    }
+                foreach ($donguri->cookies as $cname => $c) {
+                    $req->addCookie($cname, $c['value']);
                 }
                 $req->setHeader('Referer', $donguri->base_url);
                 $response = P2Commun::getHTTPResponse($req);
@@ -313,6 +292,11 @@ class Donguri {
         if ($this->status_data == null && file_exists($_conf['donguri_cache'])) {
             $content = file_get_contents($_conf['donguri_cache']);
             $this->status_data = @unserialize($content);
+        }
+        if ($this->cookie_sts != 2 && $this->status_data
+            && isset($this->status_data['status']) && $this->status_data['status'] >= 2) {
+            // どんぐりが無いのに過去のどんぐり有り状態が残っている場合、表示を補正する
+            $this->_update_status(null);
         }
         return $this->status_data;
     }
@@ -367,7 +351,8 @@ class Donguri {
     public static function get_donguri()
     {
         $donguri = self::_get_instance();
-        return isset($donguri->cookies[self::COOKIE_NAME]) ? $donguri->cookies[self::COOKIE_NAME] : null;
+        return isset($donguri->cookies[self::COOKIE_NAME]['value'])
+            ? $donguri->cookies[self::COOKIE_NAME]['value'] : null;
     }
 
     // }}}
@@ -451,6 +436,23 @@ class Donguri {
         if (!$data) {
             echo '<script type="text/javascript">checkDonguri(' . $is_iphone . ');</script>';
         }
+    }
+
+    // }}}
+    // {{{ need_relogin()
+
+    /**
+     * 書き込み前にどんぐり基地への再ログインが必要かどうかを返す
+     * acorn が無い、または期限切れ 1 時間前以降の場合は true
+     */
+    public static function need_relogin()
+    {
+        $donguri = self::_get_instance();
+        if ($donguri->cookie_sts != 2) {
+            return true;
+        }
+        $expires = $donguri->cookies[self::COOKIE_NAME]['expires'] ?? null;
+        return ($expires !== null && time() > $expires - 3600);
     }
 
     // }}}

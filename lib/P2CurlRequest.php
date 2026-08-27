@@ -330,6 +330,7 @@ class P2CurlResponse
             'secure' => false,
             'httponly' => false
         );
+        $maxAge = null;
 
         $parts = explode(';', $cookieStr);
         $first = array_shift($parts);
@@ -350,6 +351,10 @@ class P2CurlResponse
                 list($key, $val) = explode('=', $part, 2);
                 $key = strtolower(trim($key));
                 $val = trim($val);
+                if ($key === 'max-age') {
+                    $maxAge = is_numeric($val) ? (int)$val : null;
+                    continue;
+                }
                 if (array_key_exists($key, $cookie)) {
                     $cookie[$key] = $val;
                 }
@@ -361,6 +366,11 @@ class P2CurlResponse
                     $cookie['httponly'] = true;
                 }
             }
+        }
+
+        // Max-Ageが指定されている場合はexpiresを合成する (優先、0以下は過去日付になり削除指示として扱われる)
+        if ($maxAge !== null) {
+            $cookie['expires'] = gmdate('D, d-M-Y H:i:s T', time() + $maxAge);
         }
 
         $this->cookies[] = $cookie;

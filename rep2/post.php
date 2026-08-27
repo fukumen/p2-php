@@ -255,24 +255,18 @@ PostDataStore::set($post_config_key, array(
 // 書き込みを一時的に保存
 PostDataStore::set($post_backup_key, $post_cache);
 
+// cookie 読み込みの前に、どんぐりの事前チェック (acorn の再ログイン要否)
+if ($_conf['donguri_use'] && !P2HostMgr::isHostBbsPink($host) && P2HostMgr::isHost2chs($host)) {
+    require_once P2_LIB_DIR . '/donguri.inc.php';
+    if (Donguri::need_relogin()) {
+        // acorn が無い、または期限切れ 1 時間前以降ならどんぐり基地から再取得する
+        Donguri::login_base();
+    }
+}
+
 // cookie 読み込み
 $cookie_key = $_login->user_u . '/' . P2Util::normalizeHostName(P2HostMgr::isHostBbsPink($host) ? 'www.bbspink.com' : (P2HostMgr::isHost2chs($host) ? 'www.5ch.net' : $host)); // 忍法帳対応
-if ($p2cookies = CookieDataStore::get($cookie_key)) {
-    if (is_array($p2cookies)) {
-        if (array_key_exists('expires', $p2cookies)) {
-            // 期限切れなら破棄
-            if (time() > strtotime($p2cookies['expires'])) {
-                CookieDataStore::delete($cookie_key);
-                $p2cookies = null;
-            }
-        }
-    } else {
-        CookieDataStore::delete($cookie_key);
-        $p2cookies = null;
-    }
-} else {
-    $p2cookies = null;
-}
+$p2cookies = CookieDataStore::loadActive($cookie_key);
 
 if ($_conf['proxy_host']) {
     // 一時的にプロキシのオンオフを切り替えて書き込み
@@ -495,10 +489,8 @@ function postIt($host, $bbs, $key, $post, $header)
 
         // クッキー
         if ($p2cookies) {
-            foreach ($p2cookies as $cname => $cvalue) {
-                if ($cname != 'expires') {
-                    $req->addCookie($cname,$cvalue);
-                }
+            foreach ($p2cookies as $cname => $c) {
+                $req->addCookie($cname, $c['value']);
             }
         }
 
@@ -547,12 +539,7 @@ function postIt($host, $bbs, $key, $post, $header)
         // Cookieを取得
         $cookies = $response->getCookies();
         if ($cookies) {
-            foreach ($cookies as $cookie) {
-                if (!$p2cookies) {
-                    $p2cookies = array();
-                }
-                $p2cookies[ $cookie['name'] ] = $cookie['value'];
-            }
+            CookieDataStore::mergeResponse($p2cookies, $cookies);
         }
 
         $code = $response->getStatus();
@@ -673,10 +660,8 @@ function postTalk($host, $bbs, $key, $post, $header)
 
             // クッキー
             if ($p2cookies) {
-                foreach ($p2cookies as $cname => $cvalue) {
-                    if ($cname != 'expires') {
-                        $req->addCookie($cname,$cvalue);
-                    }
+                foreach ($p2cookies as $cname => $c) {
+                    $req->addCookie($cname, $c['value']);
                 }
             }
 
@@ -686,12 +671,7 @@ function postTalk($host, $bbs, $key, $post, $header)
             // Cookieを取得
             $cookies = $response->getCookies();
             if ($cookies) {
-                foreach ($cookies as $cookie) {
-                    if (!$p2cookies) {
-                        $p2cookies = array();
-                    }
-                    $p2cookies[ $cookie['name'] ] = $cookie['value'];
-                }
+                CookieDataStore::mergeResponse($p2cookies, $cookies);
             }
 
             $body = $response->getBody();
