@@ -905,6 +905,18 @@ class ThreadRead extends Thread {
             }
             $d = explode ($datline_sepa, $first_datline);
             $this->setTtitle ($d[4]);
+
+            // 1レス分のID・ワッチョイ情報を構築（_setIdCount / _setWatchoiCount 相当）
+            $idp = array (1 => null);
+            $ids = array (1 => null);
+            $wids = array (1 => null);
+            list ($idp[1], $ids[1]) = $this->_getIdsOfDatLine ($d);
+            $wids[1] = $this->_getWatchoiOfDatLine ($d);
+            $this->idp = $idp;
+            $this->ids = $ids;
+            $this->watchois = $wids;
+            $this->idcount = array_count_values (array_filter ($ids, 'is_string'));
+            $this->watchoicount = array_count_values (array_filter ($wids, 'is_string'));
         }
 
         if (! $this->readnum) {
@@ -1190,6 +1202,24 @@ class ThreadRead extends Thread {
     }
 
     // }}}
+    // {{{ _getIdsOfDatLine()
+
+    /**
+     * datlineを分割した配列からIDを抽出する
+     *
+     * @param   array $lar   explode の結果（$lar[2] が日付・ID欄）
+     * @return  array        ($idp, $ids)
+     */
+    protected function _getIdsOfDatLine($lar) {
+        if (preg_match ('<(ID: ?)([0-9A-Za-z/.+]+)(?=[^0-9A-Za-z/.+]|$)>', $lar[2], $m)) {
+            return array ($m[1], $m[2]);
+        } elseif (preg_match ('<(発信元: ?)([0-9a-fA-F.:*]+)>', $lar[2], $m)) {
+            return array ($m[1], $m[2]);
+        }
+        return array (null, null);
+    }
+
+    // }}}
     // {{{ setIdCount()
 
     /**
@@ -1207,12 +1237,10 @@ class ThreadRead extends Thread {
         foreach ($this->datlines as $l) {
             $lar = explode ('<>', $l);
             $i ++;
-            if (preg_match ('<(ID: ?)([0-9A-Za-z/.+]+)(?=[^0-9A-Za-z/.+]|$)>', $lar[2], $m)) {
-                $idp[$i] = $m[1];
-                $ids[$i] = $m[2];
-            } elseif (preg_match ('<(発信元: ?)([0-9a-fA-F.:*]+)>', $lar[2], $m)) {
-                $idp[$i] = $m[1];
-                $ids[$i] = $m[2];
+            list ($p, $s) = $this->_getIdsOfDatLine ($lar);
+            if ($p !== null) {
+                $idp[$i] = $p;
+                $ids[$i] = $s;
             }
         }
 
@@ -1222,32 +1250,48 @@ class ThreadRead extends Thread {
     }
 
     // }}}
-    // {{{ _setWatchoiCount()
+    // {{{ _getWatchoiOfDatLine()
 
     /**
-     * 一つのスレ内でのワッチョイ識別子の出現数をセットする
+     * datlineを分割した配列からワッチョイを抽出する
+     *
+     * @param   array $lar   explode の結果（$lar[0] が名前欄）
+     * @return  string|null
      */
-    protected function _setWatchoiCount() {
+    protected function _getWatchoiOfDatLine($lar) {
         global $_conf;
-
-        if (!$this->datlines) {
-            return;
-        }
 
         if ($_conf['ngaborn_watchoi4']) {
             $pattern = '#\((?:[^\s()]+\s+)?(?:([0-9A-Za-z./*+]{4}-)[0-9A-Za-z./*+]{4})(?:\s+\[.+])?\)#';
         } else {
             $pattern = '#\(((?:[^\s()]+\s+)?(?:[0-9A-Za-z./*+]{4}-[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
         }
+        $name_raw = strip_tags($lar[0]);
+        if (preg_match($pattern, $name_raw, $m)) {
+            return $m[1];
+        }
+        return null;
+    }
+
+    // }}}
+    // {{{ _setWatchoiCount()
+
+    /**
+     * 一つのスレ内でのワッチョイ識別子の出現数をセットする
+     */
+    protected function _setWatchoiCount() {
+        if (!$this->datlines) {
+            return;
+        }
+
         $i = 0;
         $wids = array_fill(1, $this->rescount, null);
 
         foreach ($this->datlines as $l) {
-            $lar = explode('<>', $l);
             $i++;
-            $name_raw = strip_tags($lar[0]);
-            if (preg_match($pattern, $name_raw, $m)) {
-                $wids[$i] = $m[1];
+            $w = $this->_getWatchoiOfDatLine(explode('<>', $l));
+            if ($w !== null) {
+                $wids[$i] = $w;
             }
         }
 

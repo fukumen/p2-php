@@ -128,6 +128,8 @@ if (!empty($_GET['one'])) {
 <a href="{$_conf['read_php']}?{$host_bbs_key_q}">続きを読む</a>
 </div></div>
 EOP;
+    // フッタ参照用（プレビューでは>>1引用は付けない）
+    $res1 = array('body' => '', 'q' => '');
     include READ_FOOTER_INC_PHP;
 
     return;

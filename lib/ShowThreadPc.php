@@ -351,7 +351,7 @@ EOJS;
         global $_conf;
 
         if (!$_conf['quote_res_view']) {
-            return false;
+            return array('body' => '', 'q' => '');
         }
 
         $rpop = '';
