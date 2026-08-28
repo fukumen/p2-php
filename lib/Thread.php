@@ -562,7 +562,7 @@ class Thread
 
         // talk
         } elseif (P2HostMgr::isHostTalk ($this->host)) {
-            $motothre_url = "{$scheme}://{$this->host}/boards/{$this->bbs}/{$this->key}";
+            $motothre_url = "{$scheme}://{$this->host}/boards/{$this->bbs}/{$this->key}/{$ls}";
 
         // ‚»‚Ì‘¼
         } else {
