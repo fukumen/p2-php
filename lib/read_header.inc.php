@@ -431,7 +431,9 @@ if ($aThread->diedat) {
     $motothre_url_t = P2Util::throughIme ($motothre_url);
 
     $motothre_popup = " onmouseover=\"showHtmlPopUp('{$motothre_url_t}',event,{$_conf['iframe_popup_delay']})\" onmouseout=\"offHtmlPopUp()\"";
-    if ($_conf['iframe_popup'] == 1) {
+    if (P2_HTTPS_CONNECTION && P2Util::isExternalUrl($motothre_url_t)) {
+        $motothre_ht = "<a href=\"{$motothre_url_t}\"{$_conf['bbs_win_target_at']}>{$motothre_url}</a>";
+    } elseif ($_conf['iframe_popup'] == 1) {
         $motothre_ht = "<a href=\"{$motothre_url_t}\"{$_conf['bbs_win_target_at']}{$motothre_popup}>{$motothre_url}</a>";
     } elseif ($_conf['iframe_popup'] == 2) {
         $motothre_ht = "(<a href=\"{$motothre_url_t}\"{$_conf['bbs_win_target_at']}{$motothre_popup}>p</a>)<a href=\"{$motothre_url_t}\"{$_conf['bbs_win_target_at']}>{$motothre_url}</a>";

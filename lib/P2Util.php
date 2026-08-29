@@ -2070,6 +2070,21 @@ ERR;
     }
 
     // }}}
+    // {{{ isExternalUrl()
+
+    /**
+     * ŠO•”URL‚©‚Ç‚¤‚©‚ð”»’è‚·‚é
+     *
+     * @access  public
+     * @param   string $url
+     * @return  bool
+     */
+    static public function isExternalUrl($url)
+    {
+        return (bool)preg_match('{^(?:[a-z][a-z0-9+.-]*:)?//}i', $url);
+    }
+
+    // }}}
     // {{{ selectScheme()
 
     /**

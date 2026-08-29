@@ -989,6 +989,14 @@ EOP;
             $pop_str = "<img src=\"{$pop_img}\" width=\"{$x}\" height=\"{$y}\" hspace=\"2\" vspace=\"0\" border=\"0\" align=\"top\" alt=\"\">";
         }
 
+        // rep2がHTTPSのとき、外部URLはHTMLポップアップのフレーム内に表示できないため通常リンクにする
+        if (P2_HTTPS_CONNECTION && P2Util::isExternalUrl($pop_url)) {
+            if ($mode == 3) {
+                return "<a href=\"{$link_url}\"{$attr}>{$pop_str}{$link_str}</a>";
+            }
+            return "<a href=\"{$link_url}\"{$attr}>{$link_str}</a>";
+        }
+
         // リンク作成
         switch ($mode) {
         // マーク無し
