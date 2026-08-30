@@ -313,7 +313,7 @@ function checkUpdatan2($repo_type, $run_id)
 
     if ($repo_type === 'rep2-allinone') {
         $github_repo = 'fukumen/rep2-allinone';
-        $workflow_file = 'build-linux.yml';
+        $workflow_file = 'publish.yml';
     } else {
         $github_repo = 'fukumen/docker-rep2';
         $workflow_file = 'publish-php8.yml';
