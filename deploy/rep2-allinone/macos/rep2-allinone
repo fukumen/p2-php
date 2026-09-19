@@ -1,0 +1,87 @@
+#!/bin/sh
+
+HERE=$(cd "$(dirname "$0")" && pwd)
+cd "$HERE"
+
+if [ "$(id -u)" = "0" ]; then
+    BREW_USER=$(stat -f "%Su" "/opt/homebrew/bin/brew" 2>/dev/null || stat -f "%Su" "/usr/local/bin/brew" 2>/dev/null)
+    
+    if [ -n "$BREW_USER" ] && [ "$BREW_USER" != "root" ]; then
+        echo "Running as root, dropping privileges to Homebrew user: $BREW_USER"
+        chown "$BREW_USER" /opt/homebrew/var/lib/rep2-allinone/rep2-allinone* 2>/dev/null || true
+        chown "$BREW_USER" /usr/local/var/lib/rep2-allinone/rep2-allinone* 2>/dev/null || true
+        exec sudo -E -u "$BREW_USER" "$0" "$@"
+    fi
+fi
+
+DATA_BASE_DIR="${DATA_BASE_DIR:-/opt/homebrew/var/lib/rep2-allinone}"
+CONF_DIR="${CONF_DIR:-/opt/homebrew/etc/rep2-allinone}"
+
+if ! [ -t 1 ]; then
+    [ -f "$DATA_BASE_DIR/rep2-allinone.log" ] && mv -f "$DATA_BASE_DIR/rep2-allinone.log" "$DATA_BASE_DIR/rep2-allinone.log.1"
+    [ -f "$DATA_BASE_DIR/php-fpm.log" ] && mv -f "$DATA_BASE_DIR/php-fpm.log" "$DATA_BASE_DIR/php-fpm.log.1"
+    exec > "$DATA_BASE_DIR/rep2-allinone.log" 2>&1
+fi
+
+export REP2_WWW_ROOT="${REP2_WWW_ROOT:-$HERE/p2-php/rep2}"
+export XDG_CONFIG_HOME="$DATA_BASE_DIR/caddy_config"
+export XDG_DATA_HOME="$DATA_BASE_DIR/caddy_data"
+
+mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
+
+cp -Rn "$HERE/p2-php/conf.orig/"* "$DATA_BASE_DIR/conf/"
+cp -f "$HERE/p2-php/conf.orig/conf_user_def"* "$DATA_BASE_DIR/conf/"
+cp -Rn "$HERE/p2-php/data.orig/"* "$DATA_BASE_DIR/data/"
+
+[ -f "$CONF_DIR/default" ] && export $(grep -v '^#' "$CONF_DIR/default" | xargs)
+[ -f "$CONF_DIR/secrets.conf" ] && export $(grep -v '^#' "$CONF_DIR/secrets.conf" | xargs)
+[ -f "$CONF_DIR/build_info" ] && export $(grep -v '^#' "$CONF_DIR/build_info" | xargs)
+
+CADDY_BIN="./bin/caddy"
+if [ -x "$DATA_BASE_DIR/custom-caddy" ]; then
+    CADDY_BIN="$DATA_BASE_DIR/custom-caddy"
+fi
+
+ORIG_CONF="$HERE/p2-php/conf.orig/conf.inc.php" \
+TARGET_CONF="$DATA_BASE_DIR/conf/conf.inc.php" \
+./bin/php << 'EOF'
+<?php
+$orig_file = getenv('ORIG_CONF');
+$target_file = getenv('TARGET_CONF');
+
+if (!file_exists($orig_file) || !file_exists($target_file)) {
+    exit;
+}
+
+$orig_lines = file($orig_file);
+$target_lines = file($target_file);
+$new_line = '';
+
+foreach ($orig_lines as $line) {
+    if (strpos($line, "'p2version'") !== false && strpos($line, '=>') !== false) {
+        $new_line = $line;
+        break;
+    }
+}
+
+if ($new_line !== '') {
+    foreach ($target_lines as $k => $line) {
+        if (strpos($line, "'p2version'") !== false && strpos($line, '=>') !== false) {
+            $target_lines[$k] = $new_line;
+            break;
+        }
+    }
+    file_put_contents($target_file, implode('', $target_lines));
+}
+EOF
+
+./bin/php "$HERE/p2-php/scripts/ic2.php" setup | iconv -f SHIFT_JIS -t UTF-8
+
+sed "s|@@ERROR_LOG_PATH@@|$DATA_BASE_DIR/php-fpm.log|" "$CONF_DIR/php-fpm.conf" > "$DATA_BASE_DIR/conf/php-fpm.conf"
+./bin/php-fpm -y "$DATA_BASE_DIR/conf/php-fpm.conf" -F &
+PHP_PID=$!
+
+trap "kill $PHP_PID 2>/dev/null; exit" INT TERM EXIT
+
+echo "Starting Caddy server..."
+$CADDY_BIN run --config "$CONF_DIR/Caddyfile" --adapter caddyfile

@@ -1,0 +1,11 @@
+[conf/conf.inc.php]
+- define('P2_CONFIG_DIR', __DIR__);
++ define('P2_CONFIG_DIR', '/opt/rep2-allinone/p2-php/conf');
+
+[conf/conf_admin_ex.inc.php]
+- $_conf['expack.ic2.enabled'] = 0; // (0)
++ $_conf['expack.ic2.enabled'] = 3; // (0)
+
+[conf/conf_ic2.inc.php]
+- $_conf['expack.ic2.general.dsn'] = "";
++ $_conf['expack.ic2.general.dsn'] = 'sqlite:' . $_conf['db_dir'] . '/imgcache.sqlite';

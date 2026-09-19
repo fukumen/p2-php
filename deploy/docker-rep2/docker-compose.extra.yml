@@ -1,0 +1,3 @@
+services:
+  rep2php8:
+    image: ghcr.io/fukumen/rep2-extra:latest

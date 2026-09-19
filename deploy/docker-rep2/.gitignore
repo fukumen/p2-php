@@ -1,0 +1,10 @@
+rep2-data/
+rep2-db/
+caddy-local/
+docker-compose.override.yml
+docker-compose.remote.yml
+php-local.ini
+xdebug-local.ini
+www-local.conf
+.env
+__pycache__/

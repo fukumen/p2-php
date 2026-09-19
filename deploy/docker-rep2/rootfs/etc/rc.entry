@@ -1,0 +1,79 @@
+#!/bin/sh
+
+export XDG_CONFIG_HOME="/ext/caddy_config"
+export XDG_DATA_HOME="/ext/caddy_data"
+
+mkdir -p /ext/conf /ext/data /ext/rep2/ic /ext/user_skin "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
+cp -Rn /var/www/conf.orig/* /ext/conf/
+cp -f /var/www/conf.orig/conf_user_def* /ext/conf/
+cp -Rn /var/www/data.orig/* /ext/data/
+
+chown -R www-data:www-data /ext
+
+su-exec www-data php << 'EOF'
+<?php
+$orig_file = '/var/www/conf.orig/conf.inc.php';
+$target_file = '/ext/conf/conf.inc.php';
+
+if (!file_exists($orig_file) || !file_exists($target_file)) {
+    exit;
+}
+
+$orig_lines = file($orig_file);
+$target_lines = file($target_file);
+$new_line = '';
+
+foreach ($orig_lines as $line) {
+    if (strpos($line, "'p2version'") !== false && strpos($line, '=>') !== false) {
+        $new_line = $line;
+        break;
+    }
+}
+
+if ($new_line !== '') {
+    foreach ($target_lines as $k => $line) {
+        if (strpos($line, "'p2version'") !== false && strpos($line, '=>') !== false) {
+            $target_lines[$k] = $new_line;
+            break;
+        }
+    }
+    file_put_contents($target_file, implode('', $target_lines));
+}
+EOF
+
+su-exec www-data php /var/www/scripts/ic2.php setup | iconv -f SHIFT_JIS -t UTF-8
+
+crond
+
+if [ ! -f /etc/Caddyfile ]; then
+cat <<EOF > /etc/Caddyfile
+:8443 {
+    log {
+        output stderr
+    }
+EOF
+if [ -n "$REP2_TLS_CERT" ] && [ -n "$REP2_TLS_KEY" ]; then
+    echo "    tls $REP2_TLS_CERT $REP2_TLS_KEY" >> /etc/Caddyfile
+fi
+cat <<EOF >> /etc/Caddyfile
+    root * /var/www/rep2
+    php_fastcgi 127.0.0.1:9000
+    file_server
+
+    @js_files {
+        path *.js
+    }
+    header @js_files Content-Type "application/javascript; charset=Shift_JIS"
+
+    @css_files {
+        path *.css
+    }
+    header @css_files Content-Type "text/css; charset=Shift_JIS"
+}
+EOF
+fi
+
+CADDY_USER=${CADDY_USER:-www-data}
+sed -i "s/%%CADDY_USER%%/${CADDY_USER}/g" /etc/supervisord.conf
+
+exec /usr/bin/supervisord -c /etc/supervisord.conf

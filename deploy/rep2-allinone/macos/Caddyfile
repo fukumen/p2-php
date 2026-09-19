@@ -1,0 +1,18 @@
+:{$REP2_PORT:10088} {
+    log {
+        output stderr
+    }
+    root * {$REP2_WWW_ROOT}
+    php_fastcgi 127.0.0.1:9000
+    file_server
+
+    @js_files {
+        path *.js
+    }
+    header @js_files Content-Type "application/javascript; charset=Shift_JIS"
+
+    @css_files {
+        path *.css
+    }
+    header @css_files Content-Type "text/css; charset=Shift_JIS"
+}

@@ -1,0 +1,30 @@
+services:
+  rep2php8:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      additional_contexts:
+# p2-repが参照するgitリポジトリの指定
+        p2-rep2: https://github.com/fukumen/p2-php.git#php8-merge-mbstring
+      args:
+        FLAG_EXTRA: "false"
+        FLAG_LOCAL: "false"
+        FLAG_DEBUG: "false"
+    image: ${REP2_IMAGE:-ghcr.io/fukumen/rep2:latest}
+    volumes:
+# rep2のデータの格納先の指定
+      - ${REP2_DATA:-./rep2-data}:/ext
+# php.iniを設定したいときの指定
+#      - ./php-local.ini:/usr/local/etc/php/conf.d/z-php-local.ini
+# php-fpmを設定したいときの指定
+#      - ./www-local.conf:/usr/local/etc/php-fpm.d/z-www-local.conf
+# rep2へhttps接続するためのポート番号の指定
+# 10088が待ち受けのポート番号(.envを作成しREP2_PORT=80と書いておくと80に変更出来る)
+    ports:
+      - "${REP2_PORT:-10088}:8443"
+    network_mode: bridge
+    restart: unless-stopped
+    environment:
+      TZ: "Asia/Tokyo"
+# rep2で使用する暗号キーの指定
+      SECRET_KEY: "ホストで openssl rand -hex 32 を実行した結果に置き換えてください"

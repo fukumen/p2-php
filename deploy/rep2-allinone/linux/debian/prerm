@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+systemctl stop rep2-allinone || true
+systemctl disable rep2-allinone || true
+
+rm -f /opt/rep2-allinone/p2-php/conf
+rm -f /opt/rep2-allinone/p2-php/data
+rm -f /opt/rep2-allinone/p2-php/rep2/ic

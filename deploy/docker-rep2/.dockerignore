@@ -1,0 +1,4 @@
+.git*
+*.md
+rep2-data
+rep2-db

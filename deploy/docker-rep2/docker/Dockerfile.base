@@ -1,0 +1,87 @@
+ARG PHP_VERSION="8.5"
+ARG ALPINE_VERSION="3.24"
+ARG COMPOSER_VERSION="2.10.3"
+ARG FLAG_EXTRA="false"
+ARG FLAG_DEBUG="false"
+
+FROM php:${PHP_VERSION}-fpm-alpine${ALPINE_VERSION} AS base-builder
+ARG FLAG_EXTRA
+ARG COMPOSER_VERSION
+ARG FLAG_DEBUG
+
+RUN apk --no-cache add \
+            git \
+            patch \
+            gettext-dev \
+            jpeg-dev \
+            libpng-dev \
+            libwebp-dev \
+            libavif-dev \
+            zlib-dev \
+            icu-dev \
+            libzip-dev \
+            freetype-dev \
+            libxml2-dev
+
+RUN if [ "$FLAG_EXTRA" = "true" ]; then \
+        apk add --no-cache $PHPIZE_DEPS imagemagick-dev libtool postgresql-dev && \
+        pecl install imagick && \
+        docker-php-ext-enable imagick && \
+        docker-php-ext-configure gd --with-jpeg --with-freetype --with-webp --with-avif && \
+        docker-php-ext-install -j$(nproc) gd pdo_mysql pdo_pgsql exif zip bcmath xml simplexml; \
+    else \
+        docker-php-ext-configure gd --with-jpeg --with-webp --with-avif && \
+        docker-php-ext-install -j$(nproc) gd bcmath; \
+    fi
+
+RUN if [ "$FLAG_DEBUG" = "true" ]; then \
+        apk add --no-cache $PHPIZE_DEPS linux-headers && \
+        pecl install xdebug && \
+        docker-php-ext-enable xdebug; \
+    fi
+
+RUN docker-php-ext-install -j$(nproc) gettext intl
+
+WORKDIR /tmp
+RUN curl -sS https://getcomposer.org/installer | php -- --version ${COMPOSER_VERSION}
+
+FROM php:${PHP_VERSION}-fpm-alpine${ALPINE_VERSION}
+ARG COMPOSER_VERSION
+# Based on the original work by Abe Masahiro <pen@thcomp.org>
+LABEL composer.version=${COMPOSER_VERSION} \
+    org.opencontainers.image.authors="Fukumen <fukumen@gmail.com>" \
+    org.opencontainers.image.source="https://github.com/fukumen/docker-rep2"
+
+ARG FLAG_EXTRA
+ARG FLAG_DEBUG
+
+RUN apk --no-cache add \
+            git \
+            patch \
+            su-exec \
+            supervisor \
+            gettext \
+            libintl \
+            libjpeg \
+            libpng \
+            libwebp \
+            libavif \
+            ca-certificates \
+            zlib \
+            tzdata \
+            icu-libs
+
+RUN if [ "$FLAG_EXTRA" = "true" ]; then \
+        apk --no-cache add imagemagick libpq libzip freetype libxml2; \
+    fi
+
+RUN if [ "$FLAG_DEBUG" = "true" ]; then \
+        apk --no-cache add tshark; \
+    fi
+
+COPY --from=base-builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+COPY --from=base-builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
+COPY --from=base-builder /tmp/composer.phar /tmp/composer.phar
+
+RUN rm -rf /var/www && mkdir /var/www
+WORKDIR /var/www

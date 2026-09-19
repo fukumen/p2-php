@@ -1,0 +1,5 @@
+[www]
+; メモリ消費確認用
+; docker compose exec rep2php8 tail -f /tmp/php-access.log
+access.log = /tmp/php-access.log
+access.format = "%t %{kilo}M kB %m %r%Q%q"

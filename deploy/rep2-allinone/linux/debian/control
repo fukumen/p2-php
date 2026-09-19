@@ -1,0 +1,8 @@
+Package: rep2-allinone
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: fukumen <fukumen@gmail.com>
+Section: web
+Priority: optional
+Description: rep2-allinone (p2-php) with built-in Caddy and PHP-FPM.
+ A standalone package for rep2 using a dedicated user.
