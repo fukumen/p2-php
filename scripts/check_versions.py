@@ -16,7 +16,7 @@ COLOR_CYAN = "\033[36m"
 
 STATIC_PHP_LIST_URL = "https://dl.static-php.dev/v3/php-bin/common/?format=json"
 WINDOWS_PHP_URL_TEMPLATE = "https://windows.php.net/downloads/releases/php-{version}-nts-Win32-vs17-x64.zip"
-AIO_RELEASE_API_URL = "https://api.github.com/repos/fukumen/rep2-allinone/releases/tags/latest"
+AIO_RELEASE_API_URL = "https://api.github.com/repos/fukumen/p2-php/releases/tags/latest"
 
 PLATFORMS = {
     'linux-x86_64':   ('static',  'linux',  'x86_64',  'Linux x86_64'),
@@ -117,12 +117,14 @@ def get_aio_release_assets():
     return [a.get('name', '') for a in data['assets']]
 
 def parse_aio_built_versions(asset_names):
-    """Release 成果物ファイル名から {platform_key: {'php': ver, 'caddy': ver}} を抽出する"""
-    # rpm のみ Caddy とタイムスタンプの区切りが "." のため、Caddy を遅延マッチにしてタイムスタンプを分離する
-    pat_deb = re.compile(r'^rep2-allinone_[\d.]+-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)(?:\+\d+)?_(?P<arch>amd64|arm64)\.deb$')
-    pat_rpm = re.compile(r'^rep2-allinone-[\d.]+-php(?P<php>[0-9.]+)\.caddy(?P<caddy>[0-9.]+?)\.\d+\.(?P<arch>x86_64|aarch64)\.rpm$')
-    pat_mac = re.compile(r'^rep2-allinone-[\d.]+-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)(?:\+\d+)?-macos-(?P<arch>x86_64|arm64)\.tar\.gz$')
-    pat_zip = re.compile(r'^rep2-allinone-[\d.]+-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)(?:\+\d+)?-windows-(?P<arch>x86_64|arm64)\.zip$')
+    # 新形式: rep2-allinone_<COMMIT_DATE>-php<PHP>-caddy<CADDY>_<arch>.deb
+    #         rep2-allinone-<COMMIT_DATE>-php<PHP>.caddy<CADDY>.<arch>.rpm
+    #         rep2-allinone-<COMMIT_DATE>-php<PHP>-caddy<CADDY>-macos-<arch>.tar.gz
+    #         rep2-allinone-<COMMIT_DATE>-php<PHP>-caddy<CADDY>-windows-<arch>.zip
+    pat_deb = re.compile(r'^rep2-allinone_(?P<date>\d+)-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)_(?P<arch>amd64|arm64)\.deb$')
+    pat_rpm = re.compile(r'^rep2-allinone-(?P<date>\d+)-php(?P<php>[0-9.]+)\.caddy(?P<caddy>[0-9.]+)\.(?P<arch>x86_64|aarch64)\.rpm$')
+    pat_mac = re.compile(r'^rep2-allinone-(?P<date>\d+)-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)-macos-(?P<arch>x86_64|arm64)\.tar\.gz$')
+    pat_zip = re.compile(r'^rep2-allinone-(?P<date>\d+)-php(?P<php>[0-9.]+)-caddy(?P<caddy>[0-9.]+)-windows-(?P<arch>x86_64|arm64)\.zip$')
     arch_map = {'amd64': 'x86_64', 'arm64': 'aarch64'}
     built = {}
     for name in asset_names or []:
@@ -348,10 +350,10 @@ def main():
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    rep2_root = os.path.dirname(os.path.dirname(script_dir))
-    
-    docker_rep2_dir = os.path.join(rep2_root, "docker-rep2")
-    rep2_allinone_dir = os.path.join(rep2_root, "rep2-allinone")
+    rep2_root = os.path.dirname(script_dir)
+
+    docker_rep2_dir = os.path.join(rep2_root, "deploy", "docker-rep2")
+    rep2_allinone_dir = os.path.join(rep2_root, "deploy", "rep2-allinone")
     
     # Parse local files
     d_base_path = os.path.join(docker_rep2_dir, "docker", "Dockerfile.base")

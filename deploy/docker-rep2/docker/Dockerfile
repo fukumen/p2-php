@@ -18,7 +18,8 @@ COPY --from=p2-rep2 . /var/www
 WORKDIR /var/www
 
 RUN /tmp/composer.phar install
-RUN rm -rf `find . -name '.git*' -o -name 'composer.*'`
+RUN rm -rf `find . -name '.git*' -o -name 'composer.*'` && rm -rf build .vscode .editorconfig *.code-workspace \
+    && find deploy -type f ! -name '*.md' -delete && find deploy -type d -empty -delete
 
 COPY patch /tmp
 RUN php /tmp/apply_settings.php /tmp/settings.txt .
@@ -31,19 +32,15 @@ RUN ln -s /ext/user_skin rep2/user_skin
 FROM rep2-${FLAG_EXTRA}-${FLAG_LOCAL}-${FLAG_DEBUG}
 # Based on the original work by Abe Masahiro <pen@thcomp.org>
 LABEL org.opencontainers.image.authors="Fukumen <fukumen@gmail.com>" \
-    org.opencontainers.image.source="https://github.com/fukumen/docker-rep2"
+    org.opencontainers.image.source="https://github.com/fukumen/p2-php"
 ARG FLAG_DEBUG
 
 ARG REPO_HASH
 ARG REPO_LOG
-ARG REP2_HASH
-ARG REP2_LOG
 ARG RUN_ID
 ARG RUN_NUMBER
 ENV VER_REPO_HASH=$REPO_HASH
 ENV VER_REPO_LOG=$REPO_LOG
-ENV VER_REP2_HASH=$REP2_HASH
-ENV VER_REP2_LOG=$REP2_LOG
 ENV VER_RUN_ID=$RUN_ID
 ENV VER_RUN_NUMBER=$RUN_NUMBER
 

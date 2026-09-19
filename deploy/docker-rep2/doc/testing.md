@@ -11,14 +11,14 @@ docker-rep2 環境の php-cli を利用して rep2 の関数単位テストを�
 `test` コマンドを実行するには、`.env` にテストファイルの置き場所（コンテキスト）を記載してください。
 
 ```text
-REP2_TEST_CONTEXT=../test
+REP2_TEST_CONTEXT=../../../test
 ```
 
 `REP2_TEST_CONTEXT` は docker-rep2 ディレクトリからの相対パス（絶対パスでも可）です。未設定のまま実行するとエラーになります。
 
 ```bash
 cd docker-rep2
-python3 build.py test ../test/my_test.php
+python3 build.py test ../../../test/my_test.php
 ```
 
 ### コマンドの挙動
@@ -49,6 +49,6 @@ rep2 本体に合わせて **Shift-JIS** で作成してください。
 テストスクリプトに引数を渡す場合は、ファイルパスの後に続けて記述します。
 
 ```bash
-python3 build.py test ../test/my_test.php -- --verbose --target=user
+python3 build.py test ../../../test/my_test.php -- --verbose --target=user
 ```
 ※ `--` を挟むことで、`build.py` 自身のオプションと区別できます。

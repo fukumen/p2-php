@@ -19,7 +19,6 @@ endif
 ARCH ?= $(HOST_ARCH_DETECTED)
 OS ?= $(HOST_OS_DETECTED)
 
-BASE_VERSION = 1.1.10
 PHP_VERSION = 8.5.10
 ifeq ($(OS),macos)
 PHP_VERSION = 8.5.9
@@ -28,8 +27,6 @@ endif
 CADDY_VERSION = 2.11.4
 COMPOSER_VERSION = 2.10.3
 
-REP2_REPO = https://github.com/fukumen/p2-php.git
-REP2_BRANCH = php8-merge-mbstring
 PHP_URL_WINDOWS = https://windows.php.net/downloads/releases/archives
 PHP_URL_COMMON = https://dl.static-php.dev/v3/php-bin/common
 CADDY_URL = https://github.com/caddyserver/caddy/releases/download
@@ -42,9 +39,9 @@ PHP_URL = $(PHP_URL_COMMON)
 endif
 
 COMMIT_DATE = $(shell cat dist/build_info_rep2_date 2>/dev/null || echo "unknown")
-DEB_VERSION = $(BASE_VERSION)-php$(PHP_VERSION)-caddy$(CADDY_VERSION)+$(COMMIT_DATE)
-RPM_VERSION = $(BASE_VERSION)
-RPM_RELEASE = php$(PHP_VERSION).caddy$(CADDY_VERSION).$(COMMIT_DATE)
+DEB_VERSION = $(COMMIT_DATE)-php$(PHP_VERSION)-caddy$(CADDY_VERSION)
+RPM_VERSION = $(COMMIT_DATE)
+RPM_RELEASE = php$(PHP_VERSION).caddy$(CADDY_VERSION)
 
 RUN_ID ?= local
 RUN_NUMBER ?= local
@@ -124,7 +121,7 @@ PHP_CHECKSUMS = dist/php-checksums.txt
 HOST_BIN_DIR = dist/bin-$(HOST_OS_DETECTED)-$(HOST_ARCH_DETECTED)
 HOST_PHP_BIN = $(HOST_BIN_DIR)/php
 
-.PHONY: all build install install-linux install-macos install-windows deb rpm macos windows clean dist-clean update-php-checksums _update-php-checksum
+.PHONY: all build install install-linux install-macos install-windows deb rpm macos windows brew-install clean dist-clean update-php-checksums _update-php-checksum
 
 $(PHP_CHECKSUMS):
 	$(MAKE) update-php-checksums
@@ -170,10 +167,8 @@ build: dist/p2-php $(BIN_DIR)/php-fpm $(BIN_DIR)/php $(BIN_DIR)/caddy dist/build
 dist/build_info: dist/p2-php
 	@mkdir -p dist
 	@echo "VER_REPO_TYPE=$(REPO_TYPE)" > $@
-	@echo "VER_REPO_HASH=$(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)" >> $@
-	@echo "VER_REPO_LOG=$(shell TZ=Asia/Tokyo git log -1 --format='%cd %s' --date=format-local:'%Y-%m-%d %H:%M' 2>/dev/null | base64 -w 0 || echo unknown)" >> $@
-	@echo "VER_REP2_HASH=$(shell cat dist/build_info_rep2_hash 2>/dev/null || echo unknown)" >> $@
-	@echo "VER_REP2_LOG=$(shell cat dist/build_info_rep2_log 2>/dev/null || echo unknown)" >> $@
+	@echo "VER_REPO_HASH=$(shell git -C ../.. rev-parse --short HEAD)" >> $@
+	@echo "VER_REPO_LOG=$(shell TZ=Asia/Tokyo git -C ../.. log -1 --format='%cd %s' --date=format-local:'%Y-%m-%d %H:%M' | base64 -w 0)" >> $@
 	@echo "VER_RUN_ID=$(RUN_ID)" >> $@
 	@echo "VER_RUN_NUMBER=$(RUN_NUMBER)" >> $@
 
@@ -253,16 +248,18 @@ $(HOST_PHP_BIN):
 endif
 
 dist/p2-php: $(HOST_PHP_BIN)
-	git clone --depth 1 -b $(REP2_BRANCH) $(REP2_REPO) dist/p2-php
+	mkdir -p dist/p2-php
+	git -C ../.. archive HEAD | tar -x -C dist/p2-php
 
 	cd dist && curl https://getcomposer.org/installer | ../$(HOST_PHP_BIN) -- --version $(COMPOSER_VERSION)
 	cd dist/p2-php && ../../$(HOST_PHP_BIN) ../composer.phar install
-	cd dist/p2-php && git rev-parse --short HEAD > ../build_info_rep2_hash
-	cd dist/p2-php && TZ=Asia/Tokyo git log -1 --format='%cd %s' --date=format-local:'%Y-%m-%d %H:%M' 2>/dev/null | base64 -w 0 > ../build_info_rep2_log
-	cd dist/p2-php && TZ=Asia/Tokyo git log -1 --format="%cd" --date=format-local:"%Y%m%d%H%M" > ../build_info_rep2_date
-	cd dist/p2-php && rm -rf `find . -name '.git*' -o -name 'composer.*'`
+
+	cd dist/p2-php && rm -rf `find . -name '.git*' -o -name 'composer.*'` && rm -rf build .vscode .editorconfig *.code-workspace \
+	    && find deploy -type f ! -name '*.md' -delete && find deploy -type d -empty -delete
 
 	cd dist/p2-php && ../../$(HOST_PHP_BIN) ../../patches/apply_settings.php ../../patches/settings.txt .
+
+	git -C ../.. log -1 --format="%cd" --date=format-local:"%Y%m%d%H%M" > dist/build_info_rep2_date
 
 install: install-$(OS)
 
@@ -391,6 +388,19 @@ _windows: build
 	$(MAKE) install-windows DESTDIR=$(WINDOWS_DIR)_$(ARCH)/rep2-allinone
 
 	cd $(WINDOWS_DIR)_$(ARCH) && zip -r ../$(PKG_NAME)-$(DEB_VERSION)-windows-$(WIN_ARCH).zip rep2-allinone
+
+# ローカルビルドした macOS tarball をローカル tap 経由でインストールする (macOS のみ)
+brew-install: macos
+	mkdir -p $(HOME)/.rep2-local-tap/Formula
+	sed -e "s/@@VERSION@@/$(COMMIT_DATE)/g" \
+	    -e "s|url \"https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_ARM64@@\"|url \"file://$$(pwd)/dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz\"|" \
+	    -e "s/@@SHA_ARM64@@/$$(shasum -a 256 dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz | awk '{print $$1}')" \
+	    -e "s|url \"https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_X86_64@@\"|url \"file://$$(pwd)/dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz\"|" \
+	    -e "s/@@SHA_X86_64@@/$$(shasum -a 256 dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz | awk '{print $$1}')" \
+	    macos/homebrew-formula.rb.template > $(HOME)/.rep2-local-tap/Formula/$(PKG_NAME).rb
+	mkdir -p $$(brew --repository)/Library/Taps/$${USER}
+	ln -sfn $(HOME)/.rep2-local-tap $$(brew --repository)/Library/Taps/$${USER}/homebrew-local
+	$$(brew --repository)/bin/brew install $${USER}/local/$(PKG_NAME)
 
 clean:
 	rm -rf dist/

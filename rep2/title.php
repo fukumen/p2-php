@@ -74,7 +74,7 @@ $newversion_found = '';
 // github actionの情報表示
 //=========================================================
 $ver_str = array();
-foreach (array('VER_REPO_TYPE', 'VER_REPO_HASH', 'VER_REPO_LOG', 'VER_REP2_HASH', 'VER_REP2_LOG', 'VER_RUN_ID', 'VER_RUN_NUMBER') as $key) {
+foreach (array('VER_REPO_TYPE', 'VER_REPO_HASH', 'VER_REPO_LOG', 'VER_RUN_ID', 'VER_RUN_NUMBER') as $key) {
     if (($val = getenv($key)) !== false) {
         $ver_str[$key] = $val;
     }
@@ -84,20 +84,18 @@ if (empty($ver_str['VER_REPO_TYPE'])) {
 }
 
 $current_rep2_hash_en = '';
-if (count($ver_str) >= 6) {
+if (count($ver_str) >= 5) {
     $newversion_found2 = '';
-    if (!empty($_conf['updatan_haahaa'])) {
+    if (!empty($_conf['updatan_haahaa']) && isset($ver_str['VER_RUN_ID']) && is_numeric($ver_str['VER_RUN_ID'])) {
         $newversion_found2 = checkUpdatan2($ver_str['VER_REPO_TYPE'], $ver_str['VER_RUN_ID']);
     }
 
-    $ver_str['VER_REP2_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REP2_LOG']), 'CP932', 'UTF-8');
     $ver_str['VER_REPO_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REPO_LOG']), 'CP932', 'UTF-8');
-    $current_rep2_hash_en = rawurlencode($ver_str['VER_REP2_HASH']);
+    $current_rep2_hash_en = rawurlencode($ver_str['VER_REPO_HASH']);
     $htm['ver_str'] = <<<EOT
 <table border="0" cellspacing="0" cellpadding="1">
     <caption>ビルド情報</caption>
     <tbody>
-        <tr><th>p2-php:</th><td>{$ver_str['VER_REP2_LOG']}&nbsp;{$ver_str['VER_REP2_HASH']}</td></tr>
         <tr><th>{$ver_str['VER_REPO_TYPE']}:</th><td>{$ver_str['VER_REPO_LOG']}&nbsp;{$ver_str['VER_REPO_HASH']}</td></tr>
         <tr><th>github action:</th><td>run_id:{$ver_str['VER_RUN_ID']}&nbsp;run_number:{$ver_str['VER_RUN_NUMBER']}</td></tr>
     </tbody>
@@ -312,18 +310,17 @@ function checkUpdatan2($repo_type, $run_id)
     global $_conf;
 
     if ($repo_type === 'rep2-allinone') {
-        $github_repo = 'fukumen/rep2-allinone';
-        $workflow_file = 'publish.yml';
+        $github_repo = 'fukumen/p2-php';
+        $workflow_file = 'publish-packages.yml';
     } else {
-        $github_repo = 'fukumen/docker-rep2';
-        $workflow_file = 'publish-php8.yml';
+        $github_repo = 'fukumen/p2-php';
+        $workflow_file = 'publish-docker.yml';
         $repo_type = 'docker-rep2';
     }
 
     try {
         $requests = array(
             'repo' => "https://api.github.com/repos/{$github_repo}/actions/workflows/{$workflow_file}/runs?status=success&per_page=1",
-            'rep2' => 'https://api.github.com/repos/fukumen/p2-php/actions/workflows/trigger-docker.yml/runs?status=success&per_page=1'
         );
 
         $responses = P2CurlMulti::httpRequestsParallel($requests);
@@ -335,33 +332,15 @@ function checkUpdatan2($repo_type, $run_id)
                 $latest_run_id = $json['workflow_runs'][0]['id'];
                 
                 if ($latest_run_id > $run_id) {
-                    $docker_msg = isset($json['workflow_runs'][0]['head_commit']['message']) ? $json['workflow_runs'][0]['head_commit']['message'] : '';
-                    $docker_msg = (string)strtok($docker_msg, "\r\n");
-                    $docker_msg = p2h(mb_convert_encoding($docker_msg, 'Shift_JIS', 'UTF-8'));
-                    $docker_hash = isset($json['workflow_runs'][0]['head_sha']) ? substr($json['workflow_runs'][0]['head_sha'], 0, 7) : '';
-                    $docker_date = isset($json['workflow_runs'][0]['head_commit']['timestamp']) ? $json['workflow_runs'][0]['head_commit']['timestamp'] : '';
-                    if ($docker_date) {
-                        $dt = new DateTime($docker_date);
+                    $repo_msg = isset($json['workflow_runs'][0]['head_commit']['message']) ? $json['workflow_runs'][0]['head_commit']['message'] : '';
+                    $repo_msg = (string)strtok($repo_msg, "\r\n");
+                    $repo_msg = p2h(mb_convert_encoding($repo_msg, 'Shift_JIS', 'UTF-8'));
+                    $repo_hash = isset($json['workflow_runs'][0]['head_sha']) ? substr($json['workflow_runs'][0]['head_sha'], 0, 7) : '';
+                    $repo_date = isset($json['workflow_runs'][0]['head_commit']['timestamp']) ? $json['workflow_runs'][0]['head_commit']['timestamp'] : '';
+                    if ($repo_date) {
+                        $dt = new DateTime($repo_date);
                         $dt->setTimezone(new DateTimeZone('Asia/Tokyo'));
-                        $docker_date = $dt->format('Y-m-d H:i');
-                    }
-
-                    $rep2_res = P2CurlMulti::getResponse($responses, 'rep2');
-                    $rep2_msg = '';
-                    $rep2_date = '';
-                    $rep2_hash = '';
-                    if ($rep2_res && $rep2_res->getStatus() == 200) {
-                        $json2 = json_decode($rep2_res->getBody(), true);
-                        $rep2_msg = isset($json2['workflow_runs'][0]['head_commit']['message']) ? $json2['workflow_runs'][0]['head_commit']['message'] : '';
-                        $rep2_msg = (string)strtok($rep2_msg, "\r\n");
-                        $rep2_msg = p2h(mb_convert_encoding($rep2_msg, 'Shift_JIS', 'UTF-8'));
-                        $rep2_hash = isset($json2['workflow_runs'][0]['head_sha']) ? substr($json2['workflow_runs'][0]['head_sha'], 0, 7) : '';
-                        $rep2_date = isset($json2['workflow_runs'][0]['head_commit']['timestamp']) ? $json2['workflow_runs'][0]['head_commit']['timestamp'] : '';
-                        if ($rep2_date) {
-                            $dt = new DateTime($rep2_date);
-                            $dt->setTimezone(new DateTimeZone('Asia/Tokyo'));
-                            $rep2_date = $dt->format('Y-m-d H:i');
-                        }
+                        $repo_date = $dt->format('Y-m-d H:i');
                     }
 
                     $github_url = P2Util::throughIme('https://github.com/' . $github_repo . '/actions/runs/' . $latest_run_id);
@@ -371,8 +350,7 @@ function checkUpdatan2($repo_type, $run_id)
     <table border="0" cellspacing="0" cellpadding="1">
         <caption>新しいビルドがあります。</caption>
         <tbody>
-            <tr><th>p2-php:</th><td>{$rep2_date}&nbsp;{$rep2_msg}&nbsp;{$rep2_hash}</td></tr>
-            <tr><th>{$repo_type}:</th><td>{$docker_date}&nbsp;{$docker_msg}&nbsp;{$docker_hash}</td></tr>
+            <tr><th>{$repo_type}:</th><td>{$repo_date}&nbsp;{$repo_msg}&nbsp;{$repo_hash}</td></tr>
             <tr><th>github action:</th><td>run_id:<a href="{$github_url}"{$_conf['ext_win_target_at']}>{$latest_run_id}</a></td></tr>
         </tbody>
     </table>

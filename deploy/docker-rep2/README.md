@@ -2,27 +2,48 @@
 
 ## 概要
 
-以下のソフトのdockerコンテナを作成するDockerfileとdocker-compose.ymlです。
+fukumen/p2-php リポジトリの `deploy/docker-rep2/` 配下にある、rep2 + caddy + PHP の dockerコンテナを構成するDockerfileとdocker-compose.ymlです。
 [pen/docker-rep2](https://github.com/pen/docker-rep2)のフォークです。
 
 * rep2
 * caddy + PHP 他
 
+rep2本体のソースコードは同じリポジトリのルートを参照してビルドします（`p2-rep2` コンテキストが `../..` = リポジトリルートを指します）。
+
 ## 使い方
 
-git, docker, docker composeなどが必要です。
+### ビルド不要（既存イメージを利用）
 
-そのままの設定で使うなら以下を実行すればコンテナをプルして起動までしてくれます。
-標準ではポート番号は10088です。
-変更したい場合はdocker-compose.ymlを編集してください。
+イメージの取得と起動だけなら git clone は不要で、composeファイルがあれば足ります。
+標準ではポート番号は10088です。変更したい場合はdocker-compose.ymlを編集してください。
 
 ```shell
-git clone https://github.com/fukumen/docker-rep2.git
-cd docker-rep2
+mkdir rep2 && cd rep2
+curl -O https://raw.githubusercontent.com/fukumen/p2-php/main/deploy/docker-rep2/docker-compose.yml
+# docker-compose.yml の SECRET_KEY を「openssl rand -hex 32」の実行結果に置き換える
 docker compose up -d
 ```
 
-ビルドしたい場合は `./build.py --help` を参照してください。
+イメージの更新は `docker compose pull`（または `docker compose up -d --pull always`）で可能です。
+
+追加機能（PostgreSQL / MySQL / ImageMagick / AAS 等）を使う場合は、overrideとして取得してください（編集不要）。
+
+```shell
+curl -o docker-compose.override.yml https://raw.githubusercontent.com/fukumen/p2-php/main/deploy/docker-rep2/docker-compose.extra.yml
+```
+
+### ビルドする場合
+
+p2-php リポジトリ全体の clone が必要です（`p2-rep2` コンテキストがリポジトリルートを参照するため）。
+
+```shell
+git clone https://github.com/fukumen/p2-php.git
+cd p2-php/deploy/docker-rep2
+./build.py build
+```
+
+ビルド・運用コマンドは `./build.py --help` を参照してください。
+リモート実行・デバッグの設定は `.env` で指定します（後述）。
 
 標準ではカレントディレクトリのrep2-dataにrep2のdataやconf、caddyのcaddy_configやcaddy_dataが格納されます。
 変更したい場合はdocker-compose.ymlを編集してください。
@@ -44,11 +65,11 @@ docker compose exec rep2php8 diff /var/www/conf.orig /ext/conf | iconv -f SHIFT_
 ```
 
 -のみの行が表示表示されているようならリポジトリ側で追加されているのでマージが必要です。
-fukumen/p2-phpを使用しているのであれば[confの変化点](https://github.com/fukumen/p2-php/commits/php8-merge-mbstring/conf)を参考に作業してください。
+[confの変化点](https://github.com/fukumen/p2-php/commits/main/conf)を参考に作業してください。
 
 ### :warning:data/prefについての注意事項
 
-fukumen/p2-phpを使用する場合、「認証関係のハッシュや暗号化を強化」によりp2_auth_user.phpとconf_user.srd.cgiが従来のrep2では全く読めなくなります。バックアップをとっておいてください。
+「認証関係のハッシュや暗号化を強化」によりp2_auth_user.phpとconf_user.srd.cgiが従来のrep2では全く読めなくなります。バックアップをとっておいてください。
 
 ### 通常設定
 
@@ -67,10 +88,9 @@ HTTPリクエストをproxy経由で解析・デバッグしたい場合は[doc/
 
 ### rep2
 
-PHP8に対応した[mikoim/p2-php](https://github.com/mikoim/p2-php)をフォークした[fukumen/p2-php](https://github.com/fukumen/p2-php)を使用しています。
-変更したい場合はdocker-compose.ymlを編集してください。
+ビルド時にはリポジトリルートのソース一式がイメージへ取り込まれます。
 
-fukumen/p2-phpを使用する場合、「認証関係のハッシュや暗号化を強化」により、environmentにSECRET_KEYの設定が必要です。ホストで openssl rand -hex 32 を実行した結果を記載してください。
+「認証関係のハッシュや暗号化を強化」により、environmentにSECRET_KEYの設定が必要です。ホストで openssl rand -hex 32 を実行した結果を記載してください。
 
 ### PHP
 
@@ -102,7 +122,7 @@ HTTPS接続を有効にしたい場合や証明書に関する設定について
 
 ### ソフトバージョン
 
-実バージョンは[GitHub Packagesのrep2パッケージページ](https://github.com/fukumen/docker-rep2/pkgs/container/rep2)で確認できます。
+実バージョンは[GitHub Packagesのrep2パッケージページ](https://github.com/fukumen/p2-php/pkgs/container/rep2)で確認できます。
 
 ## docker-compose.override.ymlについて
 
@@ -110,52 +130,8 @@ docker-compose.ymlを編集してしまってもよいですが、docker-compose
 
 ## デバッグ方法
 
-通常のビルドではgithubのrep2を直接参照してビルドしますが、デバッグ用のビルドではdocker-compose.debug.ymlで指定したパスにrep2のソースコードをgit cloneしておき、そのソースコードをコンテナに格納します。
-
-また、以下のようなvscodeのワークスペースファイルを用意してください。
-
-```json
-{
-	"folders": [
-		{
-			"path": "p2-php"
-		},
-		{
-			"path": "docker-rep2"
-		}
-	],
-	"settings": {
-		"files.autoGuessEncoding": true
-	},
-	"launch": {
-		"version": "0.2.0",
-		"configurations": [
-			{
-				"name": "Listen for Xdebug",
-				"type": "php",
-				"request": "launch",
-				"port": 9003,
-				"pathMappings": {
-					"/var/www/vendor/pear-pear.php.net/HTTP_Request2/HTTP/": "${workspaceFolder:HTTP_Request2}/HTTP",
-					"/var/www": "${workspaceFolder:p2-php}",
-					"/ext": "${workspaceFolder:docker-rep2}/rep2-data"
-				}
-			}
-		]
-	}
-}
-```
-
-まとめると以下のようなディレクトリ構成としてください。
-
-```
-projdir/
-  rep2.code-workspace
-  docker-rep2/
-  p2-php/
-```
-
-ソースコードが用意できたら以下のように実行してください。
+デバッグ用のビルドではxdebugを有効化し、docker-compose.debug.ymlの設定が読み込まれます。
+XdebugのpathMappings等を設定済みのvscode launch設定をリポジトリルートの`.vscode/launch.json`に同梱しています。vscodeでリポジトリルート（p2-php）をフォルダとして開いてください。
 
 ```shell
 ./build.py build-base
@@ -163,8 +139,7 @@ projdir/
 ./build.py --noremote up
 ```
 
-これらの用意をしてvscodeでrep2.code-workspaceを開いてください。
-PHP Debug拡張機能を使ってrep2のデバッグが出来ます。
+vscodeでリポジトリルート（p2-php）をフォルダとして開いた状態でPHP Debug拡張機能を使ってrep2のデバッグが出来ます。
 デバッグ付きイメージ (`rep2-dbg`) でビルドする場合は `--debug` を指定してください。既定はデバッグオフで、`.env` に `REP2_BUILD_DEBUG=true` と記載すると `--debug` を省略できます。
 
 リモートホストで操作する場合は、`.env` にリモート先を記載してください。

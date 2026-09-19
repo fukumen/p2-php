@@ -1,0 +1,66 @@
+name: Build and Publish Base Images
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/docker-rep2/docker/Dockerfile.base'
+
+jobs:
+  build_base_images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Date Tag
+        id: date
+        run: echo "today=$(TZ=Asia/Tokyo date +'%Y%m%d-%H%M')" >> "$GITHUB_OUTPUT"
+
+      # Build rep2-base (Standard)
+      - name: Build and push rep2-base
+        uses: docker/build-push-action@v6
+        with:
+          context: deploy/docker-rep2
+          file: deploy/docker-rep2/docker/Dockerfile.base
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: false
+          outputs: type=registry,oci-mediatypes=true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/rep2-base:latest
+            ghcr.io/${{ github.repository_owner }}/rep2-base:${{ steps.date.outputs.today }}
+
+      # Build rep2-base-extra (With Extra Packages)
+      - name: Build and push rep2-base-extra
+        uses: docker/build-push-action@v6
+        with:
+          context: deploy/docker-rep2
+          file: deploy/docker-rep2/docker/Dockerfile.base
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: false
+          outputs: type=registry,oci-mediatypes=true
+          build-args: |
+            FLAG_EXTRA=true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/rep2-base-extra:latest
+            ghcr.io/${{ github.repository_owner }}/rep2-base-extra:${{ steps.date.outputs.today }}

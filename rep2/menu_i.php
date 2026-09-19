@@ -43,7 +43,7 @@ if (isset($_POST['word'])) {
 // {{{ ビルド情報
 
 $ver_str = array();
-foreach (array('VER_REPO_TYPE', 'VER_REPO_HASH', 'VER_REPO_LOG', 'VER_REP2_HASH', 'VER_REP2_LOG', 'VER_RUN_ID', 'VER_RUN_NUMBER') as $key) {
+foreach (array('VER_REPO_TYPE', 'VER_REPO_HASH', 'VER_REPO_LOG', 'VER_RUN_ID', 'VER_RUN_NUMBER') as $key) {
     if (($val = getenv($key)) !== false) {
         $ver_str[$key] = $val;
     }
@@ -56,13 +56,11 @@ $current_rep2_hash_en = '';
 $fukumen_url = "https://github.com/fukumen/p2-php";
 $fukumen_url_r = P2Util::throughIme($fukumen_url);
 
-if (count($ver_str) >= 6) {
-    $ver_str['VER_REP2_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REP2_LOG']), 'CP932', 'UTF-8');
+if (count($ver_str) >= 5) {
     $ver_str['VER_REPO_LOG'] = mb_convert_encoding(base64_decode($ver_str['VER_REPO_LOG']), 'CP932', 'UTF-8');
-    $current_rep2_hash_en = rawurlencode($ver_str['VER_REP2_HASH']);
+    $current_rep2_hash_en = rawurlencode($ver_str['VER_REPO_HASH']);
     $htm['ver_str'] = <<<EOT
     <li class="group">ビルド情報</li>
-    <li><div style="word-break:break-all;">p2-php: {$ver_str['VER_REP2_LOG']}&nbsp;{$ver_str['VER_REP2_HASH']}</div></li>
     <li><div style="word-break:break-all;">{$ver_str['VER_REPO_TYPE']}: {$ver_str['VER_REPO_LOG']}&nbsp;{$ver_str['VER_REPO_HASH']}</div></li>
     <li><div style="word-break:break-all;">github action: run_id:{$ver_str['VER_RUN_ID']}&nbsp;run_number:{$ver_str['VER_RUN_NUMBER']}</div></li>
 EOT;

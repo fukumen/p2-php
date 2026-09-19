@@ -50,7 +50,7 @@ ARG COMPOSER_VERSION
 # Based on the original work by Abe Masahiro <pen@thcomp.org>
 LABEL composer.version=${COMPOSER_VERSION} \
     org.opencontainers.image.authors="Fukumen <fukumen@gmail.com>" \
-    org.opencontainers.image.source="https://github.com/fukumen/docker-rep2"
+    org.opencontainers.image.source="https://github.com/fukumen/p2-php"
 
 ARG FLAG_EXTRA
 ARG FLAG_DEBUG

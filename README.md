@@ -33,6 +33,7 @@
 * ワッチョイ対応
 * talk.jp対応([詳細はこちら](doc/README-talkjp.md))
 * スマホのスレ表示に非同期(Ajax)モードを追加
+* docker-rep2とrep2-allinoneを同梱
 
 なお、5ch以外やpinkでは全くテストしていません。
 
@@ -65,9 +66,9 @@ chmod 0777 data/* rep2/ic
 
 ## ビルド済みパッケージ
 
-- **[docker-rep2](https://github.com/fukumen/docker-rep2)**:  rep2+PHP+Caddyで構成されたdockerコンテナ
-- **[docker-rep2-win](https://github.com/fukumen/docker-rep2-win)**:  Windows11でdocker-rep2を使うためのアプリ
-- **[rep2-allinone](https://github.com/fukumen/rep2-allinone)**:  rep2+PHP+Caddyで構成されたパッケージ(Linux用deb/rpm、macOS用Homebrew)
+- **docker** (`deploy/docker-rep2/`): rep2+PHP+Caddyで構成されたdockerコンテナ。詳細は [deploy/docker-rep2/README.md](deploy/docker-rep2/README.md) を参照
+- **[docker-rep2-win](https://github.com/fukumen/docker-rep2-win)**: Windows11でdocker-rep2を使うためのアプリ
+- **パッケージ** (`deploy/rep2-allinone/`): rep2+PHP+Caddyで構成されたパッケージ(Linux用deb/rpm、macOS用Homebrew)。詳細は [deploy/rep2-allinone/README.md](deploy/rep2-allinone/README.md) を参照
 
 環境を移行する場合、インストール後に data,conf,rep2/ic をコピーするだけで OK です。
 
@@ -98,7 +99,7 @@ php scripts/p2cmd.php check
 
 ### :warning:proxyについて
 
-rep2側で過去ログ倉庫のスクレイピングも実装済みのため、現時点ではproxyは不要になっているはず。proxy無しの場合の推奨設定は[fukumen/docker-rep2](https://github.com/fukumen/docker-rep2)のREADME.mdを参照してください。
+rep2側で過去ログ倉庫のスクレイピングも実装済みのため、現時点ではproxyは不要になっているはず。proxy無しの場合の推奨設定は[deploy/docker-rep2/README.md](deploy/docker-rep2/README.md)を参照してください。
 
 2chproxy.plを使いたい場合、[fukumen/2chproxy.pl](https://github.com/fukumen/2chproxy.pl)を使ってENABLE_ALWAYS_HTTPS_FOR_2CH: 1, KEEP_COOKIE : 0とする必要があります。
 

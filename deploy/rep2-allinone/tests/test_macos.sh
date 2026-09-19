@@ -82,7 +82,7 @@ if [ "$REPO_MODE" = "false" ]; then
         exit 1
     fi
     echo "使用パッケージ: $PKG_PATH"
-    VERSION=$(basename "$PKG_PATH" | sed -E 's/rep2-allinone-([0-9]+\.[0-9]+\.[0-9]+)-.*/\1/')
+    VERSION=$(basename "$PKG_PATH" | sed -E 's/^rep2-allinone-([0-9]+)-.*/\1/')
     echo "バージョン：$VERSION"
 else
     echo "Repo モード: 公式 Tap (fukumen/tap) からインストールします。"
@@ -187,9 +187,9 @@ else
 
     echo "rep2-allinone.rbの作成中..."
     run_ssh "sed -e 's/@@VERSION@@/${VERSION}/g' \
-        -e 's|url \"https://fukumen.github.io/rep2-allinone/macos/@@FILE_ARM64@@\"|url \"file:///tmp/rep2-allinone.tar.gz\"|' \
+        -e 's|url \"https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_ARM64@@\"|url \"file:///tmp/rep2-allinone.tar.gz\"|' \
         -e 's/@@SHA_ARM64@@/${SHA256}/' \
-        -e 's|url \"https://fukumen.github.io/rep2-allinone/macos/@@FILE_X86_64@@\"|url \"file:///tmp/rep2-allinone.tar.gz\"|' \
+        -e 's|url \"https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_X86_64@@\"|url \"file:///tmp/rep2-allinone.tar.gz\"|' \
         -e 's/@@SHA_X86_64@@/${SHA256}/' \
         /tmp/homebrew-formula.rb.template > ~/homebrew-tap/Formula/rep2-allinone.rb"
 

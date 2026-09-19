@@ -14,9 +14,6 @@ except ImportError:
 DEFAULT_IMAGE_BASE = "ghcr.io/fukumen/rep2"
 LOCAL_IMAGE_BASE = "rep2"
 
-DEFAULT_P2_CONTEXT = "https://github.com/fukumen/p2-php.git#php8-merge-mbstring"
-LOCAL_P2_CONTEXT = "../p2-php"
-
 SERVICE_NAME = "rep2php8"
 
 REMOTE_COMMAND = {
@@ -187,10 +184,8 @@ def execute_command(cmd_name, args, extra_args=None):
         flag_extra = "true" if args.extra else "false"
         flag_local = "false" if args.ghcr else "true"
         flag_debug = "true" if args.debug else "false"
-        context_p2 = DEFAULT_P2_CONTEXT if args.ghcr else LOCAL_P2_CONTEXT
 
-        repo_hash, repo_log = get_git_info(".")
-        rep2_hash, rep2_log = get_git_info(context_p2)
+        repo_hash, repo_log = get_git_info("../..")
 
         build_cmd = [
             "docker", "build",
@@ -200,9 +195,7 @@ def execute_command(cmd_name, args, extra_args=None):
             "--build-arg", f"FLAG_DEBUG={flag_debug}",
             "--build-arg", f"REPO_HASH={repo_hash}",
             "--build-arg", f"REPO_LOG={repo_log}",
-            "--build-arg", f"REP2_HASH={rep2_hash}",
-            "--build-arg", f"REP2_LOG={rep2_log}",
-            "--build-context", f"p2-rep2={context_p2}",
+            "--build-context", "p2-rep2=../..",
             "-f", "docker/Dockerfile",
             "."
         ]
@@ -241,8 +234,8 @@ def execute_command(cmd_name, args, extra_args=None):
         run_cmd(compose_base + ["config"], env=env)
 
     elif cmd_name == "update":
-        run_cmd(compose_base + ["cp", f"{LOCAL_P2_CONTEXT}/lib", f"{SERVICE_NAME}:/var/www"], env=env)
-        run_cmd(compose_base + ["cp", f"{LOCAL_P2_CONTEXT}/rep2", f"{SERVICE_NAME}:/var/www"], env=env)
+        run_cmd(compose_base + ["cp", "../../lib", f"{SERVICE_NAME}:/var/www"], env=env)
+        run_cmd(compose_base + ["cp", "../../rep2", f"{SERVICE_NAME}:/var/www"], env=env)
         run_cmd(compose_base + ["exec", SERVICE_NAME, "chown", "-R", "root:root", "/var/www/lib"], env=env)
         run_cmd(compose_base + ["exec", SERVICE_NAME, "chown", "-R", "root:root", "/var/www/rep2"], env=env)
 
@@ -344,8 +337,8 @@ def main():
     # 共通オプションを定義する親パーサー (ヘルプ重複衝突を避けるため add_help=False)
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument('--extra', action='store_true', help="全部入りイメージにする")
-    parent_parser.add_argument('--ghcr', action='store_true', help=f"githubのソースコードを使用し、公式イメージ名 ({DEFAULT_IMAGE_BASE}) を使用する")
-    parent_parser.add_argument('--noghcr', dest='ghcr', action='store_false', help=f"ローカルのソースコードを使用し、ローカルイメージ名 ({LOCAL_IMAGE_BASE}) を使用する (default)")
+    parent_parser.add_argument('--ghcr', action='store_true', help=f"公式イメージ名 ({DEFAULT_IMAGE_BASE}) を使用する")
+    parent_parser.add_argument('--noghcr', dest='ghcr', action='store_false', help=f"ローカルイメージ名 ({LOCAL_IMAGE_BASE}) を使用する (default)")
     parent_parser.add_argument('--debug', dest='debug', action='store_true', default=None, help="デバッグを有効にする (default: .env の REP2_BUILD_DEBUG、未設定なら無効)")
     parent_parser.add_argument('--nodebug', dest='debug', action='store_false', help="デバッグを無効にする")
     parent_parser.add_argument('--remote', action='store_true', default=None, help="リモートホストで実行する (SSH経由 / DOCKER_HOST=ssh://<REP2_REMOTE_HOST>、REP2_REMOTE_HOST と REP2_REMOTE_PATH の両方が必要)")

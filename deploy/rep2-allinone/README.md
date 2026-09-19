@@ -23,8 +23,8 @@ PHP-FPM、Caddy (Webサーバー)、そして rep2を統合したパッケージ
 ### Ubuntu / Debian 系 (APT リポジトリ)
 
 ```bash
-curl -fsSL https://fukumen.github.io/rep2-allinone/apt/fukumen.gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/rep2-allinone-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/rep2-allinone-keyring.gpg] https://fukumen.github.io/rep2-allinone/apt ./" | sudo tee /etc/apt/sources.list.d/rep2-allinone.list
+curl -fsSL https://fukumen.github.io/p2-php/apt/fukumen.gpg.key | sudo gpg --dearmor -o /usr/share/keyrings/rep2-allinone-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/rep2-allinone-keyring.gpg] https://fukumen.github.io/p2-php/apt ./" | sudo tee /etc/apt/sources.list.d/rep2-allinone.list
 
 sudo apt update
 sudo apt install rep2-allinone
@@ -36,11 +36,11 @@ sudo apt install rep2-allinone
 cat <<EOF | sudo tee /etc/yum.repos.d/rep2-allinone.repo
 [rep2-allinone]
 name=rep2-allinone Repository
-baseurl=https://fukumen.github.io/rep2-allinone/rpm
+baseurl=https://fukumen.github.io/p2-php/rpm
 enabled=1
 gpgcheck=1
 repo_gpgcheck=1
-gpgkey=https://fukumen.github.io/rep2-allinone/rpm/fukumen.gpg.key
+gpgkey=https://fukumen.github.io/p2-php/rpm/fukumen.gpg.key
 EOF
 
 sudo dnf install rep2-allinone
@@ -82,7 +82,7 @@ diff -ru $(brew --prefix)/opt/rep2-allinone/p2-php/conf.orig $(brew --prefix)/va
 ```
 
 -のみの行が表示表示されているようならリポジトリ側で追加されているのでマージが必要です。
-[confの変化点](https://github.com/fukumen/p2-php/commits/php8-merge-mbstring/conf)を参考に作業してください。
+[confの変化点](https://github.com/fukumen/p2-php/commits/main/conf)を参考に作業してください。
 
 ### インストール後の動作
 
@@ -133,13 +133,12 @@ tail -f $(brew --prefix)/var/lib/rep2-allinone/php-fpm.log
 ## パッケージのバージョンについて
 
 本パッケージのバージョン番号は、内包する各コンポーネントのバージョンがひと目でわかるように構成されています。
-インストールされたパッケージのバージョン（例: `1.0.0-php8.5.3-caddy2.9.1+202403051200` 等）は、以下の情報を表しています。
+インストールされたパッケージのバージョン（例: `202609191234-php8.5.3-caddy2.9.1` 等）は、以下の情報を表しています。
 
-- `1.0.0`: rep2-allinone 自体のベースバージョン
+- `202609191234`: `rep2` の最新コミット日時 (JST)
 - `php8.5.3` / `caddy2.9.1`: 同梱されている PHP と Caddy のバージョン
-- `202403051200`: 上流リポジトリ (`rep2`) の最新コミット日時 (JST)
 
-※ OSのパッケージ命名規則により、RPM パッケージの場合は区切り文字がハイフンではなくドット (`.`) に変換されます。
+※ OSのパッケージ命名規則により、RPM パッケージの場合は `Version=<コミット日時>` / `Release=php<PHP>.caddy<CADDY>` の形式になります。
 
 ## アンインストール
 
@@ -214,6 +213,13 @@ rm -rf $(brew --prefix)/var/lib/rep2-allinone
 
 ## 開発者向け: パッケージのビルド
 
+パッケージのビルドには p2-php リポジトリ全体の clone が必要です（ビルド時に `git archive` でリポジトリ HEAD 全体を展開するため、一部のみの取得では成立しません。パッケージ導入のみの利用であれば clone は不要です）。
+
+```bash
+git clone https://github.com/fukumen/p2-php.git
+cd p2-php/deploy/rep2-allinone
+```
+
 ご自身でカスタマイズしてパッケージをビルドする場合は、各プラットフォーム向けのビルドコマンドを使用します。
 ビルドが完了すると、各プラットフォーム向けのパッケージが `dist/` ディレクトリ配下に生成されます。
 
@@ -229,6 +235,10 @@ make ARCH=arm64 deb    # arm64 向けを明示的に指定
 # RPM パッケージ (.rpm) のビルド
 make rpm               # ホスト環境 (x86_64/aarch64) に応じて自動判定
 make ARCH=arm64 rpm    # aarch64 向けを明示的に指定
+
+# ビルドしたパッケージのインストール
+sudo apt install ./dist/rep2-allinone_*_amd64.deb    # Debian / Ubuntu 系
+sudo dnf install ./dist/rep2-allinone-*.x86_64.rpm   # RHEL 系
 ```
 
 ### macOS (Homebrew)
@@ -242,14 +252,5 @@ make ARCH=x86_64 macos   # Intel (x86_64) 向けを明示的に指定
 make ARCH=arm64 macos    # Apple Silicon (arm64) 向けを明示的に指定
 ```
 
-ビルドが完了したら、生成された `.tar.gz` ファイルの SHA256 ハッシュ値を計算し、`macos/homebrew-formula.rb.template` を基に Homebrew Tap のフォーミュラを更新してください。
-
-### ローカルの rep2 リポジトリを参照する場合
-
-`make` 実行時に `REP2_REPO` と `REP2_BRANCH` を指定することで、任意のリポジトリやローカルディレクトリ、およびブランチを参照してビルドできます。
-
-```bash
-# 相対パスでローカルディレクトリの特定のブランチを参照してビルド
-make REP2_REPO=../p2-php REP2_BRANCH=develop deb
-```
+ローカルビルドした `.tar.gz` は `make brew-install` でインストールできます（macOS のみ。formula を生成してホームディレクトリ直下の `~/.rep2-local-tap` をローカル tap として登録し、`brew install` します）。
 

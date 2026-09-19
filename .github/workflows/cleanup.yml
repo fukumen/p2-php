@@ -1,0 +1,49 @@
+name: Cleanup Old Images
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 19 * * 0'
+
+jobs:
+  delete-old-versions:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+
+    steps:
+      - name: Cleanup rep2 images
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: 'rep2'
+          delete-untagged: true
+          keep-n-tagged: 3
+          exclude-tags: 'latest'
+
+      - name: Cleanup rep2-extra images
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: 'rep2-extra'
+          delete-untagged: true
+          keep-n-tagged: 3
+          exclude-tags: 'latest'
+
+      - name: Cleanup rep2-base images
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: 'rep2-base'
+          delete-untagged: true
+          keep-n-tagged: 3
+          exclude-tags: 'latest'
+
+      - name: Cleanup rep2-base-extra images
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          package: 'rep2-base-extra'
+          delete-untagged: true
+          keep-n-tagged: 3
+          exclude-tags: 'latest'

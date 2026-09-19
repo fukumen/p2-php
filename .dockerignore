@@ -1,0 +1,11 @@
+# named context (p2-rep2 = リポジトリルート) への混入防止
+.git
+vendor
+composer.phar
+build
+.vscode
+.editorconfig
+*.code-workspace
+data/**
+scripts/__pycache__
+.dockerignore

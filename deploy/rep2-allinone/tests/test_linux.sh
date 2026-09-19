@@ -61,8 +61,8 @@ if [ "$TYPE" = "deb" ]; then
     # systemd-debian image already has systemd/dbus.
     if [ "$REPO_MODE" = "true" ]; then
         INSTALL_CMD="apt-get update && apt-get install -y openssl curl ca-certificates gnupg && \
-            curl -fsSL https://fukumen.github.io/rep2-allinone/apt/fukumen.gpg.key | gpg --dearmor -o /usr/share/keyrings/rep2-allinone-keyring.gpg && \
-            echo \"deb [signed-by=/usr/share/keyrings/rep2-allinone-keyring.gpg] https://fukumen.github.io/rep2-allinone/apt ./\" | tee /etc/apt/sources.list.d/rep2-allinone.list && \
+            curl -fsSL https://fukumen.github.io/p2-php/apt/fukumen.gpg.key | gpg --dearmor -o /usr/share/keyrings/rep2-allinone-keyring.gpg && \
+            echo \"deb [signed-by=/usr/share/keyrings/rep2-allinone-keyring.gpg] https://fukumen.github.io/p2-php/apt ./\" | tee /etc/apt/sources.list.d/rep2-allinone.list && \
             apt-get update && apt-get install -y rep2-allinone"
     else
         INSTALL_CMD="apt-get update && apt-get install -y openssl curl ca-certificates && dpkg -i /root/package.deb || apt-get install -f -y"
@@ -77,11 +77,11 @@ elif [ "$TYPE" = "rpm" ]; then
             cat <<EOF | tee /etc/yum.repos.d/rep2-allinone.repo
 [rep2-allinone]
 name=rep2-allinone Repository
-baseurl=https://fukumen.github.io/rep2-allinone/rpm
+baseurl=https://fukumen.github.io/p2-php/rpm
 enabled=1
 gpgcheck=1
 repo_gpgcheck=1
-gpgkey=https://fukumen.github.io/rep2-allinone/rpm/fukumen.gpg.key
+gpgkey=https://fukumen.github.io/p2-php/rpm/fukumen.gpg.key
 EOF
             dnf install -y rep2-allinone"
     else
@@ -163,7 +163,7 @@ if [ "$SUCCESS" = "true" ]; then
 
     echo "ビルド情報の検証中..."
     ENV_FILE="/opt/rep2-allinone/p2-php/rep2/env_test.php"
-    docker exec "$CONTAINER_NAME" sh -c "echo '<?php foreach([\"VER_REPO_TYPE\",\"VER_REPO_HASH\",\"VER_REPO_LOG\",\"VER_REP2_HASH\",\"VER_REP2_LOG\",\"VER_RUN_ID\",\"VER_RUN_NUMBER\"] as \$v) echo \"\$v=\".getenv(\$v).\"\n\";' > $ENV_FILE"
+    docker exec "$CONTAINER_NAME" sh -c "echo '<?php foreach([\"VER_REPO_TYPE\",\"VER_REPO_HASH\",\"VER_REPO_LOG\",\"VER_RUN_ID\",\"VER_RUN_NUMBER\"] as \$v) echo \"\$v=\".getenv(\$v).\"\n\";' > $ENV_FILE"
     
     BUILD_INFO=$(curl -s "http://localhost:$PORT/env_test.php")
     echo "--- 取得したビルド情報 ---"
@@ -171,7 +171,7 @@ if [ "$SUCCESS" = "true" ]; then
         [ -z "$line" ] && continue
         KEY=$(echo "$line" | cut -d= -f1)
         VAL=$(echo "$line" | cut -d= -f2)
-        if [ "$KEY" = "VER_REPO_LOG" ] || [ "$KEY" = "VER_REP2_LOG" ]; then
+        if [ "$KEY" = "VER_REPO_LOG" ]; then
             if [ -n "$VAL" ] && [ "$VAL" != "unknown" ]; then
                 DECODED=$(echo "$VAL" | base64 -d 2>/dev/null || echo "(Error: base64 decode failed)")
                 echo "$KEY: $DECODED"

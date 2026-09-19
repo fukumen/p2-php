@@ -4,8 +4,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile
       additional_contexts:
-# p2-repが参照するgitリポジトリの指定
-        p2-rep2: https://github.com/fukumen/p2-php.git#php8-merge-mbstring
+        p2-rep2: ../..
       args:
         FLAG_EXTRA: "false"
         FLAG_LOCAL: "false"

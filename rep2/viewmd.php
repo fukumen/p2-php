@@ -18,10 +18,15 @@ $readable_files = array(
     'doc/README-donguri.md',
     'doc/README-lockout.md',
     'doc/README-login5ch.md',
-    'doc/README-SECRET_KEY.md'
+    'doc/README-SECRET_KEY.md',
+    'doc/README-talkjp.md',
+    'deploy/docker-rep2/README.md',
+    'deploy/docker-rep2/doc/caddy.md',
+    'deploy/docker-rep2/doc/database.md',
+    'deploy/docker-rep2/doc/mitmproxy.md',
+    'deploy/rep2-allinone/README.md',
+    'deploy/rep2-allinone/doc/https.md'
 );
-
-$githubBase = 'https://github.com/fukumen/p2-php/blob/master/';
 
 // ŠG•¶Žš‚ðŽg—p‚·‚é‚Æ‚«‚Í‚±‚±‚Ì’è‹`‚É’Ç‰Á‚µ‚Ä‚­‚¾‚³‚¢
 $emoji_replacements = array(
@@ -84,7 +89,6 @@ $base_dir_js = ($file_dir === '.' || $file_dir === '/') ? '' : $file_dir . '/';
         const rawContent = <?php echo $cont_json; ?>;
         const baseDir = '<?php echo $base_dir_js; ?>';
         const extWinAttr = '<?php echo $_conf['ext_win_target_at']; ?>';
-        const githubBase = '<?php echo $githubBase; ?>';
 
         const renderer = {
             link({ href, title, text }) {
@@ -110,7 +114,6 @@ $base_dir_js = ($file_dir === '.' || $file_dir === '/') ? '' : $file_dir . '/';
                     if (resolvedPath.endsWith('.txt')) {
                         return `<a href="viewtxt.php?file=${resolvedPath}">${text}</a>`;
                     }
-                    return `<a href="${githubBase}${resolvedPath}"${extWinAttr}>${text}</a>`;
                 }
                 return false;
             }
