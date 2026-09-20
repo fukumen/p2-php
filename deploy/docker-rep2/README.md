@@ -12,7 +12,7 @@ rep2本体のソースコードは同じリポジトリのルートを参照し�
 
 ## 使い方
 
-### ビルド不要（既存イメージを利用）
+### 公式イメージを使用する場合
 
 イメージの取得と起動だけなら git clone は不要で、composeファイルがあれば足ります。
 標準ではポート番号は10088です。変更したい場合はdocker-compose.ymlを編集してください。
@@ -40,10 +40,12 @@ p2-php リポジトリ全体の clone が必要です（`p2-rep2` コンテキ�
 git clone https://github.com/fukumen/p2-php.git
 cd p2-php/deploy/docker-rep2
 ./build.py build
+./build.py up
 ```
 
 ビルド・運用コマンドは `./build.py --help` を参照してください。
-リモート実行・デバッグの設定は `.env` で指定します（後述）。
+デバッグとリモート実行は `.env` で指定します（後述）。
+共通オプション（`--debug`、`--remote` など）はサブコマンドの前に指定してください。
 
 標準ではカレントディレクトリのrep2-dataにrep2のdataやconf、caddyのcaddy_configやcaddy_dataが格納されます。
 変更したい場合はdocker-compose.ymlを編集してください。
@@ -130,17 +132,19 @@ docker-compose.ymlを編集してしまってもよいですが、docker-compose
 
 ## デバッグ方法
 
-デバッグ用のビルドではxdebugを有効化し、docker-compose.debug.ymlの設定が読み込まれます。
-XdebugのpathMappings等を設定済みのvscode launch設定をリポジトリルートの`.vscode/launch.json`に同梱しています。vscodeでリポジトリルート（p2-php）をフォルダとして開いてください。
+`--debug` を指定してビルドすると xdebug を有効化したデバッグ用イメージ (`rep2-dbg`) が作られ、起動時にも `docker-compose.debug.yml` が読み込まれます。既定はデバッグオフで、`.env` に `REP2_BUILD_DEBUG=true` と記載すると `--debug` を省略できます。
 
 ```shell
-./build.py build-base
-./build.py build
-./build.py --noremote up
+./build.py --debug build-base
+./build.py --debug build
+./build.py --debug --noremote up
 ```
 
-vscodeでリポジトリルート（p2-php）をフォルダとして開いた状態でPHP Debug拡張機能を使ってrep2のデバッグが出来ます。
-デバッグ付きイメージ (`rep2-dbg`) でビルドする場合は `--debug` を指定してください。既定はデバッグオフで、`.env` に `REP2_BUILD_DEBUG=true` と記載すると `--debug` を省略できます。
+XdebugのpathMappings等を設定済みのvscode launch設定をリポジトリルートの`.vscode/launch.json`に同梱しています。vscodeでリポジトリルート（p2-php）をフォルダとして開き、PHP Debug拡張機能を使ってrep2のデバッグが出来ます。
+
+## リモート実行
+
+`up` / `down` / `pull` / `logs` / `exec` / `config` / `update` / `confdiff` / `prune` は、`.env` にリモート先が記載されていれば既定でリモート実行、未設定ならローカル実行になります（`--remote` / `--noremote` で強制切り替え可能）。
 
 リモートホストで操作する場合は、`.env` にリモート先を記載してください。
 
@@ -149,7 +153,9 @@ REP2_REMOTE_HOST=rep2
 REP2_REMOTE_PATH=docker-rep2
 ```
 
-`REP2_REMOTE_HOST` と `REP2_REMOTE_PATH` の両方が設定されている場合にのみ `--remote` が機能します（未設定または片方のみの場合はエラーになります）。`up` / `down` / `pull` / `logs` / `exec` / `config` / `update` / `confdiff` / `prune` は既定でリモート実行です。
+`REP2_REMOTE_HOST` と `REP2_REMOTE_PATH` の両方が設定されている場合にのみ `--remote` が機能します（未設定または片方のみの場合はエラーになります）。
+
+`deploy` は down → build → (upload) → up → prune を一括実行するコマンドで、リモート設定の有無でローカル／リモートを自動判定します。
 
 ## おまけ
 

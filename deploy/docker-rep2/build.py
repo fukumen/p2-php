@@ -158,7 +158,10 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
     if remote_override is not None:
         is_remote = remote_override
     else:
-        is_remote = args.remote if args.remote is not None else REMOTE_COMMAND.get(cmd_name, False)
+        # フラグ未指定時はリモート設定の有無で自動判定する（deploy と同じ挙動）
+        is_remote = args.remote if args.remote is not None else (
+            REMOTE_COMMAND.get(cmd_name, False) and all(get_remote_config())
+        )
     remote_host = remote_path = None
     if is_remote:
         remote_host, remote_path = require_remote_config()
@@ -338,17 +341,26 @@ def main():
 
     command_help = "コマンド一覧:\n"
     for cmd, desc in command_descriptions.items():
-        remote_status = "--remote" if REMOTE_COMMAND.get(cmd, False) else "--noremote"
-        command_help += f"  {cmd:<10} : {desc} (default: {remote_status})\n"
+        command_help += f"  {cmd:<10} : {desc}\n"
+    command_help += (
+        "\nデバッグ:\n"
+        "  .env に REP2_BUILD_DEBUG=true が設定されていれば既定で有効、\n"
+        "  未設定なら無効 (--debug / --nodebug で強制)\n"
+        "\nリモート実行:\n"
+        "  up/down/pull/logs/exec/config/update/confdiff/prune は\n"
+        "  .env の REP2_REMOTE_HOST と REP2_REMOTE_PATH の両方が設定されていれば\n"
+        "  既定でリモート実行、未設定ならローカル実行 (--remote / --noremote で強制)\n"
+        "  deploy はリモート設定の有無でローカル/リモートを自動判定する\n"
+    )
 
     # 共通オプションを定義する親パーサー (ヘルプ重複衝突を避けるため add_help=False)
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument('--extra', action='store_true', help="全部入りイメージにする")
     parent_parser.add_argument('--ghcr', action='store_true', help=f"公式イメージ名 ({DEFAULT_IMAGE_BASE}) を使用する")
     parent_parser.add_argument('--noghcr', dest='ghcr', action='store_false', help=f"ローカルイメージ名 ({LOCAL_IMAGE_BASE}) を使用する (default)")
-    parent_parser.add_argument('--debug', dest='debug', action='store_true', default=None, help="デバッグを有効にする (default: .env の REP2_BUILD_DEBUG、未設定なら無効)")
+    parent_parser.add_argument('--debug', dest='debug', action='store_true', default=None, help="デバッグを有効にする")
     parent_parser.add_argument('--nodebug', dest='debug', action='store_false', help="デバッグを無効にする")
-    parent_parser.add_argument('--remote', action='store_true', default=None, help="リモートホストで実行する (SSH経由 / DOCKER_HOST=ssh://<REP2_REMOTE_HOST>、REP2_REMOTE_HOST と REP2_REMOTE_PATH の両方が必要)")
+    parent_parser.add_argument('--remote', action='store_true', default=None, help="リモートホストで実行する (SSH経由 / DOCKER_HOST=ssh://<REP2_REMOTE_HOST>)")
     parent_parser.add_argument('--noremote', dest='remote', action='store_false', help="ローカルホストで実行する")
     parent_parser.add_argument('--use-remote-yml', action='store_true', help=argparse.SUPPRESS)
 
