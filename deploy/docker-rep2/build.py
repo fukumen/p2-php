@@ -154,8 +154,11 @@ def get_compose_args(args, is_remote):
         cmd.extend(["-f", "docker-compose.override.yml"])
     return cmd
 
-def execute_command(cmd_name, args, extra_args=None):
-    is_remote = args.remote if args.remote is not None else REMOTE_COMMAND.get(cmd_name, False)
+def execute_command(cmd_name, args, extra_args=None, remote_override=None):
+    if remote_override is not None:
+        is_remote = remote_override
+    else:
+        is_remote = args.remote if args.remote is not None else REMOTE_COMMAND.get(cmd_name, False)
     remote_host = remote_path = None
     if is_remote:
         remote_host, remote_path = require_remote_config()
@@ -265,18 +268,22 @@ def execute_command(cmd_name, args, extra_args=None):
         print("==> Starting deploy sequence...")
 
         # フラグ未指定ならリモート設定の有無でデプロイ先を自動判定
-        if args.remote is None:
-            args.remote = all(get_remote_config())
+        deploy_is_remote = args.remote if args.remote is not None else all(get_remote_config())
 
         deploy_steps = (
             ["down", "build", "upload", "up", "prune"]
-            if args.remote
+            if deploy_is_remote
             else ["down", "build", "up", "prune"]
         )
 
         for i, cmd in enumerate(deploy_steps, 1):
             print(f"\n--- [{i}/{len(deploy_steps)}] {cmd} ---")
-            execute_command(cmd, args)
+            # build/upload などはローカルで実行する。deploy がリモートのときだけ
+            # 各ステップの既定 (REMOTE_COMMAND) に従う
+            execute_command(
+                cmd, args,
+                remote_override=deploy_is_remote and REMOTE_COMMAND.get(cmd, False),
+            )
 
         print("\n==> Deploy completed successfully!")
 
