@@ -172,7 +172,7 @@ def execute_command(cmd_name, args, extra_args=None):
             flags = []
             if args.extra: flags.append("--extra")
             if args.ghcr: flags.append("--ghcr")
-            if args.debug: flags.append("--debug")
+            flags.append("--debug" if args.debug else "--nodebug")
             flags.append("--use-remote-yml")
             argv0 = os.path.basename(sys.argv[0])
             remote_cmd = f"cd {remote_path} && ./{argv0} --noremote {' '.join(flags)} up"
