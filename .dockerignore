@@ -6,6 +6,5 @@ build
 .vscode
 .editorconfig
 *.code-workspace
-data/**
 scripts/__pycache__
 .dockerignore
