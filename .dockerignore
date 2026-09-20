@@ -1,10 +1,18 @@
 # named context (p2-rep2 = リポジトリルート) への混入防止
 .git
-vendor
-composer.phar
-build
 .vscode
 .editorconfig
-*.code-workspace
-scripts/__pycache__
 .dockerignore
+
+build
+vendor
+composer.phar
+*.code-workspace
+
+scripts/__pycache__
+deploy/rep2-allinone/dist
+deploy/rep2-allinone/downloads
+deploy/rep2-allinone/repo
+deploy/docker-rep2/caddy-local
+deploy/docker-rep2/rep2-data
+deploy/docker-rep2/rep2-db
