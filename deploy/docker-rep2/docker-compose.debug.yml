@@ -1,5 +1,5 @@
 services:
-  rep2php8:
+  rep2:
 # for Xdebug
     volumes:
       - ./xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini

@@ -11,7 +11,7 @@ rep2への接続において、HTTPS接続を有効にしたい場合は、`dock
 `docker-compose.override.yml`:
 ```yaml
 services:
-  rep2php8:
+  rep2:
     environment:
       REP2_TLS_CERT: "/ext/server.crt"
       REP2_TLS_KEY: "/ext/server.key"
@@ -24,7 +24,7 @@ services:
 `docker-compose.override.yml`:
 ```yaml
 services:
-  rep2php8:
+  rep2:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro  # 証明書ディレクトリを読み取り専用でマウント
     environment:
@@ -42,7 +42,7 @@ services:
 
 **フックで実行するコマンドの例:**
 ```shell
-docker compose -f /path/to/docker-rep2/docker-compose.yml exec rep2php8 caddy reload --config /etc/Caddyfile
+docker compose -f /path/to/docker-rep2/docker-compose.yml exec rep2 caddy reload --config /etc/Caddyfile
 ```
 
 ## 方法2：Caddy本体をプラグイン入りにしてDNS-01チャンレンジを使用する
@@ -54,7 +54,7 @@ Caddy本体をプラグイン入りのものに差し替え、自前の `Caddyfi
 
 ```yaml
 services:
-  rep2php8:
+  rep2:
     volumes:
       - ./caddy-local/caddy_linux_amd64_custom:/usr/bin/caddy   # DNS-01対応バイナリをマウント
       - ./caddy-local/Caddyfile:/etc/Caddyfile                  # カスタマイズしたCaddyfileをマウント

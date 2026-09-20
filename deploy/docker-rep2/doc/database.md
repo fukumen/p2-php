@@ -10,7 +10,7 @@
 
 ```yaml
 services:
-  rep2php8:
+  rep2:
     image: ghcr.io/fukumen/rep2-extra:latest
     depends_on:
       db:
@@ -45,7 +45,7 @@ networks:
 
 ```yaml
 services:
-  rep2php8:
+  rep2:
     # PostgreSQL の例を参照
 
   db:

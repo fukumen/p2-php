@@ -5,7 +5,7 @@
 		"../../docker-compose.debug.yml",
 		"../../docker-compose.override.yml"
 	],
-	"service": "rep2php8",
+	"service": "rep2",
 	"workspaceFolder": "/ext",
 	"remoteUser": "www-data",
 	"customizations": {

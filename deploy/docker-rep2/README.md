@@ -61,7 +61,7 @@ cd p2-php/deploy/docker-rep2
 以下のコマンドで、デフォルト設定 (`conf.orig`) と現在の設定 (`conf`) の差分を確認できます。
 
 ```shell
-docker compose exec rep2php8 diff /var/www/conf.orig /ext/conf | iconv -f SHIFT_JIS -t UTF-8
+docker compose exec rep2 diff /var/www/conf.orig /ext/conf | iconv -f SHIFT_JIS -t UTF-8
 ```
 
 -のみの行が表示表示されているようならリポジトリ側で追加されているのでマージが必要です。

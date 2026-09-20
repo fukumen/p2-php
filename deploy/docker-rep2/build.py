@@ -14,7 +14,7 @@ except ImportError:
 DEFAULT_IMAGE_BASE = "ghcr.io/fukumen/rep2"
 LOCAL_IMAGE_BASE = "rep2"
 
-SERVICE_NAME = "rep2php8"
+SERVICE_NAME = "rep2"
 
 REMOTE_COMMAND = {
     "up": True,

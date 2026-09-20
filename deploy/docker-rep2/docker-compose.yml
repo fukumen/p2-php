@@ -1,5 +1,5 @@
 services:
-  rep2php8:
+  rep2:
     build:
       context: .
       dockerfile: docker/Dockerfile
