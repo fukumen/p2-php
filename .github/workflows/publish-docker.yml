@@ -3,12 +3,13 @@ name: Build and Publish Docker
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Build and Publish Base Images"]
+    workflows: ["Build and Publish Docker(Base)"]
     types:
       - completed
   push:
     branches: [main]
     paths-ignore:
+      - '.github/**'
       - 'deploy/**'
       - '**.md'
 
