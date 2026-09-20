@@ -158,7 +158,7 @@ see also [doc/ImageCache2/README.txt](doc/ImageCache2/README.txt), [doc/ImageCac
 
 細かい挙動の変更は `メニュー > 設定管理 > ユーザー設定編集` から行えます。
 
-Webブラウザから変更できない項目は [conf/conf_admin.inc.php](https://github.com/open774/p2-php/blob/master/conf/conf_admin.inc.php) (基本), [conf/conf_admin_ex.inc.php](https://github.com/open774/p2-php/blob/master/conf/conf_admin_ex.inc.php) (拡張パック), [conf/conf_ic2.inc.php](https://github.com/open774/p2-php/blob/master/conf/conf_ic2.inc.php) (ImageCache2) を直接編集します。
+Webブラウザから変更できない項目は [conf/conf_admin.inc.php](conf/conf_admin.inc.php) (基本), [conf/conf_admin_ex.inc.php](conf/conf_admin_ex.inc.php) (拡張パック), [conf/conf_ic2.inc.php](conf/conf_ic2.inc.php) (ImageCache2) を直接編集します。
 
 どういうことができるか書き起こすのが面倒なので設定ファイルのコメントを見てください。
 
