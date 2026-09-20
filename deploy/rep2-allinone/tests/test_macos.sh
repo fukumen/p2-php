@@ -174,8 +174,8 @@ run_ssh() {
 BREW_ENV='if [ "$(uname -m)" = "arm64" ]; then eval "$(/opt/homebrew/bin/brew shellenv)"; else eval "$(/usr/local/bin/brew shellenv)"; fi;'
 
 if [ "$REPO_MODE" = "true" ]; then
-    echo "Homebrew Tap (fukumen/tap) を登録中..."
-    run_ssh "${BREW_ENV} brew tap fukumen/tap"
+    echo "公式 Tap から rep2-allinone をインストール (完全修飾名)..."
+    run_ssh "${BREW_ENV} brew install fukumen/tap/rep2-allinone < /dev/null"
 else
     echo "Homebrew パッケージを展開します..."
 
@@ -198,7 +198,11 @@ else
 fi
 
 echo "rep2-allinone をインストール..."
-run_ssh "${BREW_ENV} brew install rep2-allinone < /dev/null"
+if [ "$REPO_MODE" = "true" ]; then
+    echo "（インストール済み。スキップ）"
+else
+    run_ssh "${BREW_ENV} brew install rep2-allinone < /dev/null"
+fi
 
 echo "rep2-allinone サービス開始 (root/Systemデーモンとして起動)..."
 run_ssh "${BREW_ENV} echo \"$SSH_PASS\" | sudo -S \$(which brew) services start rep2-allinone < /dev/null"

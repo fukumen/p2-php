@@ -49,14 +49,27 @@ sudo dnf install rep2-allinone
 ### macOS (Homebrew Tap)
 
 ```bash
-brew tap fukumen/tap
-brew install rep2-allinone
+brew install fukumen/tap/rep2-allinone
 
 # ログイン中のみサービスを起動したい場合
 brew services start rep2-allinone
 
 # ログインしていないときもサービスを起動したい場合
 sudo brew services start rep2-allinone
+```
+
+### 注意事項
+
+Homebrew 6.0 以降の環境で、過去に `brew tap fukumen/tap` + `brew install rep2-allinone` で導入した環境から `brew upgrade` や `brew services start` を実行して次のエラーが出る場合は、Homebrew の Tap Trust 機能によるものです。
+
+```
+Error: Refusing to load formula fukumen/tap/rep2-allinone from untrusted tap fukumen/tap.
+```
+
+次のコマンドで本 formula を信頼してから再実行してください。
+
+```bash
+brew trust --formula fukumen/tap/rep2-allinone
 ```
 
 ### ⚠️アップデート時の注意事項
