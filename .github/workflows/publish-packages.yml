@@ -167,9 +167,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create the latest release if it does not exist (upload-only; the tag stays)
-          gh release view latest > /dev/null 2>&1 || \
-            gh release create latest --title "Latest Build" --notes "Automated build triggered by repository updates."
+          # Recreate the release so its tag and published date track the built commit
+          if gh release view latest > /dev/null 2>&1; then
+            gh release delete latest -y --cleanup-tag
+          fi
+          gh release create latest \
+            --target "$GITHUB_SHA" \
+            --title "Latest Build" \
+            --notes "Automated build of commit $(git rev-parse --short HEAD)."
 
           gh release upload latest \
             deploy/rep2-allinone/dist/*.deb \
