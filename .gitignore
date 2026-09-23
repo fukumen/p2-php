@@ -54,3 +54,6 @@ dwsync.xml
 *.komodoproject
 .komodotools
 *.bak
+
+# version checker cache
+scripts/prev_versions.json

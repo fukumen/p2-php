@@ -12,9 +12,10 @@ PHP-FPM、Caddy (Webサーバー)、そして rep2を統合したパッケージ
 
 - All-in-One パッケージ: PHP-FPM、Caddy (Webサーバー)、そして rep2 本体が1つのパッケージに統合されており、複雑なミドルウェアのインストールが不要です。
 - 外部依存なし: 静的リンクされた PHP バイナリを使用しているため、OSのPHPバージョンや他のシステム環境に影響されずに独立して動作します。
+- 独自ビルドの static-php: 同梱する PHP は rep2-allinone 向けに独自ビルドした static-php です。バイナリは [fukumen/static-php-cli の Releases](https://github.com/fukumen/static-php-cli/releases) から取得します
 - 簡単かつ安全な運用: 自動的に専用の非特権ユーザー (`rep2`) が作成され、標準の systemd サービスとして管理できるため、安全かつ簡単に運用できます。
 - 常に最新: [`rep2`](https://github.com/fukumen/p2-php) のソースコードが更新されると自動的に新しいパッケージがビルドされ、リポジトリ経由で手軽にアップデートできます。
-- パッケージサイズについて: 静的リンクされた Caddy と PHP を内包しているため、パッケージのファイルサイズがやや大きくなります。（目安: Caddy 約39MB、PHP / PHP-FPM 各約11MB）
+- パッケージサイズについて: 静的リンクされた Caddy と PHP を内包しているため、パッケージのファイルサイズがやや大きくなります。PHP バイナリのサイズ計測やビルド方法は [spc-build/README.md](spc-build/README.md) を参照
 
 ## インストールと起動
 

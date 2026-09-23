@@ -13,9 +13,24 @@ if (!isset($_GET['file'])) {
 
 $file = $_GET['file'];
 
+// ../ を含む相対パスを正規化してから許可リストと照合する
+$normalized = array();
+foreach (explode('/', str_replace('\\', '/', $file)) as $seg) {
+    if ($seg === '' || $seg === '.') {
+        continue;
+    }
+    if ($seg === '..') {
+        array_pop($normalized);
+        continue;
+    }
+    $normalized[] = $seg;
+}
+$file = implode('/', $normalized);
+
 $readable_files = array(
     'README.md',
     'doc/README-donguri.md',
+    'doc/README-intl.md',
     'doc/README-lockout.md',
     'doc/README-login5ch.md',
     'doc/README-SECRET_KEY.md',
@@ -25,7 +40,8 @@ $readable_files = array(
     'deploy/docker-rep2/doc/database.md',
     'deploy/docker-rep2/doc/mitmproxy.md',
     'deploy/rep2-allinone/README.md',
-    'deploy/rep2-allinone/doc/https.md'
+    'deploy/rep2-allinone/doc/https.md',
+    'deploy/rep2-allinone/spc-build/README.md'
 );
 
 // 絵文字を使用するときはここの定義に追加してください

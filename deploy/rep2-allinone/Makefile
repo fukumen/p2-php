@@ -20,22 +20,23 @@ ARCH ?= $(HOST_ARCH_DETECTED)
 OS ?= $(HOST_OS_DETECTED)
 
 PHP_VERSION = 8.5.10
-ifeq ($(OS),macos)
-PHP_VERSION = 8.5.9
-endif
 
 CADDY_VERSION = 2.11.4
 COMPOSER_VERSION = 2.10.3
 
 PHP_URL_WINDOWS = https://windows.php.net/downloads/releases/archives
 PHP_URL_COMMON = https://dl.static-php.dev/v3/php-bin/common
+PHP_URL_REP2 = https://github.com/fukumen/static-php-cli/releases/latest/download
 CADDY_URL = https://github.com/caddyserver/caddy/releases/download
 CACERT_URL = https://curl.se/ca/cacert.pem
 
+PHP_URL_SOURCE ?= rep2
 ifeq ($(OS),windows)
 PHP_URL = $(PHP_URL_WINDOWS)
-else
+else ifeq ($(PHP_URL_SOURCE),common)
 PHP_URL = $(PHP_URL_COMMON)
+else
+PHP_URL = $(PHP_URL_REP2)
 endif
 
 COMMIT_DATE = $(shell cat dist/build_info_rep2_date 2>/dev/null || echo "unknown")

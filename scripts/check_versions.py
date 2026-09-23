@@ -15,7 +15,8 @@ COLOR_YELLOW = "\033[33m"
 COLOR_CYAN = "\033[36m"
 
 STATIC_PHP_LIST_URL = "https://dl.static-php.dev/v3/php-bin/common/?format=json"
-WINDOWS_PHP_URL_TEMPLATE = "https://windows.php.net/downloads/releases/php-{version}-nts-Win32-vs17-x64.zip"
+REP2_STATIC_PHP_RELEASE_API_URL = "https://api.github.com/repos/fukumen/static-php-cli/releases/latest"
+WINDOWS_PHP_URL_TEMPLATE = "https://windows.php.net/downloads/releases/archives/php-{version}-nts-Win32-vs17-x64.zip"
 AIO_RELEASE_API_URL = "https://api.github.com/repos/fukumen/p2-php/releases/tags/latest"
 
 PLATFORMS = {
@@ -37,6 +38,18 @@ def print_warn(text):
 
 def print_err(text):
     print(f"{COLOR_RED}✘ {text}{COLOR_RESET}")
+
+def flatten_leaves(obj, prefix=''):
+    """ネストした dict を 'a.b.c' → 値 のフラット辞書にする（キャッシュ比較用）"""
+    leaves = {}
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            key = f"{prefix}.{k}" if prefix else str(k)
+            leaves.update(flatten_leaves(v, key))
+    else:
+        leaves[prefix] = obj
+    return leaves
+
 
 def fetch_json(url, headers=None):
     if headers is None:
@@ -138,7 +151,7 @@ def parse_aio_built_versions(asset_names):
     return built
 
 def get_static_php_available_set(files):
-    """dl.static-php.dev の一覧から {platform_key: {'cli': set(versions), 'fpm': set(versions)}} を返す"""
+    """アセット名一覧から {platform_key: {'cli': set(versions), 'fpm': set(versions)}} を返す（dl.static-php.dev の一覧と GitHub Releases の assets 両方に使用）"""
     available = {key: {'cli': set(), 'fpm': set()}
                  for key, (kind, _, _, _) in PLATFORMS.items() if kind == 'static'}
     pat = re.compile(r'^php-([0-9.]+)-(cli|fpm)-(linux|macos)-(x86_64|aarch64)\.tar\.gz$')
@@ -169,7 +182,7 @@ def find_latest_static_version(platform_key, available):
     return max(vers, key=lambda v: tuple(int(x) for x in re.findall(r'\d+', v)))
 
 def check_binaries_for_platform(version, platform_key, available):
-    """platform_key が必要とする上流バイナリが提供済みか。(bool, 未提供ラベルのリスト) を返す"""
+    """platform_key が必要とする static-php バイナリが提供済みか。(bool, 未提供ラベルのリスト) を返す"""
     kind, _, _, label = PLATFORMS[platform_key]
     missing = []
     if kind == 'windows':
@@ -188,7 +201,7 @@ def get_windows_php_latest_version(official_latest):
     # Try current patch and decrement to find latest available
     while parts[2] >= 0:
         test_ver = f"{parts[0]}.{parts[1]}.{parts[2]}"
-        url = f"https://windows.php.net/downloads/releases/php-{test_ver}-nts-Win32-vs17-x64.zip"
+        url = WINDOWS_PHP_URL_TEMPLATE.format(version=test_ver)
         try:
             req = urllib.request.Request(url, method='HEAD')
             req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) VersionChecker')
@@ -387,9 +400,17 @@ def main():
         print_err("GHCRイメージのメタデータ取得に失敗しました。")
         ghcr_vers = {}
         
-    # Fetch static php files list once
+    # Fetch static php binaries info（dl.static-php.dev は表示専用、判定源は rep2-allinone 向け static-php の Releases）
     static_php_files = fetch_json(STATIC_PHP_LIST_URL)
     static_php_available = get_static_php_available_set(static_php_files)
+    rep2_release = fetch_json(REP2_STATIC_PHP_RELEASE_API_URL)
+    if rep2_release is not None and 'assets' in rep2_release:
+        rep2_static_php_assets = rep2_release['assets']
+        rep2_static_php_tag = rep2_release.get('tag_name')
+    else:
+        rep2_static_php_assets = None
+        rep2_static_php_tag = None
+    rep2_available = get_static_php_available_set(rep2_static_php_assets)
     
     # Fetch Official Upstreams
     print_bold("\n=== 3. 公式最新リリースバージョンの取得 ===")
@@ -431,13 +452,28 @@ def main():
     composer_latest = get_official_composer()
     print(f"Composer 最新安定: {composer_latest}")
     
-    # Static PHP
-    print(f"dl.static-php.dev 提供の最新 PHP バージョン:")
-    for key, (_, _, _, label) in PLATFORMS.items():
-        if key == 'windows-x86_64':
-            continue
-        ver = find_latest_static_version(key, static_php_available)
-        print(f"  - {label}: {ver or '未提供'}")
+    # Static PHP（dl.static-php.dev は参考表示のみ。更新判定には使用しない）
+    print(f"dl.static-php.dev 提供の最新 PHP バージョン（参考）:")
+    if static_php_files is None:
+        print_warn("  - 取得失敗（参考表示のため判定には影響しません）")
+    else:
+        for key, (_, _, _, label) in PLATFORMS.items():
+            if key == 'windows-x86_64':
+                continue
+            ver = find_latest_static_version(key, static_php_available)
+            print(f"  - {label}: {ver or '未提供'}")
+
+    # rep2-allinone 向け static-php（fukumen/static-php-cli）の提供状況（更新判定に使用）
+    print(f"rep2-allinone 向け static-php の提供状況（更新判定に使用）:")
+    if rep2_static_php_assets is None:
+        print_err("  - リリース情報の取得に失敗しました（バイナリ提供有無の確認をスキップします）")
+    else:
+        print(f"  - リリースタグ: {rep2_static_php_tag or '不明'}")
+        for key, (_, _, _, label) in PLATFORMS.items():
+            if key == 'windows-x86_64':
+                continue
+            ver = find_latest_static_version(key, rep2_available)
+            print(f"  - {label}: {ver or '未提供'}")
         
     # Windows PHP (from windows.php.net) - also used for caching
     target_php_series = d_base_vers.get('php') or '8.5'
@@ -445,7 +481,7 @@ def main():
     win_latest_for_cache = "未提供"
     if latest_official_php:
         win_latest = get_windows_php_latest_version(latest_official_php)
-        print(f"windows.php.net 提供の最新 PHP バージョン ({target_php_series}系列):")
+        print(f"windows.php.net（archives）提供の最新 PHP バージョン ({target_php_series}系列):")
         print(f"  - Windows (NTS):   {win_latest}")
         win_latest_for_cache = win_latest
     
@@ -596,6 +632,11 @@ def main():
         if unparsed_platforms:
             print_warn(f"成果物名から判別できなかったプラットフォームがあります: {', '.join(unparsed_platforms)}")
     
+    # rep2-allinone 向け static-php のリリース情報が取得できない場合はバイナリ確認をスキップする（dl.static-php.dev へフォールバックしない）
+    rep2_bin_check_enabled = rep2_static_php_assets is not None
+    if not rep2_bin_check_enabled:
+        print_err("rep2-allinone 向け static-php のリリース情報の取得に失敗したため、PHP バイナリの提供有無を確認できません。")
+
     # PHP: プラットフォーム別に「実ビルド vs 公式最新パッチ vs 必要バイナリの提供状況」
     for key in sorted(aio_built):
         if key not in PLATFORMS:
@@ -606,11 +647,13 @@ def main():
         latest_patch_php = php_releases.get(series)
         if not latest_patch_php or latest_patch_php == built_php:
             continue
-        bin_available, missing = check_binaries_for_platform(latest_patch_php, key, static_php_available)
+        if not rep2_bin_check_enabled:
+            continue
+        bin_available, missing = check_binaries_for_platform(latest_patch_php, key, rep2_available)
         if bin_available:
             aio_update_reasons.append(f"{key}: PHP {series}系列に最新パッチ {latest_patch_php} が存在し、必要なバイナリも提供済み（公開済みパッケージは {built_php}）")
         else:
-            print_warn(f"{key}: PHP {latest_patch_php} が公式リリースされていますが、必要なバイナリが未提供のため更新判定を見送ります（公開済みは {built_php}）")
+            print_warn(f"{key}: PHP {latest_patch_php} が公式リリースされていますが、必要なバイナリが未提供のため更新判定を見送ります（公開済みは {built_php}）。rep2-allinone 向け static-php のビルド workflow の実行が必要です")
             print(f"  バイナリ確認状況:")
             for item in missing:
                 print(f"    - {item}: 未提供")
@@ -693,18 +736,27 @@ def main():
         'caddy': ghcr_vers.get('caddy'),
     }
     
-    # Build binary availability snapshot
+    # Build binary availability snapshot（判定源は rep2-allinone 向け static-php の Releases。dl.static-php.dev は参考値として別キーに記録）
     static_bin_status = {}
-    if static_php_files:
-        for key in PLATFORMS:
-            if key == 'windows-x86_64':
-                continue
-            static_bin_status[key] = find_latest_static_version(key, static_php_available) or 'none'
-        # Windows: reuse result from display section (L428)
-        static_bin_status['windows'] = win_latest_for_cache
-    else:
-        static_bin_status = {key: 'none' for key in PLATFORMS}
-        static_bin_status['windows'] = win_latest_for_cache
+    for key in PLATFORMS:
+        if key == 'windows-x86_64':
+            continue
+        if rep2_static_php_assets is None:
+            continue
+        static_bin_status[key] = find_latest_static_version(key, rep2_available) or 'none'
+    # Windows: reuse result from display section
+    static_bin_status['windows'] = win_latest_for_cache
+    if rep2_static_php_tag is not None:
+        static_bin_status['release_tag'] = rep2_static_php_tag
+
+    dl_reference_status = {}
+    for key in PLATFORMS:
+        if key == 'windows-x86_64':
+            continue
+        if static_php_files is None:
+            dl_reference_status[key] = 'unknown'
+        else:
+            dl_reference_status[key] = find_latest_static_version(key, static_php_available) or 'none'
     
     # Cache and comparison logic
     versions_changed = True
@@ -717,6 +769,7 @@ def main():
             'composer': composer_latest,
             'local_config': local_config,
             'static_bin_status': static_bin_status,
+            'dl_reference_status': dl_reference_status,
             'docker_hub_status': docker_hub_status,
             'ghcr_snapshot': ghcr_snapshot,
         }
@@ -725,7 +778,14 @@ def main():
             try:
                 with open(cache_file, 'r', encoding='utf-8') as f:
                     prev_versions = json.load(f)
-                if prev_versions == current_versions:
+                # 取得失敗のプレースホルダ（'unknown'）と、片側にしか存在しないキーは
+                # 比較対象から除外する（取得失敗・キャッシュスキーマ変化を「変化あり」と誤判定しないため）
+                prev_leaves = flatten_leaves(prev_versions)
+                cur_leaves = flatten_leaves(current_versions)
+                common = prev_leaves.keys() & cur_leaves.keys()
+                if all(prev_leaves[k] == cur_leaves[k]
+                       or prev_leaves[k] == 'unknown' or cur_leaves[k] == 'unknown'
+                       for k in common):
                     versions_changed = False
             except Exception as e:
                 print(f"Error reading cache file: {e}", file=sys.stderr)
