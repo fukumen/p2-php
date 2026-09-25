@@ -237,26 +237,68 @@ def check_docker_hub_tag(repository, tag):
     except Exception:
         return False
 
+FULL_MANIFEST_ACCEPT = ','.join([
+    'application/vnd.docker.distribution.manifest.v2+json',
+    'application/vnd.docker.distribution.manifest.list.v2+json',
+    'application/vnd.oci.image.manifest.v1+json',
+    'application/vnd.oci.image.index.v1+json',
+])
+
+# rep2 の配布・消費対象プラットフォーム（publish-docker*.yml の platforms と build.py のホスト arch に対応）
+CHECK_PLATFORMS = (
+    {'os': 'linux', 'architecture': 'amd64', 'variant': None},
+    {'os': 'linux', 'architecture': 'arm64', 'variant': 'v8'},
+)
+
 def get_docker_hub_manifest_digest(repository, tag):
     token_url = f"https://auth.docker.io/token?service=registry.docker.io&scope=repository:{repository}:pull"
     token_data = fetch_json(token_url)
     if not token_data or 'token' not in token_data:
         return None
     token = token_data['token']
-    
+
     url = f"https://registry-1.docker.io/v2/{repository}/manifests/{tag}"
     headers = {
         'Authorization': f'Bearer {token}',
-        'Accept': 'application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json'
+        'Accept': FULL_MANIFEST_ACCEPT,
     }
-    
-    req = urllib.request.Request(url, headers=headers, method='HEAD')
+
+    req = urllib.request.Request(url, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=5) as response:
-            digest = response.headers.get('Docker-Content-Digest')
-            return digest
+            return json.loads(response.read().decode('utf-8'))
     except Exception:
         return None
+
+def get_platform_digests(repository, tag):
+    """タグの manifest を取得し、CHECK_PLATFORMS 分のイメージ manifest digest を {platform_key: digest} で返す
+
+    index 未対応レジストリ等で単一 manifest の場合は 'self' をキーに config digest を返す。
+    """
+    manifest = get_docker_hub_manifest_digest(repository, tag)
+    if not isinstance(manifest, dict):
+        return None
+    if 'manifests' not in manifest:
+        return {'self': manifest.get('config', {}).get('digest')}
+    digests = {}
+    for m in manifest['manifests']:
+        platform = m.get('platform') or {}
+        if platform.get('os') != 'linux' or m.get('annotations', {}).get('vnd.docker.reference.type'):
+            continue
+        for check in CHECK_PLATFORMS:
+            if (platform.get('architecture') == check['architecture']
+                    and platform.get('variant') == check['variant']):
+                digests[f"{check['architecture']}{'/' + check['variant'] if check['variant'] else ''}"] = m.get('digest')
+    return digests if digests else None
+
+def platform_digests_equal(digests_a, digests_b):
+    """2タグの platform digest を比較する。取得失敗側がある、または共通キー無しの場合は None（判定不能）"""
+    if not digests_a or not digests_b:
+        return None
+    common = digests_a.keys() & digests_b.keys()
+    if not common:
+        return None
+    return all(digests_a[k] == digests_b[k] for k in common)
 
 def parse_dockerfile_base(path):
     if not os.path.exists(path):
@@ -420,10 +462,11 @@ def main():
     target_alpine_series = d_base_vers.get('alpine')
     target_caddy_series = d_vers.get('caddy')
     alias_tag = None
-    alias_digest = None
-    patch_digest = None
-    caddy_alias_digest = None
-    caddy_patch_digest = None
+    patch_tag = None
+    alias_digests = None
+    patch_digests = None
+    caddy_alias_digests = None
+    caddy_patch_digests = None
     alpine_exists = False
     base_exists = False
     docker_hub_digests = {}
@@ -477,14 +520,15 @@ def main():
             print_warn(f"  - Docker Hub: ベースイメージ php:{alias_tag} が存在しません")
         elif latest_official_php:
             patch_tag = f"{latest_official_php}-fpm-alpine{target_alpine_series}"
-            alias_digest = get_docker_hub_manifest_digest("library/php", alias_tag)
-            patch_digest = get_docker_hub_manifest_digest("library/php", patch_tag)
+            alias_digests = get_platform_digests("library/php", alias_tag)
+            patch_digests = get_platform_digests("library/php", patch_tag)
             docker_hub_digests['php_patch_tag'] = patch_tag
-            docker_hub_digests['php_alias_digest'] = alias_digest
-            docker_hub_digests['php_patch_digest'] = patch_digest
-            if alias_digest and patch_digest and alias_digest == patch_digest:
+            docker_hub_digests['php_alias_digests'] = alias_digests
+            docker_hub_digests['php_patch_digests'] = patch_digests
+            php_reflected = platform_digests_equal(alias_digests, patch_digests)
+            if php_reflected is True:
                 print_ok(f"  - Docker Hub (php:{patch_tag}): 反映済み")
-            elif alias_digest and patch_digest:
+            elif php_reflected is False:
                 print_warn(f"  - Docker Hub (php:{patch_tag}): タグは存在しますが、エイリアス {alias_tag} には未反映")
             else:
                 print_warn(f"  - Docker Hub (php:{patch_tag}): manifest 取得失敗")
@@ -495,15 +539,16 @@ def main():
     if target_caddy_series and caddy_latest and caddy_latest.startswith(target_caddy_series + '.'):
         caddy_alias_tag = f"{target_caddy_series}-alpine"
         caddy_patch_tag = f"{caddy_latest}-alpine"
-        caddy_alias_digest = get_docker_hub_manifest_digest("library/caddy", caddy_alias_tag)
-        caddy_patch_digest = get_docker_hub_manifest_digest("library/caddy", caddy_patch_tag)
+        caddy_alias_digests = get_platform_digests("library/caddy", caddy_alias_tag)
+        caddy_patch_digests = get_platform_digests("library/caddy", caddy_patch_tag)
         docker_hub_digests['caddy_alias_tag'] = caddy_alias_tag
         docker_hub_digests['caddy_patch_tag'] = caddy_patch_tag
-        docker_hub_digests['caddy_alias_digest'] = caddy_alias_digest
-        docker_hub_digests['caddy_patch_digest'] = caddy_patch_digest
-        if caddy_alias_digest and caddy_patch_digest and caddy_alias_digest == caddy_patch_digest:
+        docker_hub_digests['caddy_alias_digests'] = caddy_alias_digests
+        docker_hub_digests['caddy_patch_digests'] = caddy_patch_digests
+        caddy_reflected = platform_digests_equal(caddy_alias_digests, caddy_patch_digests)
+        if caddy_reflected is True:
             print_ok(f"  - Docker Hub (caddy:{caddy_patch_tag}): 反映済み")
-        elif caddy_alias_digest and caddy_patch_digest:
+        elif caddy_reflected is False:
             print_warn(f"  - Docker Hub (caddy:{caddy_patch_tag}): タグは存在しますが、エイリアス {caddy_alias_tag} には未反映")
         else:
             print_warn(f"  - Docker Hub (caddy:{caddy_patch_tag}): manifest 取得失敗")
@@ -552,32 +597,41 @@ def main():
     print_bold("[docker-rep2 判定]")
     
     # 1. Base Image Rebuild（Docker Hub の確認結果はセクション3で取得済みのため再利用する）
-    rebuild_reasons = []
+    #    ベース要因（PHP/Alpine）と Caddy 要因を分け、必要な作業の文言を出し分ける
+    base_rebuild_reasons = []
+    caddy_rebuild_reasons = []
     if base_exists:
         # PHP
         if target_php_series and target_alpine_series and ghcr_vers.get('php'):
             latest_patch_php = php_releases.get(target_php_series)
             if latest_patch_php and latest_patch_php != ghcr_vers.get('php'):
-                if alias_digest and patch_digest and alias_digest == patch_digest:
-                    rebuild_reasons.append(f"PHP {target_php_series}系列に最新パッチ {latest_patch_php} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('php')}）")
+                if platform_digests_equal(alias_digests, patch_digests) is True:
+                    base_rebuild_reasons.append(f"PHP {target_php_series}系列に最新パッチ {latest_patch_php} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('php')}）")
 
         # Alpine
         if target_alpine_series and target_php_series and ghcr_vers.get('alpine'):
             if target_alpine_latest and target_alpine_latest != ghcr_vers.get('alpine') and alpine_exists:
-                rebuild_reasons.append(f"Alpine {target_alpine_series}系列に最新パッチ {target_alpine_latest} が存在（GHCRは {ghcr_vers.get('alpine')}、Docker Hubイメージあり）")
+                base_rebuild_reasons.append(f"Alpine {target_alpine_series}系列に最新パッチ {target_alpine_latest} が存在（GHCRは {ghcr_vers.get('alpine')}、Docker Hubイメージあり）")
 
-        # Caddy
+        # Caddy（ベースイメージには含まれず本体イメージのビルド時に取り込まれるため、再ビルド対象は本体イメージ）
         if target_caddy_series and ghcr_vers.get('caddy') and caddy_latest:
             if caddy_latest.startswith(target_caddy_series + '.') and caddy_latest != ghcr_vers.get('caddy'):
-                if caddy_alias_digest and caddy_patch_digest and caddy_alias_digest == caddy_patch_digest:
-                    rebuild_reasons.append(f"Caddy {target_caddy_series}系列に最新パッチ {caddy_latest} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('caddy')}）")
-            
-    if rebuild_reasons:
-        print_warn("ベースイメージまたはCaddyの再ビルドが必要です。")
-        for reason in rebuild_reasons:
+                if platform_digests_equal(caddy_alias_digests, caddy_patch_digests) is True:
+                    caddy_rebuild_reasons.append(f"Caddy {target_caddy_series}系列に最新パッチ {caddy_latest} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('caddy')}）")
+
+    if base_rebuild_reasons:
+        print_warn("ベースイメージの再ビルドが必要です。続いて本体イメージの再ビルドを行ってください。")
+        for reason in base_rebuild_reasons:
+            print(f"  - {reason}")
+        print("  ※ GitHub Actions (publish-docker-base.yml) 実行時は workflow_run により publish-docker.yml が自動実行されます")
+        if caddy_rebuild_reasons:
+            print("  - Caddy の更新も同時発生していますが、本体イメージの再ビルド時に取り込まれます")
+    elif caddy_rebuild_reasons:
+        print_warn("本体イメージの再ビルドが必要です（Caddy 更新の取り込み）。")
+        for reason in caddy_rebuild_reasons:
             print(f"  - {reason}")
     else:
-        print_ok("ベースイメージおよびCaddyは最新パッチを維持しています。再ビルドは不要です。")
+        print_ok("ベースイメージは最新パッチを維持しています。再ビルドは不要です。")
         
     # 2. Dockerfile / Dockerfile.base 更新
     update_reasons = []
@@ -602,14 +656,14 @@ def main():
             alias_tag = f"{caddy_latest_mm}-alpine"
             patch_tag = f"{caddy_latest}-alpine"
 
-            alias_digest = get_docker_hub_manifest_digest("library/caddy", alias_tag)
-            patch_digest = get_docker_hub_manifest_digest("library/caddy", patch_tag)
-            docker_hub_digests['caddy_alias_digest'] = alias_digest
-            docker_hub_digests['caddy_patch_digest'] = patch_digest
+            alias_digests = get_platform_digests("library/caddy", alias_tag)
+            patch_digests = get_platform_digests("library/caddy", patch_tag)
+            docker_hub_digests['caddy_alias_digests'] = alias_digests
+            docker_hub_digests['caddy_patch_digests'] = patch_digests
             docker_hub_digests['caddy_alias_tag'] = alias_tag
             docker_hub_digests['caddy_patch_tag'] = patch_tag
-            
-            if alias_digest and patch_digest and alias_digest == patch_digest:
+
+            if platform_digests_equal(alias_digests, patch_digests) is True:
                 update_reasons.append(f"Caddy の新系列 {caddy_latest_mm} が利用可能（Dockerfileは {target_caddy_series}、Docker Hubイメージに反映済み）")
             else:
                 print_warn(f"Caddy の新系列 {caddy_latest_mm} が公式リリースされましたが、Docker Hubのエイリアスイメージ {alias_tag} への反映がまだ完了していません。")
@@ -782,7 +836,7 @@ def main():
         except Exception as e:
             print(f"Error saving cache file: {e}", file=sys.stderr)
         
-    has_updates = len(rebuild_reasons) > 0 or len(update_reasons) > 0 or len(aio_update_reasons) > 0
+    has_updates = len(base_rebuild_reasons) > 0 or len(caddy_rebuild_reasons) > 0 or len(update_reasons) > 0 or len(aio_update_reasons) > 0
     if args.fail_on_update and has_updates:
         if args.only_on_change and not versions_changed:
             print_bold("\n更新が必要な項目がありますが、前回の実行時から公式バージョンに変化がないため、ステータス 0 で終了します。")
