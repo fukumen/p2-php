@@ -414,39 +414,99 @@ def main():
     
     # Fetch Official Upstreams
     print_bold("\n=== 3. 公式最新リリースバージョンの取得 ===")
-    
-    # Alpine
+
+    # ターゲット系列（リポジトリ設定値）。Docker Hub 反映確認とセクション4の判定で再利用する
+    target_php_series = d_base_vers.get('php')
+    target_alpine_series = d_base_vers.get('alpine')
+    target_caddy_series = d_vers.get('caddy')
+    alias_tag = None
+    alias_digest = None
+    patch_digest = None
+    caddy_alias_digest = None
+    caddy_patch_digest = None
+    alpine_exists = False
+    base_exists = False
+    docker_hub_digests = {}
+
+    # Alpine（表示はターゲット系列のみ。全系列のデータは新系列判定に使用）
     alp_latest, alp_branches = get_official_alpine()
     print(f"Alpine Linux:")
     print(f"  - 最新安定系列: {alp_latest}")
-    
-    def parse_branch_version(b):
-        m = re.match(r'^v?(\d+)\.(\d+)', b)
-        if m:
-            return (int(m.group(1)), int(m.group(2)))
-        return (0, 0)
-        
-    sorted_branches = sorted(alp_branches.keys(), key=parse_branch_version, reverse=True)
-    for br in sorted_branches[:3]:
-        print(f"  - {br}系列最新:  {alp_branches[br]}")
-        
-    # PHP
+    target_alpine_latest = None
+    if target_alpine_series:
+        target_alpine_latest = alp_branches.get(target_alpine_series) or alp_branches.get('v' + target_alpine_series)
+    if target_alpine_latest:
+        print(f"  - {target_alpine_series}系列最新:  {target_alpine_latest}")
+        alpine_exists = check_docker_hub_tag("library/alpine", target_alpine_latest)
+        if alpine_exists:
+            print_ok(f"  - Docker Hub (alpine:{target_alpine_latest}): 提供済み")
+        else:
+            print_warn(f"  - Docker Hub (alpine:{target_alpine_latest}): 未提供")
+        docker_hub_digests['alpine_patch_tag'] = target_alpine_latest
+        docker_hub_digests['alpine_patch_exists'] = alpine_exists
+    elif target_alpine_series:
+        print_warn(f"  - {target_alpine_series}系列最新:  取得失敗")
+
+    # PHP（Alpine と同様に最新安定系列を常に表示し、ターゲット系列の最新を併記する。全系列のデータは新系列判定に使用）
     php_releases = get_official_php()
     print(f"PHP:")
-    
+
     def parse_php_series(s):
         m = re.match(r'^(\d+)\.(\d+)', s)
         if m:
             return (int(m.group(1)), int(m.group(2)))
         return (0, 0)
+
+    latest_php_series = max(php_releases.keys(), key=parse_php_series) if php_releases else None
+    if latest_php_series:
+        print(f"  - 最新安定系列: {php_releases[latest_php_series]}")
+    else:
+        print_warn("  - 最新安定系列:  取得失敗")
+    latest_official_php = php_releases.get(target_php_series)
+    if latest_official_php:
+        print(f"  - {target_php_series}系列最新:  {latest_official_php}")
+    elif target_php_series:
+        print_warn(f"  - {target_php_series}系列最新:  取得失敗")
+    else:
+        print_warn("  - Dockerfile.base に PHP 系列指定がありません")
+    if target_php_series and target_alpine_series:
+        alias_tag = f"{target_php_series}-fpm-alpine{target_alpine_series}"
+        docker_hub_digests['php_alias_tag'] = alias_tag
+        base_exists = check_docker_hub_tag("library/php", alias_tag)
+        if not base_exists:
+            print_warn(f"  - Docker Hub: ベースイメージ php:{alias_tag} が存在しません")
+        elif latest_official_php:
+            patch_tag = f"{latest_official_php}-fpm-alpine{target_alpine_series}"
+            alias_digest = get_docker_hub_manifest_digest("library/php", alias_tag)
+            patch_digest = get_docker_hub_manifest_digest("library/php", patch_tag)
+            docker_hub_digests['php_patch_tag'] = patch_tag
+            docker_hub_digests['php_alias_digest'] = alias_digest
+            docker_hub_digests['php_patch_digest'] = patch_digest
+            if alias_digest and patch_digest and alias_digest == patch_digest:
+                print_ok(f"  - Docker Hub (php:{patch_tag}): 反映済み")
+            elif alias_digest and patch_digest:
+                print_warn(f"  - Docker Hub (php:{patch_tag}): タグは存在しますが、エイリアス {alias_tag} には未反映")
+            else:
+                print_warn(f"  - Docker Hub (php:{patch_tag}): manifest 取得失敗")
         
-    sorted_php_series = sorted(php_releases.keys(), key=parse_php_series, reverse=True)
-    for series in sorted_php_series[:4]:
-        print(f"  - {series}系列最新:  {php_releases[series]}")
-        
-    # Caddy
+    # Caddy（同系列のパッチリリースかを確認し、Docker Hub 反映状況を表示。結果はセクション4の判定でも再利用する）
     caddy_latest = get_official_caddy()
     print(f"Caddy 最新安定:  {caddy_latest}")
+    if target_caddy_series and caddy_latest and caddy_latest.startswith(target_caddy_series + '.'):
+        caddy_alias_tag = f"{target_caddy_series}-alpine"
+        caddy_patch_tag = f"{caddy_latest}-alpine"
+        caddy_alias_digest = get_docker_hub_manifest_digest("library/caddy", caddy_alias_tag)
+        caddy_patch_digest = get_docker_hub_manifest_digest("library/caddy", caddy_patch_tag)
+        docker_hub_digests['caddy_alias_tag'] = caddy_alias_tag
+        docker_hub_digests['caddy_patch_tag'] = caddy_patch_tag
+        docker_hub_digests['caddy_alias_digest'] = caddy_alias_digest
+        docker_hub_digests['caddy_patch_digest'] = caddy_patch_digest
+        if caddy_alias_digest and caddy_patch_digest and caddy_alias_digest == caddy_patch_digest:
+            print_ok(f"  - Docker Hub (caddy:{caddy_patch_tag}): 反映済み")
+        elif caddy_alias_digest and caddy_patch_digest:
+            print_warn(f"  - Docker Hub (caddy:{caddy_patch_tag}): タグは存在しますが、エイリアス {caddy_alias_tag} には未反映")
+        else:
+            print_warn(f"  - Docker Hub (caddy:{caddy_patch_tag}): manifest 取得失敗")
     
     # Composer
     composer_latest = get_official_composer()
@@ -491,73 +551,26 @@ def main():
     # docker-rep2 の判定
     print_bold("[docker-rep2 判定]")
     
-    # 1. Base Image Rebuild
+    # 1. Base Image Rebuild（Docker Hub の確認結果はセクション3で取得済みのため再利用する）
     rebuild_reasons = []
-    # PHP
-    target_php_series = d_base_vers.get('php')
-    target_alpine_series = d_base_vers.get('alpine')
-    # Check if local base image exists on Docker Hub
-    base_exists = False
-    if target_php_series and target_alpine_series:
-        local_base_tag = f"{target_php_series}-fpm-alpine{target_alpine_series}"
-        base_exists = check_docker_hub_tag("library/php", local_base_tag)
-        if not base_exists:
-            print_warn(f"ローカル設定に対応するベースイメージ php:{local_base_tag} が Docker Hub に存在しません。")
-
-    # Collect Docker Hub digests for both decisions and caching (avoid duplicate calls)
-    docker_hub_digests = {}
-    
     if base_exists:
         # PHP
-        if target_php_series and ghcr_vers.get('php') and target_alpine_series:
+        if target_php_series and target_alpine_series and ghcr_vers.get('php'):
             latest_patch_php = php_releases.get(target_php_series)
             if latest_patch_php and latest_patch_php != ghcr_vers.get('php'):
-                alias_tag = f"{target_php_series}-fpm-alpine{target_alpine_series}"
-                patch_tag = f"{latest_patch_php}-fpm-alpine{target_alpine_series}"
-                
-                alias_digest = get_docker_hub_manifest_digest("library/php", alias_tag)
-                patch_digest = get_docker_hub_manifest_digest("library/php", patch_tag)
-                docker_hub_digests['php_alias_digest'] = alias_digest
-                docker_hub_digests['php_patch_digest'] = patch_digest
-                docker_hub_digests['php_alias_tag'] = alias_tag
-                docker_hub_digests['php_patch_tag'] = patch_tag
-                
                 if alias_digest and patch_digest and alias_digest == patch_digest:
                     rebuild_reasons.append(f"PHP {target_php_series}系列に最新パッチ {latest_patch_php} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('php')}）")
-                else:
-                    print_warn(f"PHP {latest_patch_php} が公式リリースされていますが、Docker Hubのエイリアスイメージ {alias_tag} への反映がまだ完了していません。")
-                
+
         # Alpine
-        if target_alpine_series and ghcr_vers.get('alpine') and target_php_series:
-            latest_patch_alpine = alp_branches.get(target_alpine_series) or alp_branches.get('v' + target_alpine_series)
-            if latest_patch_alpine and latest_patch_alpine != ghcr_vers.get('alpine'):
-                alpine_exists = check_docker_hub_tag("library/alpine", latest_patch_alpine)
-                docker_hub_digests['alpine_patch_tag'] = latest_patch_alpine
-                docker_hub_digests['alpine_patch_exists'] = alpine_exists
-                if alpine_exists:
-                    rebuild_reasons.append(f"Alpine {target_alpine_series}系列に最新パッチ {latest_patch_alpine} が存在（GHCRは {ghcr_vers.get('alpine')}、Docker Hubイメージあり）")
-                else:
-                    print_warn(f"Alpine {latest_patch_alpine} が公式リリースされていますが、Docker Hub に alpine:{latest_patch_alpine} がまだ用意されていません。")
-            
+        if target_alpine_series and target_php_series and ghcr_vers.get('alpine'):
+            if target_alpine_latest and target_alpine_latest != ghcr_vers.get('alpine') and alpine_exists:
+                rebuild_reasons.append(f"Alpine {target_alpine_series}系列に最新パッチ {target_alpine_latest} が存在（GHCRは {ghcr_vers.get('alpine')}、Docker Hubイメージあり）")
+
         # Caddy
-        target_caddy_series = d_vers.get('caddy')
         if target_caddy_series and ghcr_vers.get('caddy') and caddy_latest:
-            if caddy_latest.startswith(target_caddy_series + '.'):
-                if caddy_latest != ghcr_vers.get('caddy'):
-                    alias_tag = f"{target_caddy_series}-alpine"
-                    patch_tag = f"{caddy_latest}-alpine"
-                    
-                    alias_digest = get_docker_hub_manifest_digest("library/caddy", alias_tag)
-                    patch_digest = get_docker_hub_manifest_digest("library/caddy", patch_tag)
-                    docker_hub_digests['caddy_alias_digest'] = alias_digest
-                    docker_hub_digests['caddy_patch_digest'] = patch_digest
-                    docker_hub_digests['caddy_alias_tag'] = alias_tag
-                    docker_hub_digests['caddy_patch_tag'] = patch_tag
-                    
-                    if alias_digest and patch_digest and alias_digest == patch_digest:
-                        rebuild_reasons.append(f"Caddy {target_caddy_series}系列に最新パッチ {caddy_latest} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('caddy')}）")
-                    else:
-                        print_warn(f"Caddy {caddy_latest} が公式リリースされていますが、Docker Hubのエイリアスイメージ {alias_tag} への反映がまだ完了していません。")
+            if caddy_latest.startswith(target_caddy_series + '.') and caddy_latest != ghcr_vers.get('caddy'):
+                if caddy_alias_digest and caddy_patch_digest and caddy_alias_digest == caddy_patch_digest:
+                    rebuild_reasons.append(f"Caddy {target_caddy_series}系列に最新パッチ {caddy_latest} が存在し、Docker Hubイメージに反映済み（GHCRは {ghcr_vers.get('caddy')}）")
             
     if rebuild_reasons:
         print_warn("ベースイメージまたはCaddyの再ビルドが必要です。")
@@ -579,18 +592,16 @@ def main():
                 update_reasons.append(f"Alpine の新系列 {alp_latest_mm} が利用可能（Dockerfile.baseは {target_alpine_series}、Docker Hubイメージあり）")
             else:
                 print_warn(f"Alpine の新系列 {alp_latest_mm} が公式リリースされましたが、Docker Hub に php:{php_tag} がまだ用意されていません。")
-    # PHP series update
-    latest_php_series = max(php_releases.keys()) if php_releases else None
+    # PHP series update（latest_php_series はセクション3で数値比較により算出済み）
     if latest_php_series and target_php_series and latest_php_series != target_php_series:
         update_reasons.append(f"PHP の新系列 {latest_php_series} が利用可能（Dockerfile.baseは {target_php_series}）")
     # Caddy series update
-    target_caddy_series = d_vers.get('caddy')
     if caddy_latest and target_caddy_series:
         caddy_latest_mm = '.'.join(caddy_latest.split('.')[:2])
         if caddy_latest_mm != target_caddy_series:
             alias_tag = f"{caddy_latest_mm}-alpine"
             patch_tag = f"{caddy_latest}-alpine"
-            
+
             alias_digest = get_docker_hub_manifest_digest("library/caddy", alias_tag)
             patch_digest = get_docker_hub_manifest_digest("library/caddy", patch_tag)
             docker_hub_digests['caddy_alias_digest'] = alias_digest
@@ -700,34 +711,8 @@ def main():
         'aio_built_php': {key: aio_built[key]['php'] for key in aio_built},
     }
     
-    # Build Docker Hub reflection status snapshot (reuse digests from decision section)
-    docker_hub_status = {}
-    if base_exists and target_php_series and target_alpine_series:
-        alias_tag = f"{target_php_series}-fpm-alpine{target_alpine_series}"
-        latest_patch_php = php_releases.get(target_php_series)
-        if latest_patch_php:
-            patch_tag = f"{latest_patch_php}-fpm-alpine{target_alpine_series}"
-            docker_hub_status['php_alias_tag'] = alias_tag
-            docker_hub_status['php_patch_tag'] = patch_tag
-        else:
-            docker_hub_status['php_alias_tag'] = alias_tag
-        
-        # Alpine: reuse result from decision section (L478)
-        alpine_patch_tag = docker_hub_digests.get('alpine_patch_tag')
-        alpine_patch_exists = docker_hub_digests.get('alpine_patch_exists', False)
-        if alpine_patch_tag:
-            docker_hub_status['alpine_patch_tag'] = alpine_patch_tag
-            docker_hub_status['alpine_patch_exists'] = alpine_patch_exists
-        
-        target_caddy_series = d_vers.get('caddy')
-        if target_caddy_series and caddy_latest:
-            alias_tag_c = f"{target_caddy_series}-alpine"
-            patch_tag_c = f"{caddy_latest}-alpine"
-            docker_hub_status['caddy_alias_tag'] = alias_tag_c
-            docker_hub_status['caddy_patch_tag'] = patch_tag_c
-    
-    # Merge digests collected during decision section
-    docker_hub_status.update(docker_hub_digests)
+    # Build Docker Hub reflection status snapshot（タグ・digest はセクション3/4で docker_hub_digests に収集済み）
+    docker_hub_status = dict(docker_hub_digests)
     
     # Build GHCR image version snapshot
     ghcr_snapshot = {
