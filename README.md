@@ -44,9 +44,19 @@
 1. 本体をclone
 
 ```shell
-git clone https://github.com/fukumen/p2-php.git
+git clone --single-branch https://github.com/fukumen/p2-php.git
 cd p2-php
 ```
+
+> [!NOTE]
+> 配布用の`gh-pages`ブランチが約1GBありますが、ソースコードの利用には不要です。
+> 既にcloneやfetchで取り込んでしまった場合は、下記で除外してください(negative refspec には git 2.29 以上が必要)。
+>
+> ```shell
+> git config --add remote.origin.fetch '^refs/heads/gh-pages'
+> git branch -rd origin/gh-pages
+> git gc --prune=now
+> ```
 
 2. 依存ライブラリをダウンロード
 
