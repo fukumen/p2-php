@@ -1,0 +1,104 @@
+ARG SPC_CLI_TGZ
+ARG SPC_FPM_TGZ
+
+FROM caddy:2-alpine AS caddy-upstream
+
+# docker-rep2 イメージが実際に読んでいる php-fpm conf を公式イメージから取得する
+FROM php:8.5-fpm-alpine AS php-conf-upstream
+
+FROM alpine:3 AS spc-php
+RUN apk add --no-cache \
+        git \
+        patch \
+        su-exec \
+        supervisor \
+        ca-certificates \
+        tzdata \
+        curl \
+        openssl
+
+# alpine には www-data の group のみ存在し user は無いので user を追加する
+RUN adduser -D -H -u 82 -G www-data -g www-data -s /sbin/nologin www-data
+
+FROM spc-php AS spc-unpack
+ARG SPC_CLI_TGZ
+ARG SPC_FPM_TGZ
+
+COPY --from=spc-dist /${SPC_CLI_TGZ} /tmp/spc-cli.tar.gz
+COPY --from=spc-dist /${SPC_FPM_TGZ} /tmp/spc-fpm.tar.gz
+
+# composer install は git / unzip を使う (composer.phar install の実行ステージはこの配下のみ)
+RUN apk add --no-cache unzip
+
+RUN set -eux; \
+    mkdir -p /usr/local/bin /usr/local/sbin; \
+    tar xzf /tmp/spc-cli.tar.gz -C /tmp; \
+    mv /tmp/php /usr/local/bin/php; \
+    tar xzf /tmp/spc-fpm.tar.gz -C /tmp; \
+    mv /tmp/php-fpm /usr/local/sbin/php-fpm; \
+    chmod 755 /usr/local/bin/php /usr/local/sbin/php-fpm; \
+    rm -f /tmp/spc-cli.tar.gz /tmp/spc-fpm.tar.gz
+
+RUN cd /tmp \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/tmp --filename=composer.phar --quiet
+
+FROM spc-unpack AS builder
+ARG REPO_HASH
+ARG REPO_LOG
+
+COPY --from=p2-rep2 . /var/www
+WORKDIR /var/www
+
+RUN /tmp/composer.phar install
+RUN rm -rf `find . -name '.git*' -o -name 'composer.*'` && rm -rf build .vscode .editorconfig *.code-workspace \
+    && find deploy -type f ! -name '*.md' -delete && find deploy -type d -empty -delete
+
+COPY patch /tmp
+RUN php /tmp/apply_settings.php /tmp/settings.txt .
+
+RUN mv conf conf.orig && ln -s /ext/conf conf
+RUN mv data data.orig && ln -s /ext/data data
+RUN ln -s /ext/rep2/ic rep2/ic
+RUN ln -s /ext/user_skin rep2/user_skin
+
+FROM spc-php
+LABEL org.opencontainers.image.authors="Fukumen <fukumen@gmail.com>" \
+    org.opencontainers.image.source="https://github.com/fukumen/p2-php"
+
+ARG REPO_HASH
+ARG REPO_LOG
+ARG RUN_ID
+ARG RUN_NUMBER
+ENV VER_REPO_HASH=$REPO_HASH
+ENV VER_REPO_LOG=$REPO_LOG
+ENV VER_RUN_ID=$RUN_ID
+ENV VER_RUN_NUMBER=$RUN_NUMBER
+
+COPY --from=spc-unpack /usr/local/bin/php /usr/local/bin/php
+COPY --from=spc-unpack /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm
+COPY --from=spc-unpack /tmp/composer.phar /tmp/composer.phar
+COPY --from=caddy-upstream /usr/bin/caddy /usr/bin/caddy
+
+# spc php-fpm の既定 conf パスは /etc/php-fpm.confなため、公式イメージ同梱 conf を /etc 配下へ配置する
+COPY --from=php-conf-upstream /usr/local/etc/php-fpm.conf /etc/php-fpm.conf
+COPY --from=php-conf-upstream /usr/local/etc/php-fpm.d /usr/local/etc/php-fpm.d
+COPY --from=php-conf-upstream /usr/local/etc/php /usr/local/etc/php
+
+# 公式イメージ同梱の sodium 読み込み ini は動的ロードを試みるが、
+# spc 静的ビルドは動的ロード非対応のため毎回 Warning が出るだけで読めない。
+# rep2 の 27 拡張に sodium は含まれないため、この ini を削除して汚染を防ぐ
+RUN rm -f /usr/local/etc/php/conf.d/docker-php-ext-sodium.ini
+
+RUN echo "composer-version=$(php /tmp/composer.phar --version 2>&1 | grep -o 'Composer version [0-9.a-z-]*' | head -n1)" > /tmp/static-labels
+
+RUN apk del git patch \
+    && rm -f /tmp/composer.phar \
+    && rm -rf /var/cache/apk/* /var/log/apk.log /tmp/pear
+
+COPY --from=builder /var/www   /var/www
+COPY rootfs /
+
+VOLUME /ext
+EXPOSE 443
+
+CMD ["/etc/rc.entry"]

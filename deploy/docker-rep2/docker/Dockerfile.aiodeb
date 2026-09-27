@@ -1,0 +1,18 @@
+FROM debian:stable-slim
+
+ARG DEB_NAME
+LABEL org.opencontainers.image.authors="Fukumen <fukumen@gmail.com>" \
+    org.opencontainers.image.source="https://github.com/fukumen/p2-php"
+
+COPY --from=aiodeb-dist /${DEB_NAME} /tmp/
+
+RUN set -eux; \
+    cp -f "/tmp/${DEB_NAME}" /tmp/install.deb; \
+    printf '#!/bin/sh\nexit 0\n' > /usr/sbin/systemctl \
+    && chmod 755 /usr/sbin/systemctl \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends /tmp/install.deb \
+    && rm -f /tmp/*.deb /usr/sbin/systemctl \
+    && rm -rf /var/lib/apt/lists/*
+
+CMD ["sh", "-c", "exec /opt/rep2-allinone/rep2-allinone"]

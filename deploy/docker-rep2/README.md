@@ -142,6 +142,19 @@ docker-compose.ymlを編集してしまってもよいですが、docker-compose
 
 XdebugのpathMappings等を設定済みのvscode launch設定をリポジトリルートの`.vscode/launch.json`に同梱しています。vscodeでリポジトリルート（p2-php）をフォルダとして開き、PHP Debug拡張機能を使ってrep2のデバッグが出来ます。
 
+### ephemeral起動
+
+`--ephemeral` を指定すると、データ (/ext) をtmpfsマウントに置き換えて起動します。`down` でデータは消えます。
+
+```shell
+./build.py --ephemeral up
+./build.py --ephemeral down
+```
+
+### 検証用イメージ
+
+static-php を php に使用した検証用イメージ (`rep2-static`) と、rep2-allinone の deb パッケージを検証するイメージ (`rep2-aiodeb`) があります。`build-static` / `build-aiodeb` コマンドでビルドし、`--static` / `--aiodeb` オプションで起動します。詳細は[doc/verification-images.md](doc/verification-images.md)を参照してください。
+
 ## リモート実行
 
 `up` / `down` / `pull` / `logs` / `exec` / `config` / `update` / `confdiff` / `prune` は、`.env` にリモート先が記載されていれば既定でリモート実行、未設定ならローカル実行になります（`--remote` / `--noremote` で強制切り替え可能）。
