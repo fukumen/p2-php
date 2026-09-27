@@ -57,6 +57,13 @@ cd p2-php
 > git branch -rd origin/gh-pages
 > git gc --prune=now
 > ```
+> 
+> もしくは`main`ブランチだけに限定する（git clone --single-branchと同じ状態にする）には下記のようにしてください。
+> ```shell
+> git remote set-branches origin main
+> git branch -rd origin/gh-pages origin/php8-merge origin/php8-merge-mbstring origin/master ←main以外を列挙
+> git gc --prune=now
+> ```
 
 2. 依存ライブラリをダウンロード
 
