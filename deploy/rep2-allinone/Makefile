@@ -43,8 +43,8 @@ DEB_VERSION = $(COMMIT_DATE)-php$(PHP_VERSION)-caddy$(CADDY_VERSION)
 RPM_VERSION = $(COMMIT_DATE)
 RPM_RELEASE = php$(PHP_VERSION).caddy$(CADDY_VERSION)
 
-RUN_ID ?= local
-RUN_NUMBER ?= local
+RUN_ID ?=
+RUN_NUMBER ?=
 REPO_TYPE = rep2-allinone
 
 PKG_NAME = rep2-allinone
@@ -171,6 +171,9 @@ dist/build_info: dist/p2-php
 	@echo "VER_REPO_LOG=$(shell TZ=Asia/Tokyo git -C ../.. log -1 --format='%cd %s' --date=format-local:'%Y-%m-%d %H:%M' | base64 -w 0)" >> $@
 	@echo "VER_RUN_ID=$(RUN_ID)" >> $@
 	@echo "VER_RUN_NUMBER=$(RUN_NUMBER)" >> $@
+	@echo "VER_PHP=$(PHP_VERSION)" >> $@
+	@echo "VER_CADDY=$(CADDY_VERSION)" >> $@
+	@echo "VER_COMPOSER=$(COMPOSER_VERSION)" >> $@
 
 ifneq ($(OS),windows)
 $(PHP_FPM_TGZ): $(PHP_CHECKSUMS)

@@ -7,9 +7,11 @@ import sys
 import atexit
 import base64
 import glob
+import json
 import re
 import shutil
 import tempfile
+from datetime import datetime, timezone, timedelta
 
 try:
     import argcomplete
@@ -85,6 +87,7 @@ REMOTE_COMMAND = {
     "upload": False,
     "deploy": False,
     "test": False,
+    "images": True,
 }
 
 def load_env(path=".env"):
@@ -369,6 +372,121 @@ def get_git_info(path="."):
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "unknown", ""
 
+VERSION_IMAGE_TAG = "rep2:version"
+
+def run_capture(cmd, env=None):
+    """docker run --rm <image> <cmd> 等の出力を取得する (失敗時は終了)"""
+    res = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    if res.returncode != 0:
+        print(f"Error: コマンドが失敗しました (終了コード {res.returncode}): {' '.join(cmd)}")
+        if res.stderr.strip():
+            print(res.stderr.strip())
+        sys.exit(res.returncode)
+    return res.stdout.strip()
+
+def run_in_image(image, cmd, env=None):
+    """1回目ビルドイメージ内で cmd を実行して出力を返す"""
+    return run_capture(["docker", "run", "--rm", image] + cmd, env=env)
+
+def get_image_env(image, key, env=None):
+    """docker image inspect の Config.Env から指定キーの値を取得する (無ければ空文字)"""
+    out = run_capture(["docker", "image", "inspect", image,
+                       "--format", "{{json .Config.Env}}"], env=env)
+    try:
+        env_list = json.loads(out)
+    except json.JSONDecodeError:
+        print(f"Error: {image} の Config.Env の解析に失敗しました")
+        sys.exit(1)
+    prefix = key + "="
+    for entry in env_list:
+        if entry.startswith(prefix):
+            return entry[len(prefix):]
+    return ""
+
+VER_IMAGE_NAMES = (
+    "rep2", "rep2-extra", "rep2-dbg", "rep2-extra-dbg",
+    "rep2-base", "rep2-base-extra", "rep2-base-dbg", "rep2-base-extra-dbg",
+    "rep2-static", "rep2-aiodeb",
+)
+
+VER_ENV_KEYS = (
+    "VER_BUILD_TYPE", "VER_PHP", "VER_CADDY", "VER_ALPINE",
+    "VER_DEBIAN", "VER_COMPOSER", "VER_REPO_HASH", "VER_REPO_LOG",
+    "VER_RUN_ID", "VER_RUN_NUMBER",
+)
+
+VER_LOG_MAX = 24
+
+def strip_ver_prefix(key):
+    return key.removeprefix("VER_")
+
+def list_version_images(env=None):
+    """docker images から rep2 関連イメージを抽出し、VER_* ENV とビルド時刻を表示する"""
+    out = run_capture(["docker", "images", "--format", "{{json .}}"], env=env)
+    images = []
+    for line in out.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            data = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        repo = data.get("Repository", "")
+        # ghcr.io/fukumen/rep2 等のレジストリ付き名前は末尾の short 名で判定する
+        if repo.rsplit("/", 1)[-1] not in VER_IMAGE_NAMES:
+            continue
+        images.append(data)
+    if not images:
+        print("rep2 関連のイメージが見つかりません。")
+        return
+
+    jst = timezone(timedelta(hours=9))
+    header = ("IMAGE", "BUILT(JST)") + tuple(strip_ver_prefix(k) for k in VER_ENV_KEYS)
+    rows = []
+    for img in sorted(images, key=lambda d: (d.get("Repository", ""), d.get("Tag", ""))):
+        ref = f"{img['Repository']}:{img.get('Tag', '')}"
+        env_ = {strip_ver_prefix(k): get_image_env(ref, k, env) for k in VER_ENV_KEYS}
+        repo_log = env_["REPO_LOG"]
+        if repo_log:
+            try:
+                repo_log = base64.b64decode(repo_log).decode("utf-8", "replace")
+            except Exception:
+                pass
+            if len(repo_log) > VER_LOG_MAX:
+                repo_log = repo_log[:VER_LOG_MAX] + "..."
+            env_["REPO_LOG"] = repo_log
+        created = ""
+        raw = img.get("CreatedAt", "")
+        if raw:
+            try:
+                created = datetime.strptime(raw.split(" +0000")[0].strip(),
+                                            "%Y-%m-%d %H:%M:%S") \
+                    .replace(tzinfo=timezone.utc).astimezone(jst).strftime("%Y-%m-%d %H:%M")
+            except ValueError:
+                created = raw
+        rows.append((ref, created) + tuple(env_[strip_ver_prefix(k)] for k in VER_ENV_KEYS))
+
+    widths = [max(len(row[i]) for row in ([header] + rows)) for i in range(len(header))]
+    fmt = "  ".join(f"{{:{w}}}" for w in widths)
+    print(fmt.format(*header))
+    for row in rows:
+        print(fmt.format(*row))
+
+def build_once_then_extract(base_cmd, extract_fn, env):
+    """1回目ビルド (rep2:version) → 実イメージから抽出 → 削除 → 抽出値を返す
+
+    base_cmd は本ビルドと同一内容 (タグ・バージョン ARG を除く) の引数リスト。
+    1回目ビルドはこのリストへタグ (rep2:version) を付けて実行する。
+    """
+    version_cmd = ["docker", "build", "-t", VERSION_IMAGE_TAG] + base_cmd
+    run_cmd(version_cmd, env=env)
+    try:
+        extract_args = extract_fn(VERSION_IMAGE_TAG, env)
+    finally:
+        run_cmd(["docker", "rmi", "-f", VERSION_IMAGE_TAG], env=env)
+    return extract_args
+
 def get_image_name(args):
     if args.ghcr:
         image_name = DEFAULT_IMAGE_BASE
@@ -398,6 +516,15 @@ def get_base_image_name(args):
     if not args.ghcr and args.debug:
         base_image_name += "-dbg"
     return base_image_name + ":latest"
+
+def compose_build_type(prefix, extra, debug):
+    """VER_BUILD_TYPE を合成する (extra / debug は真偽値)"""
+    build_type = prefix
+    if extra:
+        build_type += "-extra"
+    if debug:
+        build_type += "-dbg"
+    return build_type
 
 def run_cmd(cmd, env=None, shell=False):
     print(f"==> 実行: {' '.join(cmd) if isinstance(cmd, list) else cmd}")
@@ -482,9 +609,7 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
 
         repo_hash, repo_log = get_git_info("../..")
 
-        build_cmd = [
-            "docker", "build",
-            "-t", image_name,
+        common_args = [
             "--build-arg", f"FLAG_EXTRA={flag_extra}",
             "--build-arg", f"FLAG_LOCAL={flag_local}",
             "--build-arg", f"FLAG_DEBUG={flag_debug}",
@@ -493,6 +618,19 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
             "--build-context", "p2-rep2=../..",
             "-f", "docker/Dockerfile",
             "."
+        ]
+
+        def extract_main(tag, env):
+            alpine_full = run_in_image(tag, ["cat", "/etc/alpine-release"], env=env)
+            caddy_full = run_in_image(tag, ["caddy", "version"], env=env).split()[0].lstrip("v")
+            return {"ALPINE_VERSION_FULL": alpine_full, "CADDY_VERSION_FULL": caddy_full}
+
+        build_args = build_once_then_extract(common_args, extract_main, env)
+
+        build_cmd = ["docker", "build", "-t", image_name] + common_args + [
+            "--build-arg", f"VER_BUILD_TYPE={compose_build_type('rep2', args.extra, args.debug)}",
+            "--build-arg", f"ALPINE_VERSION_FULL={build_args['ALPINE_VERSION_FULL']}",
+            "--build-arg", f"CADDY_VERSION_FULL={build_args['CADDY_VERSION_FULL']}",
         ]
         run_cmd(build_cmd, env=env)
         run_cmd(["docker", "image", "prune", "-f"], env=env)
@@ -507,6 +645,7 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
             "-t", base_image_name,
             "--build-arg", f"FLAG_EXTRA={flag_extra}",
             "--build-arg", f"FLAG_DEBUG={flag_debug}",
+            "--build-arg", f"VER_BUILD_TYPE={compose_build_type('rep2-base', args.extra, args.debug)}",
             "-f", "docker/Dockerfile.base",
             "."
         ]
@@ -528,9 +667,16 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
                 download_release_asset(SPC_RELEASE_BASE, tgz,
                                        os.path.join(spc_context, tgz))
 
-        build_cmd = [
-            "docker", "build",
-            "-t", "rep2-static:latest",
+        base_image = get_base_image_name(args)
+        composer_version = get_image_env(base_image, "VER_COMPOSER")
+        if not composer_version:
+            print(f"Error: {base_image} から ENV VER_COMPOSER を取得できません。")
+            print("ローカルイメージ名使用時は build-base の実行が必要です (--ghcr 使用時は pull を確認してください)。")
+            if args.src != "local":
+                shutil.rmtree(spc_context, ignore_errors=True)
+            sys.exit(1)
+
+        common_args = [
             "--build-arg", f"SPC_CLI_TGZ={cli_tgz}",
             "--build-arg", f"SPC_FPM_TGZ={fpm_tgz}",
             "--build-arg", f"REPO_HASH={repo_hash}",
@@ -539,6 +685,27 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
             "--build-context", "p2-rep2=../..",
             "-f", "docker/Dockerfile.static",
             "."
+        ]
+
+        def extract_static(tag, env):
+            alpine_full = run_in_image(tag, ["cat", "/etc/alpine-release"], env=env)
+            caddy_full = run_in_image(tag, ["caddy", "version"], env=env).split()[0].lstrip("v")
+            return {"SPC_ALPINE_VERSION_FULL": alpine_full, "CADDY_VERSION_FULL": caddy_full}
+
+        version_args = common_args + [
+            "--build-arg", f"BASE_IMAGE={base_image}",
+            "--build-arg", f"SPC_PHP_VERSION={php_version}",
+            "--build-arg", f"SPC_COMPOSER_VERSION={composer_version}",
+        ]
+        try:
+            build_args = build_once_then_extract(version_args, extract_static, env)
+        finally:
+            if args.src != "local":
+                shutil.rmtree(spc_context, ignore_errors=True)
+
+        build_cmd = ["docker", "build", "-t", "rep2-static:latest"] + version_args + [
+            "--build-arg", f"SPC_ALPINE_VERSION_FULL={build_args['SPC_ALPINE_VERSION_FULL']}",
+            "--build-arg", f"CADDY_VERSION_FULL={build_args['CADDY_VERSION_FULL']}",
         ]
         try:
             run_cmd(build_cmd, env=env)
@@ -558,14 +725,45 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
             download_release_asset(DEB_RELEASE_BASE, deb_name,
                                    os.path.join(deb_context, deb_name))
 
-        build_cmd = [
-            "docker", "build",
-            "-t", "rep2-aiodeb:latest",
+        common_args = [
             "--build-arg", f"DEB_NAME={deb_name}",
             "--build-context", f"aiodeb-dist={deb_context}",
             "-f", "docker/Dockerfile.aiodeb",
             "."
         ]
+
+        BUILD_INFO_KEYS = {
+            "VER_REPO_HASH": "REPO_HASH",
+            "VER_REPO_LOG": "REPO_LOG",
+            "VER_RUN_ID": "RUN_ID",
+            "VER_RUN_NUMBER": "RUN_NUMBER",
+            "VER_PHP": "PHP_VERSION_FULL",
+            "VER_CADDY": "CADDY_VERSION_FULL",
+            "VER_COMPOSER": "COMPOSER_VERSION_FULL",
+        }
+
+        def extract_aiodeb(tag, env):
+            debian_full = run_in_image(tag, ["cat", "/etc/debian_version"], env=env)
+            build_info = run_in_image(tag, ["cat", "/etc/rep2-allinone/build_info"], env=env)
+            info = {}
+            for line in build_info.splitlines():
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    info[k.strip()] = v.strip()
+            extract = {"DEBIAN_VERSION": debian_full}
+            for env_key, arg_key in BUILD_INFO_KEYS.items():
+                extract[arg_key] = info.get(env_key, "")
+            return extract
+
+        try:
+            build_args = build_once_then_extract(common_args, extract_aiodeb, env)
+        finally:
+            if args.src != "local":
+                shutil.rmtree(deb_context, ignore_errors=True)
+
+        build_cmd = ["docker", "build", "-t", "rep2-aiodeb:latest"] + common_args
+        for key, value in build_args.items():
+            build_cmd += ["--build-arg", f"{key}={value}"]
         try:
             run_cmd(build_cmd, env=env)
         finally:
@@ -583,7 +781,7 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
         run_cmd(compose_base + ["logs"] + extra_args, env=env)
         
     elif cmd_name == "exec":
-        run_cmd(compose_base + ["exec", SERVICE_NAME, "/bin/sh"], env=env)
+        run_cmd(compose_base + ["exec", SERVICE_NAME] + (extra_args or ["/bin/sh"]), env=env)
 
     elif cmd_name == "config":
         run_cmd(compose_base + ["config"], env=env)
@@ -647,6 +845,9 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
 
         print("\n==> デプロイが完了しました！")
 
+    elif cmd_name == "images":
+        list_version_images(env)
+
     elif cmd_name == "test":
         test_context = require_test_context()
         test_file = os.path.abspath(args.test_file)
@@ -686,7 +887,7 @@ def main():
         "down": "docker compose down を実行",
         "pull": "docker compose pull を実行",
         "logs": "docker compose logs を実行",
-        "exec": "コンテナ内でシェル (/bin/sh) を実行",
+        "exec": "コンテナ内でシェル (/bin/sh) または指定したコマンドを実行",
         "config": "docker compose config を実行",
         "update": "ローカルのソースコードをコンテナ内にコピーして権限を修正",
         "confdiff": "コンテナ内の conf.orig と conf の差分を表示",
@@ -695,6 +896,7 @@ def main():
         "sync": "rsync でローカルディレクトリをリモートホストへ同期",
         "upload": "ビルドしたイメージをリモートホストへ転送",
         "deploy": "down -> build(build-static/build-aiodeb) -> upload -> up のデプロイシーケンスを一括実行",
+        "images": "rep2 関連イメージの VER_* ENV とビルド時刻 (JST) を一覧表示",
         "test": "指定した PHP テストファイルをコンテナ内でワンショット実行",
     }
 

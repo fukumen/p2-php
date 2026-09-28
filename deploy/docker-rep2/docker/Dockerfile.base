@@ -5,8 +5,8 @@ ARG FLAG_EXTRA="false"
 ARG FLAG_DEBUG="false"
 
 FROM php:${PHP_VERSION}-fpm-alpine${ALPINE_VERSION} AS base-builder
-ARG FLAG_EXTRA
 ARG COMPOSER_VERSION
+ARG FLAG_EXTRA
 ARG FLAG_DEBUG
 
 RUN apk --no-cache add \
@@ -46,14 +46,16 @@ WORKDIR /tmp
 RUN curl -sS https://getcomposer.org/installer | php -- --version ${COMPOSER_VERSION}
 
 FROM php:${PHP_VERSION}-fpm-alpine${ALPINE_VERSION}
-ARG COMPOSER_VERSION
 # Based on the original work by Abe Masahiro <pen@thcomp.org>
-LABEL composer.version=${COMPOSER_VERSION} \
-    org.opencontainers.image.authors="Fukumen <fukumen@gmail.com>" \
+LABEL org.opencontainers.image.authors="Fukumen <fukumen@gmail.com>" \
     org.opencontainers.image.source="https://github.com/fukumen/p2-php"
 
 ARG FLAG_EXTRA
 ARG FLAG_DEBUG
+ARG COMPOSER_VERSION
+ARG VER_BUILD_TYPE
+ENV VER_COMPOSER=$COMPOSER_VERSION
+ENV VER_BUILD_TYPE=$VER_BUILD_TYPE
 
 RUN apk --no-cache add \
             git \

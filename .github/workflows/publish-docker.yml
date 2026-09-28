@@ -54,17 +54,17 @@ jobs:
           file: deploy/docker-rep2/docker/Dockerfile
           platforms: linux/amd64
           load: true
-          tags: rep2:local
+          tags: rep2:version
           build-contexts: |
             p2-rep2=.
 
       - name: Extract versions from image
         id: versions
         run: |
-          ALPINE_VER=$(docker run --rm rep2:local cat /etc/alpine-release)
-          PHP_VER=$(docker run --rm rep2:local php -r 'echo PHP_VERSION;')
-          CADDY_VER=$(docker run --rm rep2:local caddy version | awk '{print $1}')
-          COMPOSER_VER=$(docker inspect rep2:local --format '{{index .Config.Labels "composer.version"}}')
+          ALPINE_VER=$(docker run --rm rep2:version cat /etc/alpine-release)
+          PHP_VER=$(docker run --rm rep2:version php -r 'echo PHP_VERSION;')
+          CADDY_VER=$(docker run --rm rep2:version caddy version | awk '{print $1}' | sed 's/^v//')
+          COMPOSER_VER=$(docker inspect rep2:version --format '{{range .Config.Env}}{{println .}}{{end}}' | grep '^VER_COMPOSER=' | cut -d= -f2-)
 
           echo "alpine=${ALPINE_VER}" >> "$GITHUB_OUTPUT"
           echo "php=${PHP_VER}" >> "$GITHUB_OUTPUT"
@@ -86,6 +86,9 @@ jobs:
           build-contexts: |
             p2-rep2=.
           build-args: |
+            VER_BUILD_TYPE=rep2
+            ALPINE_VERSION_FULL=${{ steps.versions.outputs.alpine }}
+            CADDY_VERSION_FULL=${{ steps.versions.outputs.caddy }}
             REPO_HASH=${{ steps.meta.outputs.REPO_HASH }}
             REPO_LOG=${{ steps.meta.outputs.REPO_LOG }}
             RUN_ID=${{ github.run_id }}
@@ -114,6 +117,9 @@ jobs:
             p2-rep2=.
           build-args: |
             FLAG_EXTRA=true
+            VER_BUILD_TYPE=rep2-extra
+            ALPINE_VERSION_FULL=${{ steps.versions.outputs.alpine }}
+            CADDY_VERSION_FULL=${{ steps.versions.outputs.caddy }}
             REPO_HASH=${{ steps.meta.outputs.REPO_HASH }}
             REPO_LOG=${{ steps.meta.outputs.REPO_LOG }}
             RUN_ID=${{ github.run_id }}

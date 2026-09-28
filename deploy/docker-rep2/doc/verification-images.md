@@ -41,15 +41,6 @@ alpine:3 + static-php バイナリ (php / php-fpm) + composer.phar + caddy で�
 - 起動時のオーバーレイは build.py が生成します
 - php-local.ini と www-local.conf のマウントは可能です
 
-### バージョンの確認
-
-```shell
-docker run --rm rep2-static php -v | head -1                # static-php のバージョン
-docker run --rm rep2-static cat /tmp/static-labels          # composer のバージョン
-docker run --rm rep2-static cat /etc/alpine-release         # alpine のバージョン
-docker run --rm rep2-static caddy version                   # Caddy のバージョン
-```
-
 ## deb 検証イメージ (rep2-aiodeb)
 
 rep2-allinone の deb パッケージを、deb 本来の実行環境 (`debian:stable-slim`) でそのまま検証します。deb に同梱された rep2 本体・static-php バイナリ・Caddy・launcher・`linux/php-fpm.conf`・`linux/Caddyfile`・postinst を docker 側で差し替えずに使う点が、static 検証イメージとの根本的な違いです。
@@ -79,16 +70,6 @@ rep2-allinone の deb パッケージを、deb 本来の実行環境 (`debian:st
 
 - 起動時のオーバーレイは build.py が生成します (`ports` の置換、`volumes` の無効化、`user: rep2` の追加)
 - `docker-compose.override.yml` が存在する環境では、正式イメージ向けのバインドマウントが混在するのは想定していないため、`--nooverride` を付けて override を読み込まずに起動する必要があります
-
-### バージョンの確認
-
-```shell
-docker run --rm rep2-aiodeb dpkg -s rep2-allinone | grep '^Version:'   # deb パッケージのバージョン (php / caddy のバージョンを含む)
-docker run --rm rep2-aiodeb /opt/rep2-allinone/bin/php -v | head -1    # 同梱 static-php のバージョン
-docker run --rm rep2-aiodeb /opt/rep2-allinone/bin/caddy version       # 同梱 Caddy のバージョン
-docker run --rm rep2-aiodeb cat /etc/debian_version                    # Debian のバージョン
-docker run --rm rep2-aiodeb cat /etc/rep2-allinone/build_info          # rep2 本体のコミット情報
-```
 
 ### update / confdiff
 

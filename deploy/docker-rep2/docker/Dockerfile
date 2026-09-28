@@ -33,20 +33,24 @@ FROM rep2-${FLAG_EXTRA}-${FLAG_LOCAL}-${FLAG_DEBUG}
 # Based on the original work by Abe Masahiro <pen@thcomp.org>
 LABEL org.opencontainers.image.authors="Fukumen <fukumen@gmail.com>" \
     org.opencontainers.image.source="https://github.com/fukumen/p2-php"
-ARG FLAG_DEBUG
 
 ARG REPO_HASH
 ARG REPO_LOG
 ARG RUN_ID
 ARG RUN_NUMBER
+ARG ALPINE_VERSION_FULL
+ARG CADDY_VERSION_FULL
+ARG VER_BUILD_TYPE
+ENV VER_PHP=$PHP_VERSION
+ENV VER_ALPINE=$ALPINE_VERSION_FULL
+ENV VER_CADDY=$CADDY_VERSION_FULL
+ENV VER_BUILD_TYPE=$VER_BUILD_TYPE
 ENV VER_REPO_HASH=$REPO_HASH
 ENV VER_REPO_LOG=$REPO_LOG
 ENV VER_RUN_ID=$RUN_ID
 ENV VER_RUN_NUMBER=$RUN_NUMBER
 
 COPY --from=caddy-upstream /usr/bin/caddy /usr/bin/caddy
-
-
 
 RUN apk del git patch \
     && rm -f /tmp/composer.phar \
