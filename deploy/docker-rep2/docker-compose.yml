@@ -16,7 +16,7 @@ services:
 # php.iniを設定したいときの指定
 #      - ./php-local.ini:/usr/local/etc/php/conf.d/z-php-local.ini
 # php-fpmを設定したいときの指定
-#      - ./www-local.conf:/usr/local/etc/php-fpm.d/z-www-local.conf
+#      - ./php-fpm-local.conf:/etc/rep2/php-fpm.d/z-php-fpm-local.conf
 # rep2へhttps接続するためのポート番号の指定
 # 10088が待ち受けのポート番号(.envを作成しREP2_PORT=80と書いておくと80に変更出来る)
     ports:

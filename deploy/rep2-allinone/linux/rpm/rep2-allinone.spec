@@ -36,9 +36,11 @@ chown -R root:rep2 /etc/rep2-allinone
 chmod -R 755 /opt/rep2-allinone
 chmod -R 750 /etc/rep2-allinone
 chmod 640 /etc/rep2-allinone/Caddyfile
-chmod 640 /etc/rep2-allinone/php-fpm.conf
+chmod 640 /etc/rep2-allinone/php-local.ini
+chmod 640 /etc/rep2-allinone/php-fpm-local.conf
 chmod 640 "$SECRETS_FILE"
 
+ln -sf /etc/rep2-allinone/php-local.ini /opt/rep2-allinone/etc/php/conf.d/z-php-local.ini
 ln -sf /var/lib/rep2-allinone/conf /opt/rep2-allinone/p2-php/conf
 ln -sf /var/lib/rep2-allinone/data /opt/rep2-allinone/p2-php/data
 ln -sf /var/lib/rep2-allinone/ic /opt/rep2-allinone/p2-php/rep2/ic
@@ -61,6 +63,7 @@ fi
 /opt/rep2-allinone
 /etc/rep2-allinone/build_info
 %config(noreplace) /etc/rep2-allinone/Caddyfile
-%config(noreplace) /etc/rep2-allinone/php-fpm.conf
+%config(noreplace) /etc/rep2-allinone/php-local.ini
+%config(noreplace) /etc/rep2-allinone/php-fpm-local.conf
 %config(noreplace) /etc/sysconfig/rep2-allinone
 /etc/systemd/system/rep2-allinone.service

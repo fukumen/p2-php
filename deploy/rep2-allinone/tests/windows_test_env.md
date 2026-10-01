@@ -5,7 +5,7 @@
 ## 1. 仕組み
 
 - `dockurr/windows` Docker イメージを使用して、Linux 上の KVM/QEMU で Windows を実行します。
-- Windows Server 2022 (180日間評価版) を使用し、ライセンス購入なしでテスト可能です。
+- Windows Server 2025 (180日間評価版) を使用し、ライセンス購入なしでテスト可能です。
 - SSH (PowerShell) 経由でパッケージの展開・起動・テストを実行します。
 - ホストのディレクトリを Windows 内に SMB 共有 (`\\host.lan\Data`) としてマウントします。
 
@@ -30,7 +30,7 @@ mkdir -p ~/win-test-data/storage ~/win-test-data/shared
 docker run -d --name win-test-base --device=/dev/kvm --cap-add NET_ADMIN \
   -v ~/win-test-data/storage:/storage \
   -v ~/win-test-data/shared:/shared \
-  -e VERSION="2022" \
+  -e VERSION="2025" -e LANGUAGE="ja-JP" \
   -p 8006:8006 -p 2222:22 dockurr/windows
 ```
 起動後、ブラウザで `http://localhost:8006` にアクセスします。

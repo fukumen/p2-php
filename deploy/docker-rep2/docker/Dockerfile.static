@@ -1,14 +1,13 @@
 ARG SPC_CLI_TGZ
 ARG SPC_FPM_TGZ
-ARG BASE_IMAGE
 
 FROM caddy:2-alpine AS caddy-upstream
 
-# docker-rep2 イメージが実際に読んでいる php-fpm conf を公式イメージから取得する
+# docker-rep2 イメージが実際に読んでいる php.ini を公式イメージから取得する
 FROM php:8.5-fpm-alpine AS php-conf-upstream
 
 # composer.phar は rep2-base から取得し、バージョン指定の単一ソースを Dockerfile.base に保つ
-FROM ${BASE_IMAGE} AS composer-upstream
+FROM rep2-base:latest AS composer-upstream
 
 FROM alpine:3 AS spc-php
 RUN apk add --no-cache \
@@ -89,11 +88,7 @@ COPY --from=spc-unpack /usr/local/bin/php /usr/local/bin/php
 COPY --from=spc-unpack /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm
 COPY --from=caddy-upstream /usr/bin/caddy /usr/bin/caddy
 
-# spc php-fpm の既定 conf パスは /etc/php-fpm.confなため、公式イメージ同梱 conf を /etc 配下へ配置する
-COPY --from=php-conf-upstream /usr/local/etc/php-fpm.conf /etc/php-fpm.conf
-COPY --from=php-conf-upstream /usr/local/etc/php-fpm.d /usr/local/etc/php-fpm.d
 COPY --from=php-conf-upstream /usr/local/etc/php /usr/local/etc/php
-
 # 公式イメージ同梱の sodium 読み込み ini は動的ロードを試みるが、
 # spc 静的ビルドは動的ロード非対応のため毎回 Warning が出るだけで読めない。
 # rep2 の 27 拡張に sodium は含まれないため、この ini を削除して汚染を防ぐ

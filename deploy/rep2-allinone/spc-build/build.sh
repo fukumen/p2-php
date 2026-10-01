@@ -89,12 +89,46 @@ extract_workflow_upx() {
   flag="$(grep -F -- "$pattern" "$WORKFLOW_FILE" | sed -n 's/.*upx: "\([^"]*\)".*/\1/p' | head -n1)"
   [ -n "$flag" ] && echo "$flag"
 }
+# config-file-path は workflow の matrix.config-file-path（php.ini 本体の探索パスの
+# 焼き込みパス）を単一ソースとする。実行中プラットフォームの行を抽出する
+extract_workflow_config_file_path() {
+  local os arch
+  os="$(uname -s)"; arch="$(uname -m)"
+  local pattern
+  case "$os:$arch" in
+    Linux:x86_64)  pattern='runner: ubuntu-24.04,' ;;
+    Linux:aarch64) pattern='runner: ubuntu-24.04-arm,' ;;
+    Darwin:arm64)  pattern='runner: macos-15,' ;;
+    Darwin:x86_64) pattern='runner: macos-15-intel,' ;;
+    *) return 1 ;;
+  esac
+  grep -F -- "$pattern" "$WORKFLOW_FILE" | sed -n 's/.*config-file-path: "\([^"]*\)".*/\1/p' | head -n1
+}
+# scan-dir は workflow の matrix.scan-dir（ini の conf.d スキャン先の焼き込みパス）を
+# 単一ソースとする。実行中プラットフォームの行を抽出する
+extract_workflow_scan_dir() {
+  local os arch
+  os="$(uname -s)"; arch="$(uname -m)"
+  local pattern
+  case "$os:$arch" in
+    Linux:x86_64)  pattern='runner: ubuntu-24.04,' ;;
+    Linux:aarch64) pattern='runner: ubuntu-24.04-arm,' ;;
+    Darwin:arm64)  pattern='runner: macos-15,' ;;
+    Darwin:x86_64) pattern='runner: macos-15-intel,' ;;
+    *) return 1 ;;
+  esac
+  grep -F -- "$pattern" "$WORKFLOW_FILE" | sed -n 's/.*scan-dir: "\([^"]*\)".*/\1/p' | head -n1
+}
 
 EXTENSIONS="${SPC_EXTENSIONS:-$(extract_env)}"
 WORKFLOW_PHP="$(extract_default_php)"
 [ -n "$EXTENSIONS" ] || die "EXTENSIONS を workflow から抽出できませんでした"
 [ -n "$WORKFLOW_PHP" ] || die "php-version 既定値を workflow から抽出できませんでした"
 PHP_VERSION_INPUT="${SPC_PHP_VERSION:-$WORKFLOW_PHP}"
+CONFIG_FILE_PATH="$(extract_workflow_config_file_path)"
+[ -n "$CONFIG_FILE_PATH" ] || die "config-file-path を workflow から抽出できませんでした"
+SCAN_DIR="$(extract_workflow_scan_dir)"
+[ -n "$SCAN_DIR" ] || die "scan-dir を workflow から抽出できませんでした"
 
 if [ -n "${SPC_UPX:-}" ]; then
   case "$SPC_UPX" in
@@ -108,7 +142,7 @@ else
 fi
 log "SPC_REPO: $SPC_REPO (ref: $SPC_REF)"
 log "EXTENSIONS: $EXTENSIONS"
-log "PHP: $PHP_VERSION_INPUT  UPX: ${UPX_FLAG:-none}  EXTRA_FLAGS: ${EXTRA_BUILD_FLAGS:-none}  MODE: $MODE"
+log "PHP: $PHP_VERSION_INPUT  UPX: ${UPX_FLAG:-none}  CONFIG_FILE_PATH: $CONFIG_FILE_PATH  SCAN_DIR: $SCAN_DIR  EXTRA_FLAGS: ${EXTRA_BUILD_FLAGS:-none}  MODE: $MODE"
 
 # ---------------------------------------------------------------
 # patches/ を checkout に適用（workflow の Apply local patches と同一。
@@ -184,7 +218,7 @@ BUILD_CMDS=(
   "bin/spc doctor --auto-fix"
 )
 [ -n "$UPX_FLAG" ] && BUILD_CMDS+=("bin/spc install-pkg upx")
-BUILD_CMDS+=("bin/spc build --build-cli --build-fpm \"$EXTENSIONS\" --with-suggests --debug $UPX_FLAG $EXTRA_BUILD_FLAGS --dl-with-php=\"$PHP_VERSION_INPUT\" --dl-retry=5 --dl-prefer-binary --dl-ignore-cache=php-src")
+BUILD_CMDS+=("bin/spc build --build-cli --build-fpm \"$EXTENSIONS\" --with-suggests --debug $UPX_FLAG --with-config-file-path=\"$CONFIG_FILE_PATH\" --with-config-file-scan-dir=\"$SCAN_DIR\" $EXTRA_BUILD_FLAGS --dl-with-php=\"$PHP_VERSION_INPUT\" --dl-retry=5 --dl-prefer-binary --dl-ignore-cache=php-src")
 BUILD_CMDS+=("bin/spc dev:info php --json --no-ansi > /tmp/php-info.json")
 
 run_build_in_container() {

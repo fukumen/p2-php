@@ -6,6 +6,8 @@ cd "$HERE"
 DATA_BASE_DIR="/var/lib/rep2-allinone"
 CONF_DIR="/etc/rep2-allinone"
 
+[ -f "$DATA_BASE_DIR/php-fpm.log" ] && mv -f "$DATA_BASE_DIR/php-fpm.log" "$DATA_BASE_DIR/php-fpm.log.1"
+
 export XDG_CONFIG_HOME="$DATA_BASE_DIR/caddy_config"
 export XDG_DATA_HOME="$DATA_BASE_DIR/caddy_data"
 
@@ -58,7 +60,7 @@ EOF
 
 ./bin/php "$HERE/p2-php/scripts/ic2.php" setup | iconv -f SHIFT_JIS -t UTF-8
 
-./bin/php-fpm -y "$CONF_DIR/php-fpm.conf" -F &
+./bin/php-fpm -y "$HERE/etc/rep2-php-fpm.conf" -F &
 PHP_PID=$!
 
 trap "kill $PHP_PID 2>/dev/null; exit" INT TERM EXIT

@@ -96,11 +96,17 @@ HTTPリクエストをproxy経由で解析・デバッグしたい場合は[doc/
 
 ### PHP
 
-memory_limitを変更したいなどの理由でphp.iniの設定したい場合、php-local.iniのようなファイルを用意してdocker-compose.ymlでバインドマウントするよう記載してください。
+PHPのini設定はイメージ内の `/usr/local/etc/php/conf.d/rep2-php.ini` で定義しており、PHPの公式イメージの規定値から変更しています。
+現在、memory_limitはデフォルトで512Mになっています。docker compose logsを確認してAllowed memory size of〜のようなエラーが出る場合には増やす必要があります。
 
-memory_limitはデフォルトで128Mになっています。docker compose logsを確認してAllowed memory size of〜のようなエラーが出る場合には設定してください。
+ini設定を変更したい場合、php-local.iniのようなファイルを用意してdocker-compose.ymlで `/usr/local/etc/php/conf.d/z-php-local.ini` へバインドマウントするよう記載してください。
+これによりphp-local.iniはrep2-php.iniの値を上書きして読み込まれます。
+PHP本体の既定値へ戻す（memory_limit 128M / post_max_size 8M / upload_max_filesize 2M）よう設定したphp-local.ini.exampleを同梱しています。
 
-メモリ消費量を計測したいときはphp-fpm.confを変更したい場合、www-local.confのようなファイルを用意してdocker-compose.ymlでバインドマウントするよう記載してください。
+php-fpm.confはイメージ内の `/etc/rep2/rep2-php-fpm.conf` で定義しており、PHPの公式イメージ同梱のphp-fpm.conf系は読み込まれません。
+
+php-fpm.confを変更したい場合、php-fpm-local.confのようなファイルを用意してdocker-compose.ymlで `/etc/rep2/php-fpm.d/z-php-fpm-local.conf` へバインドマウントするよう記載してください。
+メモリ消費量を計測するよう設定したphp-fpm-local.conf.exampleを同梱しています。
 
 ### PostgreSQL/MySQLやExif、imagickなど追加機能を使用したい場合
 

@@ -13,7 +13,8 @@ workflow のみが行いこのスクリプトでは公開しない。
 
 - static-php が p2-php と並ぶ位置（build.sh から見て `../../../../static-php-cli`）にあること。
   `SPC_REPO` 環境変数で別の場所を指定できる
-- 情報の単一ソースは workflow ファイル。EXTENSIONS と PHP バージョンの既定値は
+- 情報の単一ソースは workflow ファイル。EXTENSIONS と PHP バージョンの既定値、
+  config-file-path / scan-dir（php.ini の探索パスと ini の conf.d スキャン先の焼き込みパス）は
   `.github/workflows/build-rep2-unix.yml` から抽出される（ローカル側に定数を持たない）
 - static-php の `rep2` ブランチの `patches/` は workflow・このスクリプトの両方で checkout 直後に
   適用されるため、パッチの効き目をローカルで検証できる。スクリプトは `git apply --check`
@@ -35,6 +36,29 @@ upstream の `v3` をベースにした `rep2` ブランチで作業し、ビル
 | 上流追従 | Sync fork ボタンは使わない（既定ブランチが `rep2` のため Discard commits で自前コミットを破棄する恐れがある）。`git push origin upstream/v3:v3` で `v3` を更新してから `rep2` へ `git merge v3` する。workflow と `patches/` は `rep2` にのみ存在するためマージ衝突は原則起きず、patch の `git apply` 失敗で初めて影響を検知できる |
 | 上流由来 workflow | 上流追従で新規 workflow が追加された場合は都度無効化する |
 | ビルド失敗時 | 軽微なビルドエラーは `rep2` ブランチの `patches/NNNN-<概要>.patch` に置く（workflow が checkout 直後に適用する）。構造的な対処は `rep2` から一時ブランチ（例: `v3-rep2-hotfix`）を切り、workflow の `ref` input で指定してビルドする。依存ライブラリ側の失敗は `--dl-ignore-cache` や spc のバージョン指定で切り分け、恒久対処は patch 化する。上流修正が取り込まれたら `v3` を更新して `rep2` へマージし、patch / 一時ブランチを撤去する（下記参照） |
+
+### ini 関連パスの焼き込み
+
+rep2-allinone の PHP バイナリは `spc build --with-config-file-path` と
+`--with-config-file-scan-dir` で、php.ini 本体の探索パスと ini の conf.d スキャン先を
+パッケージ prefix 固有パスに焼き込んでビルドする。
+
+| プラットフォーム | php.ini 探索パス | conf.d スキャン先 |
+|---|---|---|
+| linux | `/opt/rep2-allinone/etc/php` | `/opt/rep2-allinone/etc/php/conf.d` |
+| macOS（aarch64） | `/opt/homebrew/opt/rep2-allinone/etc/php` | `/opt/homebrew/opt/rep2-allinone/etc/php/conf.d` |
+| macOS（x86_64） | `/usr/local/opt/rep2-allinone/etc/php` | `/usr/local/opt/rep2-allinone/etc/php/conf.d` |
+
+spc 既定の `/usr/local/etc/php` と `/usr/local/etc/php/conf.d` から変更する理由は、
+macOS では `/usr/local/etc` への配置がユーザー権限で保証されないため（Homebrew の
+post_install sandbox では書き込めない）。linux も含めて全形態で ini の配置を
+パッケージ prefix 配下に統一する。php.ini 本体は同梱しない構成のため探索パスに
+ファイルは置かないが、意図しない php.ini が共有領域に置かれて読み込まれる経路を
+遮断する意味でも prefix 固有パスに焼き直す。
+
+2 つのパスの単一ソースは `build-rep2-unix.yml` の matrix であり、`build.sh` も workflow から
+同じ値を抽出して `spc build` に付与する。workflow とローカルビルドが同一のパスで
+ビルドされていることを維持すること。
 
 ### patch と一時ブランチの撤去
 

@@ -667,11 +667,11 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
                 download_release_asset(SPC_RELEASE_BASE, tgz,
                                        os.path.join(spc_context, tgz))
 
-        base_image = get_base_image_name(args)
-        composer_version = get_image_env(base_image, "VER_COMPOSER")
+        # Dockerfile.static の FROM rep2-base:latest と同一イメージから取得する
+        composer_version = get_image_env("rep2-base:latest", "VER_COMPOSER")
         if not composer_version:
-            print(f"Error: {base_image} から ENV VER_COMPOSER を取得できません。")
-            print("ローカルイメージ名使用時は build-base の実行が必要です (--ghcr 使用時は pull を確認してください)。")
+            print("Error: rep2-base:latest から ENV VER_COMPOSER を取得できません。")
+            print("build-base の実行が必要です。")
             if args.src != "local":
                 shutil.rmtree(spc_context, ignore_errors=True)
             sys.exit(1)
@@ -693,21 +693,16 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
             return {"SPC_ALPINE_VERSION_FULL": alpine_full, "CADDY_VERSION_FULL": caddy_full}
 
         version_args = common_args + [
-            "--build-arg", f"BASE_IMAGE={base_image}",
             "--build-arg", f"SPC_PHP_VERSION={php_version}",
             "--build-arg", f"SPC_COMPOSER_VERSION={composer_version}",
         ]
         try:
             build_args = build_once_then_extract(version_args, extract_static, env)
-        finally:
-            if args.src != "local":
-                shutil.rmtree(spc_context, ignore_errors=True)
 
-        build_cmd = ["docker", "build", "-t", "rep2-static:latest"] + version_args + [
-            "--build-arg", f"SPC_ALPINE_VERSION_FULL={build_args['SPC_ALPINE_VERSION_FULL']}",
-            "--build-arg", f"CADDY_VERSION_FULL={build_args['CADDY_VERSION_FULL']}",
-        ]
-        try:
+            build_cmd = ["docker", "build", "-t", "rep2-static:latest"] + version_args + [
+                "--build-arg", f"SPC_ALPINE_VERSION_FULL={build_args['SPC_ALPINE_VERSION_FULL']}",
+                "--build-arg", f"CADDY_VERSION_FULL={build_args['CADDY_VERSION_FULL']}",
+            ]
             run_cmd(build_cmd, env=env)
         finally:
             if args.src != "local":
@@ -757,14 +752,10 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
 
         try:
             build_args = build_once_then_extract(common_args, extract_aiodeb, env)
-        finally:
-            if args.src != "local":
-                shutil.rmtree(deb_context, ignore_errors=True)
 
-        build_cmd = ["docker", "build", "-t", "rep2-aiodeb:latest"] + common_args
-        for key, value in build_args.items():
-            build_cmd += ["--build-arg", f"{key}={value}"]
-        try:
+            build_cmd = ["docker", "build", "-t", "rep2-aiodeb:latest"] + common_args
+            for key, value in build_args.items():
+                build_cmd += ["--build-arg", f"{key}={value}"]
             run_cmd(build_cmd, env=env)
         finally:
             if args.src != "local":

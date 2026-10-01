@@ -77,8 +77,7 @@ EOF
 
 ./bin/php "$HERE/p2-php/scripts/ic2.php" setup | iconv -f SHIFT_JIS -t UTF-8
 
-sed "s|@@ERROR_LOG_PATH@@|$DATA_BASE_DIR/php-fpm.log|" "$CONF_DIR/php-fpm.conf" > "$DATA_BASE_DIR/conf/php-fpm.conf"
-./bin/php-fpm -y "$DATA_BASE_DIR/conf/php-fpm.conf" -F &
+./bin/php-fpm -y "$HERE/etc/rep2-php-fpm.conf" -F &
 PHP_PID=$!
 
 trap "kill $PHP_PID 2>/dev/null; exit" INT TERM EXIT

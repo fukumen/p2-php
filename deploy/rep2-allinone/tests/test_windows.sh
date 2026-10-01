@@ -15,7 +15,7 @@ rep2-allinone の Windows 版 ZIP パッケージを dockurr/windows コンテ�
   mkdir -p "$HOME/win-test-data/storage" "$HOME/win-test-data/shared"
   cp ~/.ssh/id_ed25519.pub "$HOME/win-test-data/shared/"
   docker run -d --name win-test-base --device=/dev/kvm --cap-add NET_ADMIN \\
-    -v "$HOME/win-test-data/storage:/storage" -v "$HOME/win-test-data/shared:/shared" -e VERSION="2022" \\
+    -v "$HOME/win-test-data/storage:/storage" -v "$HOME/win-test-data/shared:/shared" -e VERSION="2025" -e LANGUAGE="ja-JP" \\
     -p 8006:8006 -p 2222:22 dockurr/windows
   # http://localhost:8006 にアクセスしてセットアップ完了を待つ
 
@@ -80,7 +80,7 @@ docker run -d --name "$CONTAINER_NAME" \
     --device=/dev/kvm --cap-add NET_ADMIN \
     -v "$WIN_DATA_DIR:/storage" \
     -v "$(pwd)/dist:/shared" \
-    -e VERSION="2022" \
+    -e VERSION="2025" -e LANGUAGE="ja-JP" \
     -p $SSH_PORT:22 \
     -p 8006:8006 \
     -p 10088:10088 \

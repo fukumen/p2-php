@@ -107,16 +107,16 @@ diff -ru $(brew --prefix)/opt/rep2-allinone/p2-php/conf.orig $(brew --prefix)/va
 ## システム構成 (インストール後)
 
 ### Linux (Debian / RHEL)
-- プログラム本体: `/opt/rep2-allinone` (PHPスクリプトなど、変更されないシステムファイル)
+- プログラム本体: `/opt/rep2-allinone` (PHPスクリプトなど、変更されないシステムファイル。`etc/rep2-php-fpm.conf` と `etc/php/conf.d/rep2-php.ini` もここに配置され、パッケージ更新で置き換わるため編集しない)
 - 環境設定ファイル: `/etc/default/rep2-allinone` (ポート番号などの環境変数を設定)
-- 設定ファイル: `/etc/rep2-allinone` (`Caddyfile` や `php-fpm.conf` はここに配置され、自由に編集可能です)
+- 設定ファイル: `/etc/rep2-allinone` (`Caddyfile` や `php-local.ini` / `php-fpm-local.conf` はここに配置され、自由に編集可能です。`php-local.ini` は `rep2-php.ini` の上書き用、`php-fpm-local.conf` は `rep2-php-fpm.conf` の上書き用です)
 - データ領域: `/var/lib/rep2-allinone` (アプリの設定やログ、キャッシュデータはこちらに保存されます)
 - サービス名: `rep2-allinone.service`
 
 ### macOS (Homebrew)
-- プログラム本体: `/opt/homebrew/opt/rep2-allinone` (PHPスクリプトなど、変更されないシステムファイル。Intel Macの場合は `/usr/local/opt/rep2-allinone`)
+- プログラム本体: `/opt/homebrew/opt/rep2-allinone` (PHPスクリプトなど、変更されないシステムファイル。`etc/rep2-php-fpm.conf` と `etc/php/conf.d/rep2-php.ini` もここに配置され、パッケージ更新で置き換わるため編集しない。Intel Macの場合は `/usr/local/opt/rep2-allinone`)
 - 環境設定ファイル: `/opt/homebrew/etc/rep2-allinone/default` (ポート番号などの環境変数を設定)
-- 設定ファイル: `/opt/homebrew/etc/rep2-allinone` (`Caddyfile` や `php-fpm.conf` はここに配置され、自由に編集可能です)
+- 設定ファイル: `/opt/homebrew/etc/rep2-allinone` (`Caddyfile` や `php-local.ini` / `php-fpm-local.conf` はここに配置され、自由に編集可能です。`php-local.ini` は `rep2-php.ini` の上書き用、`php-fpm-local.conf` は `rep2-php-fpm.conf` の上書き用です)
 - データ領域: `/opt/homebrew/var/lib/rep2-allinone` (アプリの設定やログ、キャッシュデータはこちらに保存されます)
 - サービス名: `rep2-allinone`
 
@@ -128,8 +128,9 @@ sudo systemctl status rep2-allinone
 sudo systemctl restart rep2-allinone
 
 # ログの確認 (Linux)
+# サービスの起動ログは journal、PHP のエラーログはファイルに出力されます
 sudo journalctl -u rep2-allinone -f
-sudo journalctl -t php-fpm -f
+tail -f /var/lib/rep2-allinone/php-fpm.log
 
 # ステータスの確認 (macOS)
 brew services info rep2-allinone

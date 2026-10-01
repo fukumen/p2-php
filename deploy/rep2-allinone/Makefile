@@ -32,6 +32,8 @@ CACERT_URL = https://curl.se/ca/cacert.pem
 PHP_URL_SOURCE ?= rep2
 ifeq ($(OS),windows)
 PHP_URL = $(PHP_URL_WINDOWS)
+# 注意：common ini 関連パスが spc 既定 (/usr/local/etc/php と /usr/local/etc/php/conf.d) で
+# 焼き込まれているため、rep2-allinone が用意している rep2-php.ini / php-local.ini が読まれない
 else ifeq ($(PHP_URL_SOURCE),common)
 PHP_URL = $(PHP_URL_COMMON)
 else
@@ -269,8 +271,10 @@ install: install-$(OS)
 install-linux: build
 	mkdir -p $(DESTDIR)/opt/$(PKG_NAME)/bin
 	mkdir -p $(DESTDIR)/opt/$(PKG_NAME)/p2-php
+	mkdir -p $(DESTDIR)/opt/$(PKG_NAME)/etc/php/conf.d
 	mkdir -p $(DESTDIR)/etc/$(PKG_NAME)
 	mkdir -p $(DESTDIR)/etc/systemd/system
+	mkdir -p $(DESTDIR)$(CONF_DEFAULT_DIR)
 
 	cp -r $(BIN_DIR)/* $(DESTDIR)/opt/$(PKG_NAME)/bin/
 
@@ -286,17 +290,21 @@ install-linux: build
 	sed "s|@CONF_DEFAULT_FILE@|$(CONF_DEFAULT_DIR)/$(PKG_NAME)|g" linux/rep2-allinone.service > $(DESTDIR)/etc/systemd/system/$(PKG_NAME).service
 	chmod 644 $(DESTDIR)/etc/systemd/system/$(PKG_NAME).service
 
-	mkdir -p $(DESTDIR)$(CONF_DEFAULT_DIR)
 	install -m 644 conf/default $(DESTDIR)$(CONF_DEFAULT_DIR)/$(PKG_NAME)
 
 	install -m 640 linux/Caddyfile $(DESTDIR)/etc/$(PKG_NAME)/Caddyfile
-	install -m 640 linux/php-fpm.conf $(DESTDIR)/etc/$(PKG_NAME)/php-fpm.conf
 	install -m 644 dist/build_info $(DESTDIR)/etc/$(PKG_NAME)/build_info
+
+	install -m 644 linux/rep2-php-fpm.conf $(DESTDIR)/opt/$(PKG_NAME)/etc/rep2-php-fpm.conf
+	install -m 644 linux/rep2-php.ini $(DESTDIR)/opt/$(PKG_NAME)/etc/php/conf.d/rep2-php.ini
+
+	install -m 640 linux/php-local.ini $(DESTDIR)/etc/$(PKG_NAME)/php-local.ini
+	install -m 640 linux/php-fpm-local.conf $(DESTDIR)/etc/$(PKG_NAME)/php-fpm-local.conf
 
 install-macos: build
 	mkdir -p $(DESTDIR)/bin
-	mkdir -p $(DESTDIR)/conf
 	mkdir -p $(DESTDIR)/p2-php
+	mkdir -p $(DESTDIR)/etc/php/conf.d
 
 	cp -r $(BIN_DIR)/* $(DESTDIR)/bin/
 	rsync -a --exclude="rep2/ic/" dist/p2-php/ $(DESTDIR)/p2-php/
@@ -307,10 +315,7 @@ install-macos: build
 	mkdir -p $(DESTDIR)/p2-php/rep2
 
 	install -m 755 macos/rep2-allinone $(DESTDIR)/rep2-allinone
-	install -m 640 macos/php-fpm.conf $(DESTDIR)/conf/php-fpm.conf
-	install -m 640 macos/Caddyfile $(DESTDIR)/conf/Caddyfile
-	install -m 644 conf/default $(DESTDIR)/conf/default
-	cp dist/build_info $(DESTDIR)/conf/build_info
+	install -m 644 macos/rep2-php.ini $(DESTDIR)/etc/php/conf.d/rep2-php.ini
 
 install-windows: build $(CACERT_PEM)
 	mkdir -p $(DESTDIR)/bin
@@ -356,7 +361,8 @@ _deb: build
 	chmod 755 $(DEB_DIR)/DEBIAN/postinst $(DEB_DIR)/DEBIAN/prerm
 
 	echo "/etc/$(PKG_NAME)/Caddyfile" > $(DEB_DIR)/DEBIAN/conffiles
-	echo "/etc/$(PKG_NAME)/php-fpm.conf" >> $(DEB_DIR)/DEBIAN/conffiles
+	echo "/etc/$(PKG_NAME)/php-local.ini" >> $(DEB_DIR)/DEBIAN/conffiles
+	echo "/etc/$(PKG_NAME)/php-fpm-local.conf" >> $(DEB_DIR)/DEBIAN/conffiles
 	echo "$(CONF_DEFAULT_DIR)/$(PKG_NAME)" >> $(DEB_DIR)/DEBIAN/conffiles
 
 	SIZE=$$(du -sk $(DEB_DIR) | cut -f1); \
@@ -395,12 +401,13 @@ _windows: build
 # ローカルビルドした macOS tarball をローカル tap 経由でインストールする (macOS のみ)
 brew-install: macos
 	mkdir -p $(HOME)/.rep2-local-tap/Formula
-	sed -e "s/@@VERSION@@/$(COMMIT_DATE)/g" \
-	    -e "s|url \"https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_ARM64@@\"|url \"file://$$(pwd)/dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz\"|" \
-	    -e "s/@@SHA_ARM64@@/$$(shasum -a 256 dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz | awk '{print $$1}')" \
-	    -e "s|url \"https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_X86_64@@\"|url \"file://$$(pwd)/dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz\"|" \
-	    -e "s/@@SHA_X86_64@@/$$(shasum -a 256 dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz | awk '{print $$1}')" \
-	    macos/homebrew-formula.rb.template > $(HOME)/.rep2-local-tap/Formula/$(PKG_NAME).rb
+	$(HOST_PHP_BIN) macos/generate-formula.php $(HOME)/.rep2-local-tap/Formula/$(PKG_NAME).rb \
+	    $(COMMIT_DATE) \
+	    $(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz \
+	    "$$(shasum -a 256 dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz | awk '{print $$1}')" \
+	    $(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz \
+	    "$$(shasum -a 256 dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz | awk '{print $$1}')" \
+	    "file://$$(pwd)/dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz"
 	mkdir -p $$(brew --repository)/Library/Taps/$${USER}
 	ln -sfn $(HOME)/.rep2-local-tap $$(brew --repository)/Library/Taps/$${USER}/homebrew-local
 	$$(brew --repository)/bin/brew install $${USER}/local/$(PKG_NAME)

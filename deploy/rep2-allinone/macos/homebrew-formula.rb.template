@@ -3,6 +3,8 @@ class Rep2Allinone < Formula
   homepage "https://github.com/fukumen/p2-php"
   version "@@VERSION@@"
 
+  keg_only "rep2-allinone用のstatic-phpがバンドルされているためです"
+
   on_macos do
     if Hardware::CPU.arm?
       url "https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_ARM64@@"
@@ -12,6 +14,30 @@ class Rep2Allinone < Formula
       sha256 "@@SHA_X86_64@@"
     end
   end
+
+  BUILD_INFO_TEMPLATE = <<~INFO
+    @@BUILD_INFO@@
+  INFO
+
+  PHP_LOCAL_INI_TEMPLATE = <<~INI
+    @@PHP_LOCAL_INI@@
+  INI
+
+  PHP_FPM_LOCAL_CONF_TEMPLATE = <<~CONF
+    @@PHP_FPM_LOCAL_CONF@@
+  CONF
+
+  CADDYFILE_TEMPLATE = <<~'CADDY'
+    @@CADDYFILE@@
+  CADDY
+
+  DEFAULT_TEMPLATE = <<~DEFAULT
+    @@DEFAULT@@
+  DEFAULT
+
+  FPMCONF_TEMPLATE = <<~CONF
+    @@FPMCONF@@
+  CONF
 
   def install
     inreplace "p2-php/conf.orig/conf.inc.php", "@@REP2_INSTALL_DIR@@", opt_prefix
@@ -31,18 +57,29 @@ class Rep2Allinone < Formula
     (var/"lib/rep2-allinone/data").mkpath
     (var/"lib/rep2-allinone/ic").mkpath
     (var/"lib/rep2-allinone/user_skin").mkpath
+    (prefix/"etc/php/conf.d").mkpath
 
-    unless (etc/"rep2-allinone/php-fpm.conf").exist?
-      cp prefix/"conf/php-fpm.conf", etc/"rep2-allinone/php-fpm.conf"
-      inreplace etc/"rep2-allinone/php-fpm.conf", "@@ERROR_LOG_PATH@@", "#{var}/lib/rep2-allinone/php-fpm.log"
+    build_info_path = etc/"rep2-allinone/build_info"
+    build_info_path.unlink if build_info_path.exist?
+    build_info_path.write(BUILD_INFO_TEMPLATE)
+    unless (etc/"rep2-allinone/php-local.ini").exist?
+      (etc/"rep2-allinone/php-local.ini").write PHP_LOCAL_INI_TEMPLATE
+    end
+    unless (etc/"rep2-allinone/php-fpm-local.conf").exist?
+      (etc/"rep2-allinone/php-fpm-local.conf").write PHP_FPM_LOCAL_CONF_TEMPLATE
     end
     unless (etc/"rep2-allinone/Caddyfile").exist?
-      cp prefix/"conf/Caddyfile", etc/"rep2-allinone/Caddyfile"
+      (etc/"rep2-allinone/Caddyfile").write CADDYFILE_TEMPLATE
     end
     unless (etc/"rep2-allinone/default").exist?
-      cp prefix/"conf/default", etc/"rep2-allinone/default"
+      (etc/"rep2-allinone/default").write DEFAULT_TEMPLATE
     end
-    cp prefix/"conf/build_info", etc/"rep2-allinone/build_info"
+
+    fpm_conf = FPMCONF_TEMPLATE.gsub("@@ERROR_LOG_PATH@@", "#{var}/lib/rep2-allinone/php-fpm.log")
+                               .gsub("@@CONF_DIR@@", (etc/"rep2-allinone").to_s)
+    fpm_conf_path = prefix/"etc/rep2-php-fpm.conf"
+    fpm_conf_path.unlink if fpm_conf_path.exist?
+    fpm_conf_path.write(fpm_conf)
 
     secrets_file = etc/"rep2-allinone/secrets.conf"
     unless secrets_file.exist?
@@ -51,6 +88,7 @@ class Rep2Allinone < Formula
       secrets_file.chmod 0600
     end
 
+    ln_sf etc/"rep2-allinone/php-local.ini", prefix/"etc/php/conf.d/z-php-local.ini"
     ln_sf var/"lib/rep2-allinone/conf", prefix/"p2-php/conf"
     ln_sf var/"lib/rep2-allinone/data", prefix/"p2-php/data"
     ln_sf var/"lib/rep2-allinone/ic", prefix/"p2-php/rep2/ic"
@@ -65,7 +103,8 @@ class Rep2Allinone < Formula
       設定ファイル:
         #{etc}/rep2-allinone/default
         #{etc}/rep2-allinone/Caddyfile
-        #{etc}/rep2-allinone/php-fpm.conf
+        #{etc}/rep2-allinone/php-local.ini
+        #{etc}/rep2-allinone/php-fpm-local.conf
 
       rep2のデータおよびログ:
         #{var}/lib/rep2-allinone/data

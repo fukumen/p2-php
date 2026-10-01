@@ -1,1 +1,4 @@
-memory_limit = 512M
+; rep2-php.ini の統一値からPHP 本体の既定値に戻したい場合の上書き用
+memory_limit = 128M
+post_max_size = 8M
+upload_max_filesize = 2M

@@ -5,6 +5,6 @@ docker-compose.override.yml
 docker-compose.remote.yml
 php-local.ini
 xdebug-local.ini
-www-local.conf
+php-fpm-local.conf
 .env
 __pycache__/

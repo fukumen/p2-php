@@ -18,7 +18,7 @@ docker-rep2 には、正式イメージ (`docker/Dockerfile.base` + `docker/Dock
 
 ## static 検証イメージ (rep2-static)
 
-alpine:3 + static-php バイナリ (php / php-fpm) + composer.phar + caddy で構成し、rootfs を正式イメージと共有します。docker-rep2 の php を static に差し替えた場合の挙動確認が目的のため、php-fpm の conf は正式イメージが実際に読んでいる php 公式 fpm イメージ同梱の 3 段構成 (`php-fpm.conf` + `php-fpm.d/{docker,www,zz-docker}.conf`) をそのまま COPY します。spc の php-fpm は既定 conf パスが `/etc/php-fpm.conf` (公式イメージは `/usr/local/etc/php-fpm.conf`) なため、`/etc/` へ配置する点だけが異なります。
+alpine:3 + static-php バイナリ (php / php-fpm) + composer.phar + caddy で構成し、rootfs を正式イメージと共有します。docker-rep2 の php を static-php に差し替えた場合の挙動確認をします。
 
 ### ビルド (build-static)
 
@@ -39,11 +39,11 @@ alpine:3 + static-php バイナリ (php / php-fpm) + composer.phar + caddy で�
 ```
 
 - 起動時のオーバーレイは build.py が生成します
-- php-local.ini と www-local.conf のマウントは可能です
+- 正式イメージと同様に php-local.ini と php-fpm-local.conf のマウントは可能です
 
 ## deb 検証イメージ (rep2-aiodeb)
 
-rep2-allinone の deb パッケージを、deb 本来の実行環境 (`debian:stable-slim`) でそのまま検証します。deb に同梱された rep2 本体・static-php バイナリ・Caddy・launcher・`linux/php-fpm.conf`・`linux/Caddyfile`・postinst を docker 側で差し替えずに使う点が、static 検証イメージとの根本的な違いです。
+rep2-allinone の deb パッケージを、deb 本来の実行環境 (`debian:stable-slim`) でそのまま検証します。
 
 - systemd はコンテナに存在しないため、postinst の `systemctl` 呼び出しはビルド時にのみ stub (exit 0) を置いて通過させ、インストール後に削除します。unit の `User=rep2` に相当する実行ユーザーで launcher を直接起動します (compose の `user: rep2`)
 - launcher は `/etc/default/rep2-allinone` (systemd の EnvironmentFile) を読む者が存在しないため、Caddy は Caddyfile の既定値 (`:10088`) で待ち受けます。compose の `ports: !override` で container 側 10088 → ホスト側 `${REP2_PORT:-10088}` に置換しています
