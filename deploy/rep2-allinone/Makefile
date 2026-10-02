@@ -20,7 +20,7 @@ ARCH ?= $(HOST_ARCH_DETECTED)
 OS ?= $(HOST_OS_DETECTED)
 
 PHP_VERSION = 8.5.11
-CADDY_VERSION = 2.11.4
+CADDY_VERSION = 2.11.6
 COMPOSER_VERSION = 2.10.3
 
 PHP_URL_WINDOWS = https://windows.php.net/downloads/releases/archives
