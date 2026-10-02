@@ -40,7 +40,10 @@ else
 PHP_URL = $(PHP_URL_REP2)
 endif
 
-COMMIT_DATE = $(shell cat dist/build_info_rep2_date 2>/dev/null || echo "unknown")
+CURRENT_HEAD_FULL = $(shell git -C ../.. rev-parse HEAD 2>/dev/null)
+CURRENT_HEAD = $(shell git -C ../.. rev-parse --short HEAD 2>/dev/null)
+COMMIT_DATE = $(shell git -C ../.. log -1 --format="%cd" --date=format-local:"%Y%m%d%H%M" 2>/dev/null || echo "unknown")
+REPO_LOG = $(shell TZ=Asia/Tokyo git -C ../.. log -1 --format='%cd %s' --date=format-local:'%Y-%m-%d %H:%M' 2>/dev/null | base64 -w 0)
 DEB_VERSION = $(COMMIT_DATE)-php$(PHP_VERSION)-caddy$(CADDY_VERSION)
 RPM_VERSION = $(COMMIT_DATE)
 RPM_RELEASE = php$(PHP_VERSION).caddy$(CADDY_VERSION)
@@ -123,7 +126,7 @@ PHP_CHECKSUMS = dist/php-checksums.txt
 HOST_BIN_DIR = dist/bin-$(HOST_OS_DETECTED)-$(HOST_ARCH_DETECTED)
 HOST_PHP_BIN = $(HOST_BIN_DIR)/php
 
-.PHONY: all build install install-linux install-macos install-windows deb rpm macos windows brew-install brew-upgrade clean dist-clean update-php-checksums _update-php-checksum
+.PHONY: all build install install-linux install-macos install-windows deb rpm macos windows brew-install brew-upgrade clean dist-clean update-php-checksums _update-php-checksum dist/p2-php dist/build_info
 
 $(PHP_CHECKSUMS):
 	$(MAKE) update-php-checksums
@@ -164,13 +167,13 @@ MACOS_DIR = dist/macos
 
 all: build
 
-build: dist/p2-php $(BIN_DIR)/php-fpm $(BIN_DIR)/php $(BIN_DIR)/caddy dist/build_info
+build: dist/build_info $(BIN_DIR)/php-fpm $(BIN_DIR)/php $(BIN_DIR)/caddy
 
 dist/build_info: dist/p2-php
 	@mkdir -p dist
 	@echo "VER_REPO_TYPE=$(REPO_TYPE)" > $@
-	@echo "VER_REPO_HASH=$(shell git -C ../.. rev-parse --short HEAD)" >> $@
-	@echo "VER_REPO_LOG=$(shell TZ=Asia/Tokyo git -C ../.. log -1 --format='%cd %s' --date=format-local:'%Y-%m-%d %H:%M' | base64 -w 0)" >> $@
+	@echo "VER_REPO_HASH=$(CURRENT_HEAD)" >> $@
+	@echo "VER_REPO_LOG=$(REPO_LOG)" >> $@
 	@echo "VER_RUN_ID=$(RUN_ID)" >> $@
 	@echo "VER_RUN_NUMBER=$(RUN_NUMBER)" >> $@
 	@echo "VER_PHP=$(PHP_VERSION)" >> $@
@@ -253,18 +256,20 @@ $(HOST_PHP_BIN):
 endif
 
 dist/p2-php: $(HOST_PHP_BIN)
-	mkdir -p dist/p2-php
-	git -C ../.. archive HEAD | tar -x -C dist/p2-php
-
-	cd dist && curl https://getcomposer.org/installer | ../$(HOST_PHP_BIN) -- --version $(COMPOSER_VERSION)
-	cd dist/p2-php && ../../$(HOST_PHP_BIN) ../composer.phar install
-
-	cd dist/p2-php && rm -rf `find . -name '.git*' -o -name 'composer.*'` && rm -rf build .vscode .editorconfig *.code-workspace \
-	    && find deploy -type f ! -name '*.md' -delete && find deploy -type d -empty -delete
-
-	cd dist/p2-php && ../../$(HOST_PHP_BIN) ../../patches/apply_settings.php ../../patches/settings.txt .
-
-	git -C ../.. log -1 --format="%cd" --date=format-local:"%Y%m%d%H%M" > dist/build_info_rep2_date
+	@OLD=$$(git -C dist/p2-php rev-parse HEAD 2>/dev/null); \
+	if [ "$$OLD" != "$(CURRENT_HEAD_FULL)" ]; then \
+	    echo "dist/p2-php: HEAD changed ($${OLD:-none} -> $(CURRENT_HEAD_FULL)), regenerating"; \
+	    rm -rf dist/p2-php && \
+	    git clone --shared --no-checkout ../.. dist/p2-php && \
+	    git -C dist/p2-php checkout --quiet --detach "$(CURRENT_HEAD_FULL)" && \
+	    cd dist && curl https://getcomposer.org/installer | ../$(HOST_PHP_BIN) -- --version $(COMPOSER_VERSION) && \
+	    cd p2-php && ../../$(HOST_PHP_BIN) ../composer.phar install && \
+	    rm -rf `find . -name '.git*' ! -path './.git' -o -name 'composer.*'` && rm -rf build .vscode .editorconfig *.code-workspace && \
+	    find deploy -type f ! -name '*.md' -delete && find deploy -type d -empty -delete && \
+	    ../../$(HOST_PHP_BIN) ../../patches/apply_settings.php ../../patches/settings.txt .; \
+	else \
+	    echo "dist/p2-php: up to date ($(CURRENT_HEAD_FULL))"; \
+	fi
 
 install: install-$(OS)
 
@@ -278,7 +283,7 @@ install-linux: build
 
 	cp -r $(BIN_DIR)/* $(DESTDIR)/opt/$(PKG_NAME)/bin/
 
-	rsync -a --exclude="rep2/ic/" dist/p2-php/ $(DESTDIR)/opt/$(PKG_NAME)/p2-php/
+	rsync -a --exclude="rep2/ic/" --exclude=".git" dist/p2-php/ $(DESTDIR)/opt/$(PKG_NAME)/p2-php/
 
 	mv $(DESTDIR)/opt/$(PKG_NAME)/p2-php/conf $(DESTDIR)/opt/$(PKG_NAME)/p2-php/conf.orig
 	mv $(DESTDIR)/opt/$(PKG_NAME)/p2-php/data $(DESTDIR)/opt/$(PKG_NAME)/p2-php/data.orig
@@ -307,7 +312,7 @@ install-macos: build
 	mkdir -p $(DESTDIR)/etc/php/conf.d
 
 	cp -r $(BIN_DIR)/* $(DESTDIR)/bin/
-	rsync -a --exclude="rep2/ic/" dist/p2-php/ $(DESTDIR)/p2-php/
+	rsync -a --exclude="rep2/ic/" --exclude=".git" dist/p2-php/ $(DESTDIR)/p2-php/
 	$(HOST_PHP_BIN) patches/apply_settings.php patches/settings_macos.txt $(DESTDIR)/p2-php
 
 	mv $(DESTDIR)/p2-php/conf $(DESTDIR)/p2-php/conf.orig
@@ -324,7 +329,7 @@ install-windows: build $(CACERT_PEM)
 	mkdir -p $(DESTDIR)/p2-php
 
 	cp -r $(BIN_DIR)/* $(DESTDIR)/bin/
-	rsync -a --exclude="rep2/ic/" dist/p2-php/ $(DESTDIR)/p2-php/
+	rsync -a --exclude="rep2/ic/" --exclude=".git" dist/p2-php/ $(DESTDIR)/p2-php/
 	$(HOST_PHP_BIN) patches/apply_settings.php patches/settings_windows.txt $(DESTDIR)/p2-php
 
 	mv $(DESTDIR)/p2-php/conf $(DESTDIR)/p2-php/conf.orig
