@@ -141,7 +141,12 @@ jobs:
         run: |
           cp dist/php-checksums.txt dist/php-checksums-${{ github.run_number }}.txt
 
-          COMMIT_DATE=$(cat dist/build_info_rep2_date)
+          FILE_ARM64=$(basename dist/*-macos-arm64.tar.gz)
+          COMMIT_DATE=$(basename "$FILE_ARM64" | sed -E 's/^rep2-allinone-([0-9]+)-.*/\1/')
+          if [ -z "$COMMIT_DATE" ] || [ "$COMMIT_DATE" = "$FILE_ARM64" ]; then
+            echo "Failed to extract COMMIT_DATE from tarball filename: $FILE_ARM64" >&2
+            exit 1
+          fi
           echo "COMMIT_DATE=${COMMIT_DATE}" >> "$GITHUB_ENV"
 
       - name: Publish to GitHub Releases (dated tag)

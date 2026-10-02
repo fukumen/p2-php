@@ -42,7 +42,7 @@ endif
 
 CURRENT_HEAD_FULL = $(shell git -C ../.. rev-parse HEAD 2>/dev/null)
 CURRENT_HEAD = $(shell git -C ../.. rev-parse --short HEAD 2>/dev/null)
-COMMIT_DATE = $(shell git -C ../.. log -1 --format="%cd" --date=format-local:"%Y%m%d%H%M" 2>/dev/null || echo "unknown")
+COMMIT_DATE = $(shell TZ=Asia/Tokyo git -C ../.. log -1 --format="%cd" --date=format-local:"%Y%m%d%H%M" 2>/dev/null || echo "unknown")
 REPO_LOG = $(shell TZ=Asia/Tokyo git -C ../.. log -1 --format='%cd %s' --date=format-local:'%Y-%m-%d %H:%M' 2>/dev/null | base64 -w 0)
 DEB_VERSION = $(COMMIT_DATE)-php$(PHP_VERSION)-caddy$(CADDY_VERSION)
 RPM_VERSION = $(COMMIT_DATE)

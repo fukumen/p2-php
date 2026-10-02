@@ -26,7 +26,7 @@
 ## publish-packages.yml (rep2-allinone の deb/rpm/zip/macos)
 
 - 発火条件は push (`paths-ignore` 同上) と手動 dispatch のみ。`workflow_run` は持たない。
-- COMMIT_DATE は `dist/build_info_rep2_date` (= HEAD commit 日時) から取得され、`DEB_VERSION` / `RPM_VERSION` の基礎になる。
+- COMMIT_DATE は Makefile が `TZ=Asia/Tokyo` で取得した HEAD commit 日時 (JST 基準) であり、`DEB_VERSION` / `RPM_VERSION` の基礎になる。workflow はビルド済み macOS tarball のファイル名から COMMIT_DATE を抽出してリリースタグに使用する。
 - `RUN_ID` / `RUN_NUMBER` は make 変数として渡り、`dist/build_info` の `VER_RUN_ID` 等になる。
 - `Makefile` は PHP バイナリを static-php-cli の `releases/latest/download` から取得するため、static-php-cli を再ビルドしても rep2-allinone 側は自動では再ビルドされない。
 
