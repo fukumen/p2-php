@@ -123,7 +123,7 @@ PHP_CHECKSUMS = dist/php-checksums.txt
 HOST_BIN_DIR = dist/bin-$(HOST_OS_DETECTED)-$(HOST_ARCH_DETECTED)
 HOST_PHP_BIN = $(HOST_BIN_DIR)/php
 
-.PHONY: all build install install-linux install-macos install-windows deb rpm macos windows brew-install clean dist-clean update-php-checksums _update-php-checksum
+.PHONY: all build install install-linux install-macos install-windows deb rpm macos windows brew-install brew-upgrade clean dist-clean update-php-checksums _update-php-checksum
 
 $(PHP_CHECKSUMS):
 	$(MAKE) update-php-checksums
@@ -411,6 +411,17 @@ brew-install: macos
 	mkdir -p $$(brew --repository)/Library/Taps/$${USER}
 	ln -sfn $(HOME)/.rep2-local-tap $$(brew --repository)/Library/Taps/$${USER}/homebrew-local
 	$$(brew --repository)/bin/brew install $${USER}/local/$(PKG_NAME)
+
+brew-upgrade: macos
+	mkdir -p $(HOME)/.rep2-local-tap/Formula
+	$(HOST_PHP_BIN) macos/generate-formula.php $(HOME)/.rep2-local-tap/Formula/$(PKG_NAME).rb \
+	    $(COMMIT_DATE) \
+	    $(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz \
+	    "$$(shasum -a 256 dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz | awk '{print $$1}')" \
+	    $(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz \
+	    "$$(shasum -a 256 dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz | awk '{print $$1}')" \
+	    "file://$$(pwd)/dist/$(PKG_NAME)-$(DEB_VERSION)-macos-$(MAC_ARCH).tar.gz"
+	$$(brew --repository)/bin/brew upgrade $${USER}/local/$(PKG_NAME)
 
 clean:
 	rm -rf dist/

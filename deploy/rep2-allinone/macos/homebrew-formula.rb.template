@@ -51,48 +51,50 @@ class Rep2Allinone < Formula
     chmod 0755, Dir[prefix/"bin/*"]
   end
 
-  def post_install
-    (etc/"rep2-allinone").mkpath
-    (var/"lib/rep2-allinone/conf").mkpath
-    (var/"lib/rep2-allinone/data").mkpath
-    (var/"lib/rep2-allinone/ic").mkpath
-    (var/"lib/rep2-allinone/user_skin").mkpath
-    (prefix/"etc/php/conf.d").mkpath
+  post_install_steps do
+    mkdir_p "rep2-allinone", base: :etc
+    mkdir_p "lib/rep2-allinone/conf", base: :var
+    mkdir_p "lib/rep2-allinone/data", base: :var
+    mkdir_p "lib/rep2-allinone/ic", base: :var
+    mkdir_p "lib/rep2-allinone/user_skin", base: :var
+    mkdir_p "etc/php/conf.d", base: :prefix
 
-    build_info_path = etc/"rep2-allinone/build_info"
-    build_info_path.unlink if build_info_path.exist?
-    build_info_path.write(BUILD_INFO_TEMPLATE)
-    unless (etc/"rep2-allinone/php-local.ini").exist?
-      (etc/"rep2-allinone/php-local.ini").write PHP_LOCAL_INI_TEMPLATE
-    end
-    unless (etc/"rep2-allinone/php-fpm-local.conf").exist?
-      (etc/"rep2-allinone/php-fpm-local.conf").write PHP_FPM_LOCAL_CONF_TEMPLATE
-    end
-    unless (etc/"rep2-allinone/Caddyfile").exist?
-      (etc/"rep2-allinone/Caddyfile").write CADDYFILE_TEMPLATE
-    end
-    unless (etc/"rep2-allinone/default").exist?
-      (etc/"rep2-allinone/default").write DEFAULT_TEMPLATE
-    end
+    write_file "rep2-allinone/build_info", BUILD_INFO_TEMPLATE, base: :etc
 
-    fpm_conf = FPMCONF_TEMPLATE.gsub("@@ERROR_LOG_PATH@@", "#{var}/lib/rep2-allinone/php-fpm.log")
-                               .gsub("@@CONF_DIR@@", (etc/"rep2-allinone").to_s)
-    fpm_conf_path = prefix/"etc/rep2-php-fpm.conf"
-    fpm_conf_path.unlink if fpm_conf_path.exist?
-    fpm_conf_path.write(fpm_conf)
-
-    secrets_file = etc/"rep2-allinone/secrets.conf"
-    unless secrets_file.exist?
-      secret_key = `#{prefix}/bin/php -r 'echo bin2hex(random_bytes(32));'`.strip
-      secrets_file.write("SECRET_KEY=#{secret_key}\n")
-      secrets_file.chmod 0600
+    unless_path_exists "rep2-allinone/php-local.ini", base: :etc do
+      write_file "rep2-allinone/php-local.ini", PHP_LOCAL_INI_TEMPLATE, base: :etc
+    end
+    unless_path_exists "rep2-allinone/php-fpm-local.conf", base: :etc do
+      write_file "rep2-allinone/php-fpm-local.conf", PHP_FPM_LOCAL_CONF_TEMPLATE, base: :etc
+    end
+    unless_path_exists "rep2-allinone/Caddyfile", base: :etc do
+      write_file "rep2-allinone/Caddyfile", CADDYFILE_TEMPLATE, base: :etc
+    end
+    unless_path_exists "rep2-allinone/default", base: :etc do
+      write_file "rep2-allinone/default", DEFAULT_TEMPLATE, base: :etc
     end
 
-    ln_sf etc/"rep2-allinone/php-local.ini", prefix/"etc/php/conf.d/z-php-local.ini"
-    ln_sf var/"lib/rep2-allinone/conf", prefix/"p2-php/conf"
-    ln_sf var/"lib/rep2-allinone/data", prefix/"p2-php/data"
-    ln_sf var/"lib/rep2-allinone/ic", prefix/"p2-php/rep2/ic"
-    ln_sf var/"lib/rep2-allinone/user_skin", prefix/"p2-php/rep2/user_skin"
+    fpm_conf = FPMCONF_TEMPLATE.gsub("@@ERROR_LOG_PATH@@", "#{HOMEBREW_PREFIX}/var/lib/rep2-allinone/php-fpm.log")
+                               .gsub("@@CONF_DIR@@", "#{HOMEBREW_PREFIX}/etc/rep2-allinone")
+    write_file "etc/rep2-php-fpm.conf", fpm_conf, base: :prefix
+
+    unless_path_exists "rep2-allinone/secrets.conf", base: :etc do
+      run "{{opt_prefix}}/bin/php",
+          args: ["-r", "echo 'SECRET_KEY=', bin2hex(random_bytes(32)), PHP_EOL;"],
+          stdout_path: "{{etc}}/rep2-allinone/secrets.conf"
+      set_permissions "rep2-allinone/secrets.conf", "0600", base: :etc, recursive: false
+    end
+
+    symlink "rep2-allinone/php-local.ini", "etc/php/conf.d/z-php-local.ini",
+            source_base: :etc, target_base: :prefix, overwrite: true
+    symlink "lib/rep2-allinone/conf", "p2-php/conf",
+            source_base: :var, target_base: :prefix, overwrite: true
+    symlink "lib/rep2-allinone/data", "p2-php/data",
+            source_base: :var, target_base: :prefix, overwrite: true
+    symlink "lib/rep2-allinone/ic", "p2-php/rep2/ic",
+            source_base: :var, target_base: :prefix, overwrite: true
+    symlink "lib/rep2-allinone/user_skin", "p2-php/rep2/user_skin",
+            source_base: :var, target_base: :prefix, overwrite: true
   end
 
   def caveats

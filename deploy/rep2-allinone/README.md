@@ -49,6 +49,8 @@ sudo dnf install rep2-allinone
 
 ### macOS (Homebrew Tap)
 
+Homebrew 6.0.16 以上が必要です。
+
 ```bash
 brew install fukumen/tap/rep2-allinone
 
