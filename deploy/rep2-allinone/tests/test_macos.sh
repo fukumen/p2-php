@@ -159,10 +159,25 @@ if [ "$REPO_MODE" = "false" ]; then
 
     SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
     PROJECT_ROOT=$(dirname "$SCRIPT_DIR")
-    TEMPLATE_FILE="$PROJECT_ROOT/macos/homebrew-formula.rb.template"
+    case "$(uname -m)" in
+        x86_64) HOST_ARCH="x86_64" ;;
+        *)      HOST_ARCH="arm64" ;;
+    esac
+    HOST_PHP="$PROJECT_ROOT/dist/bin-macos-${HOST_ARCH}/php"
 
-    echo "Homebrew formula テンプレートを VM に転送中..."
-    scp -o StrictHostKeyChecking=no -o PasswordAuthentication=no "$TEMPLATE_FILE" "$SSH_USER@$VM_IP:/tmp/homebrew-formula.rb.template"
+    echo "Homebrew formula を生成中..."
+    PKG_BASENAME=$(basename "$PKG_PATH")
+    PKG_SHA256=$(shasum -a 256 "$PKG_PATH" | awk '{print $1}')
+    "$HOST_PHP" "$PROJECT_ROOT/macos/generate-formula.php" /tmp/rep2-allinone.rb \
+        "$VERSION" \
+        "$PKG_BASENAME" \
+        "$PKG_SHA256" \
+        "$PKG_BASENAME" \
+        "$PKG_SHA256" \
+        "file:///tmp/rep2-allinone.tar.gz"
+
+    echo "生成した formula を VM に転送中..."
+    scp -o StrictHostKeyChecking=no -o PasswordAuthentication=no /tmp/rep2-allinone.rb "$SSH_USER@$VM_IP:/tmp/rep2-allinone.rb"
 fi
 echo "Homebrew をインストールします..."
 ssh -tt -o StrictHostKeyChecking=no -o ConnectTimeout=10 "$SSH_USER@$VM_IP" "bash -c 'echo $SSH_PASS | sudo -S -v && NONINTERACTIVE=1 /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"'"
@@ -177,21 +192,13 @@ if [ "$REPO_MODE" = "true" ]; then
     echo "公式 Tap から rep2-allinone をインストール (完全修飾名)..."
     run_ssh "${BREW_ENV} brew install fukumen/tap/rep2-allinone < /dev/null"
 else
-    echo "Homebrew パッケージを展開します..."
-
-    echo "SHA256の計算中..."
-    SHA256=$(run_ssh "shasum -a 256 /tmp/rep2-allinone.tar.gz | awk '{print \$1}'" | tr -d '\r')
+    echo "formula はホスト側で生成済み"
 
     echo "Formulaディレクトリの作成中..."
     run_ssh "mkdir -p ~/homebrew-tap/Formula"
 
-    echo "rep2-allinone.rbの作成中..."
-    run_ssh "sed -e 's/@@VERSION@@/${VERSION}/g' \
-        -e 's|url \"https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_ARM64@@\"|url \"file:///tmp/rep2-allinone.tar.gz\"|' \
-        -e 's/@@SHA_ARM64@@/${SHA256}/' \
-        -e 's|url \"https://github.com/fukumen/p2-php/releases/download/latest/@@FILE_X86_64@@\"|url \"file:///tmp/rep2-allinone.tar.gz\"|' \
-        -e 's/@@SHA_X86_64@@/${SHA256}/' \
-        /tmp/homebrew-formula.rb.template > ~/homebrew-tap/Formula/rep2-allinone.rb"
+    echo "生成済み formula を tap に配置中..."
+    run_ssh "cp /tmp/rep2-allinone.rb ~/homebrew-tap/Formula/rep2-allinone.rb"
 
     echo "Homebrew Tapのセットアップ中..."
     run_ssh "${BREW_ENV} mkdir -p \"\$(brew --repository)/Library/Taps/fukumen\" && ln -sf \"\$HOME/homebrew-tap\" \"\$(brew --repository)/Library/Taps/fukumen/homebrew-tap\""
@@ -201,7 +208,7 @@ echo "rep2-allinone をインストール..."
 if [ "$REPO_MODE" = "true" ]; then
     echo "（インストール済み。スキップ）"
 else
-    run_ssh "${BREW_ENV} brew install rep2-allinone < /dev/null"
+    run_ssh "${BREW_ENV} brew install fukumen/tap/rep2-allinone < /dev/null"
 fi
 
 echo "rep2-allinone サービス開始 (root/Systemデーモンとして起動)..."
