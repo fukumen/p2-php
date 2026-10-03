@@ -72,7 +72,7 @@ jobs:
 
           # Prune old DEB packages (keep latest 5 per architecture)
           for arch in amd64 arm64; do
-            ls -1 repo/apt/rep2-allinone_*_${arch}.deb 2>/dev/null | sort -V | tail -n +6 | xargs -r rm -v -f
+            ls -1 repo/apt/rep2-allinone_*_${arch}.deb 2>/dev/null | sort -Vr | tail -n +6 | xargs -r rm -v -f
           done
 
           cd repo/apt
@@ -93,7 +93,7 @@ jobs:
 
           # Prune old RPM packages (keep latest 5 per architecture)
           for arch in x86_64 aarch64; do
-            ls -1 repo/rpm/rep2-allinone-*.${arch}.rpm 2>/dev/null | sort -V | tail -n +6 | xargs -r rm -v -f
+            ls -1 repo/rpm/rep2-allinone-*.${arch}.rpm 2>/dev/null | sort -Vr | tail -n +6 | xargs -r rm -v -f
           done
 
           cd repo/rpm
@@ -115,7 +115,7 @@ jobs:
 
           # Prune old ZIP packages (keep latest 5 per architecture)
           for arch in x86_64 arm64; do
-            ls -1 repo/zip/rep2-allinone-*-windows-${arch}.zip 2>/dev/null | sort -V | tail -n +6 | xargs -r rm -v -f
+            ls -1 repo/zip/rep2-allinone-*-windows-${arch}.zip 2>/dev/null | sort -Vr | tail -n +6 | xargs -r rm -v -f
           done
 
       - name: Generate HTML Indexes
