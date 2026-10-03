@@ -1,32 +1,60 @@
 # rep2 テスト実行マニュアル
 
-docker-rep2 環境の php-cli を利用して rep2 の関数単位テストをワンショットで実行する方法について説明します。
+docker-rep2 で rep2 の単体テストを実行する手順と、テストファイルの作成方法を説明します。
 
-## 1. テスト実行コマンド
+## テスト実行コマンド
 
-`build.py` の `test` コマンドを使用します。
+`build.py` の `agent-test` コマンドを使用します。
 
-### 事前設定
+### 起動
 
-`test` コマンドを実行するには、`.env` にテストファイルの置き場所（コンテキスト）を記載してください。
-
-```text
-REP2_TEST_CONTEXT=../../../test
-```
-
-`REP2_TEST_CONTEXT` は docker-rep2 ディレクトリからの相対パス（絶対パスでも可）です。未設定のまま実行するとエラーになります。
+`agent-test` の前に起動が必要です。また、rep2 本体のプログラムを更新している場合は起動の前にイメージ作成も必要です。
 
 ```bash
 cd docker-rep2
-python3 build.py test ../../../test/my_test.php
+# .env に暗号キーを設定（未設定の場合のみ。64桁の16進）
+echo "REP2_AGENT_SECRET_KEY=$(openssl rand -hex 32)" >> .env
+
+python3 build.py build        # ローカルイメージ作成（初回のみ）
+python3 build.py agent-up     # エージェント環境を起動（設定適用まで自動）
 ```
 
-### コマンドの挙動
-1. テストファイルの置き場所（`REP2_TEST_CONTEXT`）をコンテナ内の `/var/www/test` にボリュームマウントします。
-2. コンテナを `run --rm` モードで起動し、`php /var/www/test/my_test.php` を実行します。
-3. 実行完了後、コンテナは自動的に削除されます。
+起動後:
 
-## 2. テストファイルの作成方法
+- rep2 の Web UI: http://127.0.0.1:10089 （`agent` / `rep2agent` でログイン可能）
+- 通信ログ（mitmweb UI）: http://127.0.0.1:8081（パスワード: rep2agent）
+
+### テスト実行
+
+テストファイルはリポジトリの `test/` 配下に置きます（docker-rep2 から見て `../../../test`）。
+
+```bash
+python3 build.py agent-test ../../../test/agent_proxy_test.php
+```
+
+起動済みエージェント環境のコンテナ内（`/var/www/test` にマウント済み）で PHP テストを実行します。
+設定適用済みの状態で実行されます。post.php の書き込みテストは実行できません（bbs.cgi への POST が 403 で遮断されるため）。
+upload.php による画像アップロードも実行できません（外部アップローダ API への POST が 403 で遮断されるため）。
+テストスクリプトへの引数は `--` を挟んで渡します。
+
+全部入り（extra）イメージでのテストは `--extra` で起動し直してから実行します。
+
+```bash
+python3 build.py --extra agent-up
+python3 build.py --extra agent-test ../../../test/my_test.php
+```
+
+### 終了
+
+```bash
+python3 build.py agent-down
+```
+
+データ（ユーザー設定・キャッシュ等）は tmpfs 上にあり、`agent-down` で消滅します。
+次回の `agent-up` は毎回初期状態（新規ユーザー登録）から始まるため、過去の状態に影響されません。
+通常の `rep2-data/` も参照しません。
+
+## テストファイルの作成方法
 
 テストファイル（PHP）は以下のルールで作成してください。
 
@@ -43,12 +71,10 @@ require_once '/var/www/init.php';
 ### 文字コード
 rep2 本体に合わせて **Shift-JIS** で作成してください。
 
-## 3. 高度な使い方
-
 ### 引数の渡し方
-テストスクリプトに引数を渡す場合は、ファイルパスの後に続けて記述します。
+テストスクリプトに引数を渡す場合は、ファイルパスの後に `--` を挟んで記述します。
 
 ```bash
-python3 build.py test ../../../test/my_test.php -- --verbose --target=user
+python3 build.py agent-test ../../../test/my_test.php -- --verbose --target=user
 ```
 ※ `--` を挟むことで、`build.py` 自身のオプションと区別できます。

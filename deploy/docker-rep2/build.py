@@ -68,6 +68,49 @@ services:
       - /ext
 """
 
+AGENT_COMPOSE = """\
+name: rep2-agent
+services:
+  rep2:
+    image: "%%AGENT_IMAGE%%"
+    ports:
+      - "127.0.0.1:10089:8443"
+    volumes:
+      - ../../../test:/var/www/test
+    tmpfs:
+      - /ext
+    environment:
+      SECRET_KEY: "%%AGENT_SECRET_KEY%%"
+    depends_on:
+      filter-proxy:
+        condition: service_started
+  filter-proxy:
+    image: mitmproxy/mitmproxy:latest
+    command:
+      - mitmweb
+      - -p
+      - "3128"
+      - --web-host
+      - 0.0.0.0
+      - --web-port
+      - "8081"
+      - --set
+      - web_open_browser=false
+      - --set
+      - web_password=rep2agent
+      - -s
+      - /opt/agent/filter_proxy.py
+    volumes:
+      - ./agent/filter_proxy.py:/opt/agent/filter_proxy.py:ro
+    ports:
+      - "127.0.0.1:3128:3128"
+      - "127.0.0.1:8081:8081"
+"""
+
+AGENT_COMPOSE_FILE = "docker-compose.agent.yml"
+
+AGENT_COMMANDS = ("agent-up", "agent-down", "agent-logs", "agent-exec", "agent-test")
+
 REMOTE_COMMAND = {
     "up": True,
     "build": False,
@@ -86,7 +129,6 @@ REMOTE_COMMAND = {
     "sync": False,
     "upload": False,
     "deploy": False,
-    "test": False,
     "images": True,
 }
 
@@ -120,6 +162,12 @@ def resolve_debug(debug_flag):
 
 def check_flag_conflicts(args):
     """検証モード (--static / --aiodeb) と FLAG 系オプション・ローカル override の排他チェック"""
+    if args.command in AGENT_COMMANDS:
+        for flag in ("debug", "static", "aiodeb", "ephemeral"):
+            raw = getattr(args, f"raw_{flag}", None) if flag == "debug" else getattr(args, flag)
+            if raw:
+                print(f"Error: agent 系コマンドと --{flag} は同時に指定できません。")
+                sys.exit(1)
     if args.static and args.aiodeb:
         print("Error: --static と --aiodeb は同時に指定できません (検証モードは排他です)。")
         sys.exit(1)
@@ -168,7 +216,8 @@ def write_compose_file(name, content):
     通常の終了経路では atexit で削除する
     """
     path = os.path.join(tempfile.gettempdir(), name)
-    with open(path, "w", encoding="utf-8") as f:
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
         f.write(content)
     atexit.register(_remove_compose_file, path)
     return path
@@ -341,12 +390,22 @@ def require_remote_config():
     return host, path
 
 
-def require_test_context():
-    ctx = os.environ.get("REP2_TEST_CONTEXT", "").strip()
-    if not ctx:
-        print("Error: test コマンドの実行には REP2_TEST_CONTEXT の設定が必要です (.env に記述できます)。")
+def get_agent_compose_args(args):
+    """agent 系コマンド専用。compose は AGENT_COMPOSE 1本のみ"""
+    secret_key = os.environ.get("REP2_AGENT_SECRET_KEY")
+    if not secret_key or len(secret_key) != 64:
+        print("Error: REP2_AGENT_SECRET_KEY に 64 桁の 16 進の文字列(暗号キー)を設定してください (.env に記述できます)。")
+        print("生成例: openssl rand -hex 32")
         sys.exit(1)
-    return ctx
+    image_name = "rep2-extra:latest" if args.extra else "rep2:latest"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    compose = AGENT_COMPOSE.replace("%%AGENT_IMAGE%%", image_name) \
+                           .replace("%%AGENT_SECRET_KEY%%", secret_key)
+    return [
+        "docker", "compose",
+        "--project-directory", script_dir,
+        "-f", write_compose_file(AGENT_COMPOSE_FILE, compose),
+    ]
 
 
 def get_git_info(path="."):
@@ -560,7 +619,12 @@ def get_compose_args(args, is_remote, tmp_compose=None):
     return cmd
 
 def execute_command(cmd_name, args, extra_args=None, remote_override=None):
-    if remote_override is not None:
+    if cmd_name in AGENT_COMMANDS:
+        if args.remote:
+            print("Error: agent 系コマンドはローカル実行のみ対応しています。")
+            sys.exit(1)
+        is_remote = False
+    elif remote_override is not None:
         is_remote = remote_override
     else:
         # フラグ未指定時はリモート設定の有無で自動判定する（deploy と同じ挙動）
@@ -839,28 +903,40 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
     elif cmd_name == "images":
         list_version_images(env)
 
-    elif cmd_name == "test":
-        test_context = require_test_context()
+    elif cmd_name == "agent-up":
+        run_cmd(get_agent_compose_args(args) + ["up", "-d"], env=env)
+        # rc.init による conf 生成・Web UI の起動待ち (ephemeral のため毎回初期化が走る)
+        # 起動直後は 401 (ログインフォーム) が返る。HTTP 応答 (000 以外) が返れば処理が生きている
+        run_cmd(["sh", "-c",
+                 "i=0; until code=$(curl -sS --noproxy '*' -o /dev/null "
+                 "-w '%{http_code}' http://127.0.0.1:10089/ 2>/dev/null); "
+                 '[ -n "$code" ] && [ "$code" != "000" ]; do '
+                 "i=$((i+1)); [ $i -ge 60 ] && exit 1; sleep 2; done"])
+        script = os.path.normpath(os.path.join(os.path.dirname(__file__), "agent", "agent_setup.sh"))
+        run_cmd(["sh", script], env=env)
+
+    elif cmd_name == "agent-down":
+        run_cmd(get_agent_compose_args(args) + ["down"], env=env)
+
+    elif cmd_name == "agent-logs":
+        run_cmd(get_agent_compose_args(args) + ["logs"] + extra_args, env=env)
+
+    elif cmd_name == "agent-exec":
+        run_cmd(get_agent_compose_args(args) + ["exec", SERVICE_NAME] + (extra_args or ["/bin/sh"]), env=env)
+
+    elif cmd_name == "agent-test":
         test_file = os.path.abspath(args.test_file)
+        test_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../test"))
         if not os.path.exists(test_file):
             print(f"Error: ファイルが見つかりません: {test_file}")
             sys.exit(1)
-
-        test_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), test_context))
         if not (test_file.startswith(test_dir + os.sep) or test_file == test_dir):
             print(f"Error: テストファイルは test ディレクトリ配下に配置する必要があります: {test_dir}")
             sys.exit(1)
-
         rel_path = os.path.relpath(test_file, test_dir)
-        mount_opts = ["-v", f"{test_dir}:/var/www/test"]
         container_php_file = f"/var/www/test/{rel_path}"
-        test_args = extra_args
-        run_cmd(compose_base + [
-            "run", "--rm", "--entrypoint", "/etc/rc.init",
-        ] + mount_opts + [
-            SERVICE_NAME,
-            "php", container_php_file
-        ] + test_args, env=env)
+        run_cmd(get_agent_compose_args(args) + ["exec", "-T", SERVICE_NAME,
+                 "php", container_php_file] + extra_args, env=env)
 
     else:
         print(f"Error: 不明なコマンドです: {cmd_name}")
@@ -888,7 +964,11 @@ def main():
         "upload": "ビルドしたイメージをリモートホストへ転送",
         "deploy": "down -> build(build-static/build-aiodeb) -> upload -> up のデプロイシーケンスを一括実行",
         "images": "rep2 関連イメージの VER_* ENV とビルド時刻 (JST) を一覧表示",
-        "test": "指定した PHP テストファイルをコンテナ内でワンショット実行",
+        "agent-up": "エージェント環境 (強制フィルタリング Proxy) を起動して設定を適用",
+        "agent-down": "エージェント環境を停止",
+        "agent-logs": "エージェント環境のログを表示",
+        "agent-exec": "エージェント環境の rep2 コンテナでシェルまたは指定したコマンドを実行",
+        "agent-test": "起動済みエージェント環境で PHP テストを実行 (test/ 配下のファイル)",
     }
 
     command_help = "コマンド一覧:\n"
@@ -942,9 +1022,9 @@ def main():
 
     # 各コマンドをサブコマンドとして登録
     for cmd, desc in command_descriptions.items():
-        if cmd == 'test':
+        if cmd == 'agent-test':
             test_parser = subparsers.add_parser(cmd, help=desc)
-            test_file_arg = test_parser.add_argument('test_file', help="テストファイルへのパス")
+            test_file_arg = test_parser.add_argument('test_file', help="テストファイルへのパス (リポジトリの test/ 配下)")
             if argcomplete:
                 from argcomplete.completers import FilesCompleter
                 test_file_arg.completer = FilesCompleter()
@@ -966,6 +1046,7 @@ def main():
     if argcomplete:
         argcomplete.autocomplete(parser)
     args, extra_args = parser.parse_known_args()
+    args.raw_debug = args.debug  # 明示的な --debug / --nodebug の値 (未指定なら None)
     args.debug = resolve_debug(args.debug)
 
     check_flag_conflicts(args)
