@@ -189,7 +189,7 @@ $githubRepo = 'fukumen/p2-php';
                 const hash = item.sha.substring(0, 7);
                 const url = item.html_url;
 
-                const isCurrent = currentHash && hash === currentHash;
+                const isCurrent = currentHash && item.sha.startsWith(currentHash);
                 const highlightClass = isCurrent ? ' highlight' : '';
                 const badge = isCurrent ? '<span class="current-badge">Œ»İg—p’†</span>' : '';
 
