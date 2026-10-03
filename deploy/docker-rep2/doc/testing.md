@@ -22,8 +22,8 @@ python3 build.py test ../../../test/my_test.php
 ```
 
 ### コマンドの挙動
-1. 指定されたテストファイルをコンテナ内の `/tmp/my_test.php` にボリュームマウントします。
-2. コンテナを `run --rm` モードで起動し、`php /tmp/my_test.php` を実行します。
+1. テストファイルの置き場所（`REP2_TEST_CONTEXT`）をコンテナ内の `/var/www/test` にボリュームマウントします。
+2. コンテナを `run --rm` モードで起動し、`php /var/www/test/my_test.php` を実行します。
 3. 実行完了後、コンテナは自動的に削除されます。
 
 ## 2. テストファイルの作成方法

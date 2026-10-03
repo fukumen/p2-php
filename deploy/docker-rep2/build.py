@@ -856,7 +856,7 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
         container_php_file = f"/var/www/test/{rel_path}"
         test_args = extra_args
         run_cmd(compose_base + [
-            "run", "--rm",
+            "run", "--rm", "--entrypoint", "/etc/rc.init",
         ] + mount_opts + [
             SERVICE_NAME,
             "php", container_php_file

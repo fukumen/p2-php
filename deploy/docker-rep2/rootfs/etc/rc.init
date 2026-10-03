@@ -1,0 +1,49 @@
+#!/bin/sh
+# コンテナの初期化を行うスクリプト。
+# - rc.entry から source して使うため exit してはならない (呼び出し元ごと終了する)
+# - 引数ありで実行した場合 (source 元に引数がある場合を含む) は、
+#   初期化後にそのコマンドを exec する (ワンショット実行)
+
+mkdir -p /ext/conf /ext/data /ext/rep2/ic /ext/user_skin
+cp -Rn /var/www/conf.orig/* /ext/conf/
+cp -f /var/www/conf.orig/conf_user_def* /ext/conf/
+cp -Rn /var/www/data.orig/* /ext/data/
+
+chown -R www-data:www-data /ext
+
+su-exec www-data php << 'EOF'
+<?php
+$orig_file = '/var/www/conf.orig/conf.inc.php';
+$target_file = '/ext/conf/conf.inc.php';
+
+if (!file_exists($orig_file) || !file_exists($target_file)) {
+    exit;
+}
+
+$orig_lines = file($orig_file);
+$target_lines = file($target_file);
+$new_line = '';
+
+foreach ($orig_lines as $line) {
+    if (strpos($line, "'p2version'") !== false && strpos($line, '=>') !== false) {
+        $new_line = $line;
+        break;
+    }
+}
+
+if ($new_line !== '') {
+    foreach ($target_lines as $k => $line) {
+        if (strpos($line, "'p2version'") !== false && strpos($line, '=>') !== false) {
+            $target_lines[$k] = $new_line;
+            break;
+        }
+    }
+    file_put_contents($target_file, implode('', $target_lines));
+}
+EOF
+
+su-exec www-data php /var/www/scripts/ic2.php setup | iconv -f SHIFT_JIS -t UTF-8
+
+if [ $# -gt 0 ]; then
+    exec "$@"
+fi
