@@ -14,8 +14,36 @@ on:
       - '**.md'
 
 jobs:
-  build_and_push:
+  gate:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Wait for base run registration
+        run: sleep 10
+
+      - name: Check base build is running
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          api="repos/${{ github.repository }}/actions/workflows/publish-docker-base.yml/runs?per_page=1"
+          queued=$(gh api --retry 3 "${api}&status=queued" --jq '.total_count')
+          running=$(gh api --retry 3 "${api}&status=in_progress" --jq '.total_count')
+          echo "base runs: queued=${queued} in_progress=${running}"
+          skip=false
+          if [ "${queued}" -gt 0 ] || [ "${running}" -gt 0 ]; then
+            skip=true
+          fi
+          echo "skip=${skip}" >> "$GITHUB_OUTPUT"
+
+  build_and_push:
+    needs: gate
+    if: ${{ needs.gate.result == 'success' && needs.gate.outputs.skip != 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
