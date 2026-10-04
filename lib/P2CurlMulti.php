@@ -8,6 +8,7 @@ class P2CurlMulti
     private $mh;
     private $ch;
     private $file_update;
+    private $execErrors = array();
 
     public function __construct() {
         global $_conf;
@@ -94,6 +95,8 @@ class P2CurlMulti
     public function execute() {
         global $_conf;
 
+        $this->execErrors = array();
+
         if (empty($this->ch) || !$this->mh) {
             return false;
         }
@@ -108,6 +111,20 @@ class P2CurlMulti
                 }
             }
         } while ($running > 0 && $status === CURLM_OK);
+
+        // 転送の完了結果を記録する。curl_multi の転送失敗は curl_error() には
+        // 反映されないため、curl_multi_info_read() の result から取得する
+        while (false !== ($msg = curl_multi_info_read($this->mh))) {
+            if ($msg['msg'] !== CURLMSG_DONE || $msg['result'] === CURLE_OK) {
+                continue;
+            }
+            foreach ($this->ch as $key => $ch) {
+                if ($ch === $msg['handle']) {
+                    $this->execErrors[$key] = $msg['result'];
+                    break;
+                }
+            }
+        }
 
         return $status === CURLM_OK;
     }
@@ -136,7 +153,8 @@ class P2CurlMulti
                 'info' => $tmp,
                 'body' => $body,
                 'raw' => $data,
-                'error' => curl_error($ch_array)
+                'error' => isset($this->execErrors[$key]) ? curl_strerror($this->execErrors[$key]) : '',
+                'errno' => $this->execErrors[$key] ?? 0,
             );
         }
         
@@ -212,8 +230,7 @@ class P2CurlMulti
             if (isset($results[$key])) {
                 $res = $results[$key];
                 if (!empty($res['error'])) {
-                    // errnoは取得しない (curl_multiパスではエラーコード判定が使われない)
-                    $responses[$key] = new P2CurlException("cURL Error: " . $res['error']);
+                    $responses[$key] = new P2CurlException("cURL Error: " . $res['error'], $res['errno']);
                 } else {
                     // コンストラクタは(headerText, body)形式。curl_multiパスではリダイレクトしないため
                     // header_sizeでの分割は破綻しない

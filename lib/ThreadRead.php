@@ -560,7 +560,9 @@ class ThreadRead extends Thread {
                 return $this->_downloadDat2chNotFound ($code);
             }
         } catch (Exception $e) {
-            if ($e instanceof P2CurlException && $e->getNativeCode() === 6
+            if ($e instanceof P2CurlException
+                && ($e->getNativeCode() === CURLE_COULDNT_RESOLVE_HOST
+                    || $e->getNativeCode() === CURLE_PROXY)
                 && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)
             ) {
                 return $this->_downloadDat5chKako ();
