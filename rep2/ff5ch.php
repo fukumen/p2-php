@@ -10,7 +10,7 @@ function ff5ch_search($query)
     $referer = $endpoint;
 
     try {
-        $req = P2Commun::createHTTPRequest($endpoint, HTTP_Request2::METHOD_GET);
+        $req = P2Commun::createHTTPRequest($endpoint, P2CurlRequest::METHOD_GET);
         $req->setHeader('Referer', $referer);
 
         $response = P2Commun::getHTTPResponse($req);

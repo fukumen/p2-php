@@ -494,7 +494,7 @@ if (isset($_POST['edit_submit']) && !empty($_POST['change'])) {
         ImageCache2_DatabaseManager::setRank($target, $newrank);
         // ƒƒ‚‚ð’Ç‰Á
         if (!empty($_POST['addmemo'])) {
-            $newmemo = get_magic_quotes_gpc() ? stripslashes($_POST['addmemo']) : $_POST['addmemo'];
+            $newmemo = $_POST['addmemo'];
             $newmemo = $icdb->uniform($newmemo, 'CP932');
             if ($newmemo !== '') {
                  ImageCache2_DatabaseManager::addMemo($target, $newmemo);
@@ -520,7 +520,7 @@ if (isset($_POST['edit_submit']) && !empty($_POST['change'])) {
                     $removed[$id] = false;
                 }
             } else {
-                $newmemo = get_magic_quotes_gpc() ? stripslashes($_POST['img'][$id]['memo']) : $_POST['img'][$id]['memo'];
+                $newmemo = $_POST['img'][$id]['memo'];
                 $data = array(
                     'rank' => intval($_POST['img'][$id]['rank']),
                     'memo' => $icdb->uniform($newmemo, 'CP932')

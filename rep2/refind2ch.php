@@ -10,7 +10,7 @@ function refind2ch_search ($query)
     $referer = $base_url . '/search?q=' . urlencode($q);
 
     try {
-        $req = P2Commun::createHTTPRequest ($endpoint, HTTP_Request2::METHOD_POST);
+        $req = P2Commun::createHTTPRequest ($endpoint, P2CurlRequest::METHOD_POST);
         $req->setHeader('Accept', 'application/json');
         $req->setHeader('Referer', $referer);
 

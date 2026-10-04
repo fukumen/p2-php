@@ -84,7 +84,7 @@ class Donguri {
         $detail = null;
         $msg = null;
 
-        $req = P2Commun::createHTTPRequest ($this->base_url, HTTP_Request2::METHOD_GET);
+        $req = P2Commun::createHTTPRequest ($this->base_url, P2CurlRequest::METHOD_GET);
         foreach ($this->cookies as $cname => $c) {
             $req->addCookie($cname, $c['value']);
         }
@@ -209,7 +209,7 @@ class Donguri {
                 }
             }
             if (!$msg) {
-                $req = P2Commun::createHTTPRequest ($donguri->base_url . 'login', HTTP_Request2::METHOD_POST);
+                $req = P2Commun::createHTTPRequest ($donguri->base_url . 'login', P2CurlRequest::METHOD_POST);
                 foreach ($donguri->cookies as $cname => $c) {
                     $req->addCookie($cname, $c['value']);
                 }
@@ -257,7 +257,7 @@ class Donguri {
         try {
             $detail = null;
             if ($donguri->cookie_sts == 2) {
-                $req = P2Commun::createHTTPRequest ($donguri->base_url . "logout", HTTP_Request2::METHOD_GET);
+                $req = P2Commun::createHTTPRequest ($donguri->base_url . "logout", P2CurlRequest::METHOD_GET);
                 foreach ($donguri->cookies as $cname => $c) {
                     $req->addCookie($cname, $c['value']);
                 }

@@ -96,7 +96,7 @@ class SettingTxt
 
         // DL
         try {
-            $req = P2Commun::createHTTPRequest($this->_url, HTTP_Request2::METHOD_GET);
+            $req = P2Commun::createHTTPRequest($this->_url, P2CurlRequest::METHOD_GET);
             $modified && $req->setHeader("If-Modified-Since", $modified);
 
             $response = P2Commun::getHTTPResponse($req);

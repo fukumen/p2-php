@@ -1846,7 +1846,7 @@ ERR;
             "path" => P2HostMgr::isHost5ch($host) ? "log" : "index.php"));
 
         try {
-            $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST);
+            $req = P2Commun::createHTTPRequest($url, P2CurlRequest::METHOD_POST);
 
             $req->addPostParameter('mail', $mail);
             $req->addPostParameter('pass', $pass);
@@ -1937,7 +1937,7 @@ ERR;
         }
 
         try {
-            $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST, $agent);
+            $req = P2Commun::createHTTPRequest($url, P2CurlRequest::METHOD_POST, $agent);
 
             $req->setHeader('X-2ch-UA', $x_2ch_ua);
 

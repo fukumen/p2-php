@@ -14,13 +14,13 @@ class P2Commun
     // {{{ createHTTPRequest()
 
     /**
-     * HTTP_Request2クラスのインスタンスを生成する
+     * P2CurlRequestクラスのインスタンスを生成する
      *
      * @param string $url 文字列のURL(絶対に必須)
-     * @param $method HTTP_Request2と同じ
-     * @return HTTP_Request2
+     * @param $method P2CurlRequestと同じ
+     * @return P2CurlRequest
      */
-    static public function createHTTPRequest($url , $method = HTTP_Request2::METHOD_GET, $ua = null)
+    static public function createHTTPRequest($url , $method = P2CurlRequest::METHOD_GET, $ua = null)
     {
         global $_conf;
 
@@ -31,11 +31,7 @@ class P2Commun
             throw new InvalidArgumentException ("URLの指定が変です。");
         }
 
-        if ($method === HTTP_Request2::METHOD_POST && $_conf['http_post_method'] == 1) {
-            $req = new P2CurlRequest($url, $method);
-        } else {
-            $req = new HTTP_Request2($url, $method);
-        }
+        $req = new P2CurlRequest($url, $method);
 
         // よく使うヘッダを指定
         // p2のHTTP通信は特に指定の無い限りMonazillaを名乗るようにする
@@ -49,9 +45,6 @@ class P2Commun
                 'connect_timeout' => $_conf['http_conn_timeout'],
                 'timeout' => $_conf['http_read_timeout'],
         ));
-
-        // 外部との通信は全てcURLを使う（socketはopenSSL絡みで地雷踏むので絶対使用禁止！）
-        $req->setAdapter('curl');
 
         // SSLの設定
         if($purl['scheme'] == 'https') {
@@ -91,17 +84,7 @@ class P2Commun
     }
 
     static public function getHTTPResponse($req) {
-        if ($req instanceof P2CurlRequest) {
-            return $req->send();
-        }
-        if($req->getConfig('proxy_type') == 'socks5') {
-            $socks = new HTTP_Request2_Adapter_Socket();
-            $res = $socks->sendRequest($req);
-            unset($socks);
-        } else {
-            $res = $req->send ();
-        }
-        return $res;
+        return $req->send();
     }
     // }}}
     // {{{ getP2UA()
@@ -147,7 +130,7 @@ class P2Commun
     static public function getWebPage($url, &$error_msg, $timeout = 15)
     {
         try {
-            $req = self::createHTTPRequest($url, HTTP_Request2::METHOD_GET);
+            $req = self::createHTTPRequest($url, P2CurlRequest::METHOD_GET);
             //$req->addHeader("X-PHP-Version", phpversion());
 
             $response = self::getHTTPResponse($req);
@@ -185,7 +168,7 @@ class P2Commun
 
         try {
             // DL
-            $req = self::createHTTPRequest($url, HTTP_Request2::METHOD_GET);
+            $req = self::createHTTPRequest($url, P2CurlRequest::METHOD_GET);
 
             $req->setConfig(array('follow_redirects' => $trace_redirection));
 
@@ -239,7 +222,7 @@ class P2Commun
     public static function getResponseCode($url)
     {
         try {
-            $req = self::createHTTPRequest ($url, HTTP_Request2::METHOD_HEAD);
+            $req = self::createHTTPRequest ($url, P2CurlRequest::METHOD_HEAD);
             $response = self::getHTTPResponse($req);
             return $response->getStatus();
 

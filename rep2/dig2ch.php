@@ -12,7 +12,7 @@ function dig2chsearch($query)
     $url = 'https://dig.5ch.net/' . '?AndOr=' . $query_arry['AndOr'] . '&maxResult=' . $query_arry['maxResult'] . '&atLeast=1&Sort=' . $query_arry['Sort'] . '&Link=1&Bbs=all&924=' . $query_arry['924'] . '&json=1&keywords=' . $query_arry['q'];
 
     try {
-        $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);
+        $req = P2Commun::createHTTPRequest ($url, P2CurlRequest::METHOD_GET);
         // $req->setHeader('User-Agent', $_SERVER['HTTP_USER_AGENT']); ‚â‚Á‚ÏMonazilla–¼æ‚Á‚Æ‚¢‚½•û‚ª—Ç‚³‚»‚¤‚©
         $req->setHeader('Accept-Charset', 'utf-8');
         $req->setHeader('Cache-Control', 'no-cache');

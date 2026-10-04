@@ -81,7 +81,6 @@ rep2を以下の設定で使う想定です。
 proxy_use: しない
 use_https: する
 2ch_to_5ch: する
-http_post_method: HTTP_Request2コンパチ
 ```
 
 HTTPリクエストをproxy経由で解析・デバッグしたい場合は[doc/mitmproxy.md](doc/mitmproxy.md)を参照してください。

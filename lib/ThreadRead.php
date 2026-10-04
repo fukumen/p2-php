@@ -157,7 +157,7 @@ class ThreadRead extends Thread {
         $HB = hash_hmac ("sha256", $message, $HMKey);
 
         try {
-            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_POST, $ReadUA);
+            $req = P2Commun::createHTTPRequest ($url, P2CurlRequest::METHOD_POST, $ReadUA);
 
             // ヘッダ
             if (! empty ($_GET['one'])) {
@@ -419,7 +419,7 @@ class ThreadRead extends Thread {
                                     // $request .= "Accept-Encoding: gzip, deflate\r\n";
 
         try {
-            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);
+            $req = P2Commun::createHTTPRequest ($url, P2CurlRequest::METHOD_GET);
             // ヘッダ
             $req->setHeader ('Referer', P2Util::selectScheme($purl['host'])."://{$purl['host']}/{$this->bbs}/");
 
@@ -436,7 +436,7 @@ class ThreadRead extends Thread {
 
             // Basic認証用のヘッダ
             if (isset ($purl['user']) && isset ($purl['pass'])) {
-                $req->setAuth ($purl['user'], $purl['pass'], HTTP_Request2::AUTH_BASIC);
+                $req->setAuth ($purl['user'], $purl['pass'], P2CurlRequest::AUTH_BASIC);
             }
 
             // Requestの送信
@@ -560,7 +560,7 @@ class ThreadRead extends Thread {
                 return $this->_downloadDat2chNotFound ($code);
             }
         } catch (Exception $e) {
-            if ($e instanceof HTTP_Request2_Exception && $e->getNativeCode() === 6
+            if ($e instanceof P2CurlException && $e->getNativeCode() === 6
                 && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)
             ) {
                 return $this->_downloadDat5chKako ();
@@ -598,7 +598,7 @@ class ThreadRead extends Thread {
         $url = $uri . $ext;
 
         try {
-            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET);
+            $req = P2Commun::createHTTPRequest ($url, P2CurlRequest::METHOD_GET);
 
             if ($this->modified) {
                 $req->setHeader ('If-Modified-Since', $this->modified);
@@ -652,7 +652,7 @@ class ThreadRead extends Thread {
         $url = P2Util::selectScheme($this->host)."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
 
         try {
-            $req = P2Commun::createHTTPRequest ($url, HTTP_Request2::METHOD_GET, $_SERVER['HTTP_USER_AGENT']);
+            $req = P2Commun::createHTTPRequest ($url, P2CurlRequest::METHOD_GET, $_SERVER['HTTP_USER_AGENT']);
             // ヘッダ
             // $req->setHeader ('User-Agent', P2Commun::getP2UA(false,P2HostMgr::isHost2chs($this->host))); // ここは、"Monazilla/" をつけるとNG
             // read.cgiにrep2のUAでアクセスすると弾かれるサイトがあるので対処
@@ -966,7 +966,7 @@ class ThreadRead extends Thread {
         }
 
         try {
-            $req = P2Commun::createHTTPRequest ($read_url.'1', HTTP_Request2::METHOD_GET, $_SERVER['HTTP_USER_AGENT']);
+            $req = P2Commun::createHTTPRequest ($read_url.'1', P2CurlRequest::METHOD_GET, $_SERVER['HTTP_USER_AGENT']);
             // ヘッダ
             // $req->setHeader ('User-Agent', P2Commun::getP2UA(false,P2HostMgr::isHost2chs($this->host))); // ここは、"Monazilla/" をつけるとNG
             // read.cgiにrep2のUAでアクセスすると弾かれるサイトがあるので対処
@@ -1475,7 +1475,7 @@ class ThreadRead extends Thread {
          */
         try {
             $url = "http://{$this->host}/{$this->bbs}/dat/{$this->key}.dat";
-            $req = P2Commun::createHTTPRequest ($url,HTTP_Request2::METHOD_GET);
+            $req = P2Commun::createHTTPRequest ($url,P2CurlRequest::METHOD_GET);
 
             $res = P2Commun::getHTTPResponse($req);
 

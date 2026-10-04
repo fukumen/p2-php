@@ -8,26 +8,6 @@ if (version_compare(PHP_VERSION, '8.2.0', '<')) {
     die('PHP 8.2.0 or later is required.');
 }
 
-/**
- * PHP 8Ç≈îpé~Ç≥ÇÍÇΩä÷êîÇåƒÇ—èoÇ∑îyÇÃÇΩÇﬂÇÃÉpÉbÉ`
- * HTTP_Request2
- * Bug #23839 get_magic_quotes_runtime() is deprecated
- * https://pear.php.net/bugs/bug.php?id=23839
- **/
-if (version_compare(PHP_VERSION, '8') > 0) {
-    function set_magic_quotes_runtime($new_setting) {
-        throw new Exception('Ç∆Ç§ÇÃêÃÇ…îpé~Ç≥ÇÍÇ‹ÇµÇΩÇÊ');
-    }
-
-    function get_magic_quotes_runtime() {
-        return false;
-    }
-
-    function get_magic_quotes_gpc() {
-        return false;
-    }
-}
-
 p2_rewrite_vars_for_proxy();
 
 // {{{ ÉÜÅ[ÉUÅ[ê›íË ì«çû

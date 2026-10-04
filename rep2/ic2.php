@@ -319,7 +319,7 @@ $ic2_ua = (!empty($_conf['expack.user_agent']))
 
 // キャッシュされていなければ、取得を試みる
 try {
-    $req = P2Commun::createHTTPRequest($uri, HTTP_Request2::METHOD_GET, $ic2_ua);
+    $req = P2Commun::createHTTPRequest($uri, P2CurlRequest::METHOD_GET, $ic2_ua);
     $req->setConfig(array('follow_redirects' => true));
     if ($mtime > 0) {
         $req->setHeader('If-Modified-Since', http_date($mtime));

@@ -34,7 +34,8 @@ class P2CurlMulti
         if (empty($url)) { return false; }
         if (isset($this->ch[$key])) { return false; }
 
-        $host = parse_url($url, PHP_URL_HOST);
+        $purl = parse_url($url);
+        $host = $purl['host'];
 
         $this->ch[$key] = curl_init();
         $this->file_update[$key] = $before_time;
@@ -47,7 +48,12 @@ class P2CurlMulti
         curl_setopt($this->ch[$key], CURLOPT_RETURNTRANSFER, true);
         curl_setopt($this->ch[$key], CURLOPT_TIMEOUT, $_conf['http_read_timeout']);
         curl_setopt($this->ch[$key], CURLOPT_CONNECTTIMEOUT, $_conf['http_conn_timeout']);
-        curl_setopt($this->ch[$key], CURLOPT_SSL_VERIFYPEER, false);
+        if ($purl['scheme'] == 'https') {
+            if ($_conf['ssl_capath']) {
+                curl_setopt($this->ch[$key], CURLOPT_CAPATH, $_conf['ssl_capath']);
+            }
+            curl_setopt($this->ch[$key], CURLOPT_SSL_VERIFYPEER, (bool)$_conf['ssl_verify_peer']);
+        }
         curl_setopt($this->ch[$key], CURLOPT_FILETIME, true);
         curl_setopt($this->ch[$key], CURLOPT_HTTPHEADER, $header);
         curl_setopt($this->ch[$key], CURLINFO_HEADER_OUT, true);
@@ -63,25 +69,21 @@ class P2CurlMulti
 
         // プロキシ
         if ($_conf['tor_use'] && P2HostMgr::isHostTor($host, 0)) { // Tor(.onion)はTor用の設定をセット
-            $tor_user_info = sprintf("%s%s@", $_conf['tor_proxy_user'], empty($_conf['tor_proxy_password']) ? "" : ":{$_conf['tor_proxy_password']}");
-            $tor_address   = "{$_conf['tor_proxy_host']}:{$_conf['tor_proxy_port']}";
-            $address = sprintf("http://%s%s", strpos($tor_user_info, "@") === 0 ? "" : $tor_user_info, $tor_address);
-
-            curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
-
-            if($_conf['tor_proxy_mode'] == 'socks5'){
-                curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+            curl_setopt($this->ch[$key], CURLOPT_PROXY, $_conf['tor_proxy_host'] . ':' . $_conf['tor_proxy_port']);
+            if ($_conf['tor_proxy_user'] !== '') {
+                curl_setopt($this->ch[$key], CURLOPT_PROXYUSERPWD, $_conf['tor_proxy_user'] . ':' . $_conf['tor_proxy_password']);
+            }
+            if ($_conf['tor_proxy_mode'] == 'socks5') {
+                curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5_HOSTNAME);
             }
 
         } elseif ($_conf['proxy_use']) {
-            $proxy_user_info = sprintf("%s%s@", $_conf['proxy_user'], empty($_conf['proxy_password']) ? "" : ":{$_conf['proxy_password']}");
-            $proxy_address   = "{$_conf['proxy_host']}:{$_conf['proxy_port']}";
-            $address = sprintf("http://%s%s", strpos($proxy_user_info, "@") === 0 ? "" : $proxy_user_info, $proxy_address);
-
-            curl_setopt($this->ch[$key], CURLOPT_PROXY, $address);
-
-            if($_conf['proxy_mode'] == 'socks5'){
-                curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+            curl_setopt($this->ch[$key], CURLOPT_PROXY, $_conf['proxy_host'] . ':' . $_conf['proxy_port']);
+            if ($_conf['proxy_user'] !== '') {
+                curl_setopt($this->ch[$key], CURLOPT_PROXYUSERPWD, $_conf['proxy_user'] . ':' . $_conf['proxy_password']);
+            }
+            if ($_conf['proxy_mode'] == 'socks5') {
+                curl_setopt($this->ch[$key], CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5_HOSTNAME);
             }
         }
 
@@ -152,7 +154,7 @@ class P2CurlMulti
      *                            ]
      *                            または
      *                            $key => (string) URL文字列
-     * @return array キー => P2CurlResponse | HTTP_Request2_Response | Exception
+     * @return array キー => P2CurlResponse | P2CurlException | Exception
      */
     static public function httpRequestsParallel($requestSpecs)
     {
@@ -171,7 +173,7 @@ class P2CurlMulti
                 try {
                     $url = $spec['url'];
                     
-                    $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_GET);
+                    $req = P2Commun::createHTTPRequest($url, P2CurlRequest::METHOD_GET);
                     if (isset($spec['before_time']) && $spec['before_time'] > 0) {
                         $req->setHeader('If-Modified-Since', gmdate('D, d M Y H:i:s T', $spec['before_time']));
                     }
@@ -210,14 +212,16 @@ class P2CurlMulti
             if (isset($results[$key])) {
                 $res = $results[$key];
                 if (!empty($res['error'])) {
-                    $error_msg = "cURL Error: " . $res['error'];
-                    $responses[$key] = new Exception($error_msg);
+                    // errnoは取得しない (curl_multiパスではエラーコード判定が使われない)
+                    $responses[$key] = new P2CurlException("cURL Error: " . $res['error']);
                 } else {
-                    $responses[$key] = new P2CurlResponse($res['raw'], $res['info']);
+                    // コンストラクタは(headerText, body)形式。curl_multiパスではリダイレクトしないため
+                    // header_sizeでの分割は破綻しない
+                    $header_size = $res['info']['header_size'];
+                    $responses[$key] = new P2CurlResponse(substr($res['raw'], 0, $header_size), $res['body']);
                 }
             } else {
-                $error_msg = "Request failed without results";
-                $responses[$key] = new Exception($error_msg);
+                $responses[$key] = new P2CurlException("Request failed without results");
             }
         }
 
@@ -327,12 +331,12 @@ class P2CurlMulti
      *
      * @param array $responses sendRequestsParallelの結果配列
      * @param string $key キー
-     * @return P2CurlResponse|HTTP_Request2_Response|null 失敗または存在しない場合はnull
+     * @return P2CurlResponse|null 失敗または存在しない場合はnull
      */
     static public function getResponse($responses, $key)
     {
         $response = $responses[$key] ?? null;
-        return (($response instanceof P2CurlResponse) || ($response instanceof HTTP_Request2_Response)) ? $response : null;
+        return ($response instanceof P2CurlResponse) ? $response : null;
     }
 
     /**
@@ -345,7 +349,7 @@ class P2CurlMulti
     static public function getErrorMessage($responses, $key)
     {
         $response = $responses[$key] ?? null;
-        if (($response instanceof P2CurlResponse) || ($response instanceof HTTP_Request2_Response)) {
+        if ($response instanceof P2CurlResponse) {
             return null;
         }
         if ($response instanceof Exception) {

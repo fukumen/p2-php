@@ -77,7 +77,7 @@ class AuthTalkAPI
             $HB = hash_hmac("sha256", $message, $HMKey);
             $body = null;
             try {
-                $req = P2Commun::createHTTPRequest($url_auth, HTTP_Request2::METHOD_POST, $AuthUA);
+                $req = P2Commun::createHTTPRequest($url_auth, P2CurlRequest::METHOD_POST, $AuthUA);
 
                 $req->setHeader('X-2ch-UA', $AppName);
 
@@ -122,7 +122,7 @@ class AuthTalkAPI
         if ($canLogin) {
             $body = null;
             try {
-                $req = P2Commun::createHTTPRequest($url_login, HTTP_Request2::METHOD_POST, $AuthUA);
+                $req = P2Commun::createHTTPRequest($url_login, P2CurlRequest::METHOD_POST, $AuthUA);
 
                 $req->setHeader('X-2ch-UA', $AppName);
 

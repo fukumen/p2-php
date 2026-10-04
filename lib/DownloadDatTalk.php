@@ -61,7 +61,7 @@ class DownloadDatTalk implements DownloadDatInterface
         }
 
         try {
-            $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST, $_conf['talkapi_ua.auth'] ?: null);
+            $req = P2Commun::createHTTPRequest($url, P2CurlRequest::METHOD_POST, $_conf['talkapi_ua.auth'] ?: null);
 
             foreach ($post_data as $name => $val) {
                 $req->addPostParameter($name, $val);
@@ -124,7 +124,7 @@ class DownloadDatTalk implements DownloadDatInterface
         $url = "{$scheme}://{$host}/api/boards/{$bbs}/threads/{$key}";
 
         try {
-            $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_GET);
+            $req = P2Commun::createHTTPRequest($url, P2CurlRequest::METHOD_GET);
             $response = P2Commun::getHTTPResponse($req);
         } catch (Exception $e) {
             $thread->getdat_error_msg_ht .= '<p>datæ“¾ƒGƒ‰[(talk): ' . $e->getMessage() . '</p>';

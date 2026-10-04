@@ -1,12 +1,17 @@
 <?php
 /**
- * POSTリクエスト用のHTTP_Request2コンパチクラス
+ * HTTPクライアントクラス (GET / POST / HEAD)
  * 
  * @copyright 2026 fukumen (https://github.com/fukumen)
  * @license   http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause License
  */
 class P2CurlRequest
 {
+    const METHOD_GET  = 'GET';
+    const METHOD_POST = 'POST';
+    const METHOD_HEAD = 'HEAD';
+    const AUTH_BASIC  = 'basic';
+
     private $url;
     private $method;
     private $headers = array();
@@ -15,12 +20,13 @@ class P2CurlRequest
     private $uploads = array();
     private $body = null;
     private $cookies = array();
+    private $auth = null;
     private $debugfile = null;
 
-    public function __construct($url, $method = 'GET')
+    public function __construct($url, $method = self::METHOD_GET)
     {
-        if ($method !== 'GET' && $method !== 'POST') {
-            throw new Exception("P2CurlRequest only supports GET and POST methods.");
+        if ($method !== self::METHOD_GET && $method !== self::METHOD_POST && $method !== self::METHOD_HEAD) {
+            throw new Exception("P2CurlRequest only supports GET, POST and HEAD methods.");
         }
         $this->url = $url;
         $this->method = $method;
@@ -84,7 +90,8 @@ class P2CurlRequest
 
     public function setAuth($user, $password, $scheme = null)
     {
-        // Do nothing
+        // Basic認証のみ対応 (schemeは無視する)
+        $this->auth = $user . ':' . $password;
     }
 
     public function addPostParameter($name, $value = null)
@@ -128,54 +135,47 @@ class P2CurlRequest
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        // follow_redirects設定時のみリダイレクトを追跡する (最大5回)
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+        // ヘッダはHEADERFUNCTIONで収集し、ステータス行(HTTP/で始まる行)を検出した時点で
+        // 収集済みヘッダをリセットする。リダイレクトの各転送で呼ばれるため、
+        // 最終転送のヘッダのみが残る (CURLOPT_HEADER+FOLLOWLOCATIONでは
+        // 全転送のヘッダとボディが連結され分割が破綻するため)
+        $responseHeaders = array();
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($handle, $line) use (&$responseHeaders) {
+            if (strpos($line, 'HTTP/') === 0) {
+                $responseHeaders = array();
+            }
+            $responseHeaders[] = $line;
+            return strlen($line);
+        });
 
-        if (isset($this->config['connect_timeout'])) {
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->config['connect_timeout']);
-        }
-        if (isset($this->config['timeout'])) {
-            curl_setopt($ch, CURLOPT_TIMEOUT, $this->config['timeout']);
-        }
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->config['connect_timeout']);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->config['timeout']);
         if (isset($this->config['ssl_capath'])) {
             curl_setopt($ch, CURLOPT_CAPATH, $this->config['ssl_capath']);
         }
         if (isset($this->config['ssl_verify_peer'])) {
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->config['ssl_verify_peer']);
         }
-        if (isset($this->config['ssl_verify_host'])) {
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, $this->config['ssl_verify_host'] ? 2 : 0);
-        }
         if (isset($this->config['proxy_host'])) {
             curl_setopt($ch, CURLOPT_PROXY, $this->config['proxy_host']);
             curl_setopt($ch, CURLOPT_PROXYPORT, $this->config['proxy_port']);
-            if (isset($this->config['proxy_user'])) {
+            if ($this->config['proxy_user'] !== '') {
                 curl_setopt($ch, CURLOPT_PROXYUSERPWD, $this->config['proxy_user'] . ':' . $this->config['proxy_password']);
             }
             if (isset($this->config['proxy_type']) && $this->config['proxy_type'] == 'socks5') {
-                curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+                curl_setopt($ch, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5_HOSTNAME);
             }
         }
         if (isset($this->config['follow_redirects']) && $this->config['follow_redirects']) {
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         }
 
-        $protocol_version = isset($this->config['protocol_version']) ? $this->config['protocol_version'] : '1.1';
-        switch ($protocol_version) {
-            case '2.0':
-                if (defined('CURL_HTTP_VERSION_2_0')) {
-                    curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-                }
-                break;
-            case '1.0':
-                curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-                break;
-            case '1.1':
-            default:
-                curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-                break;
-        }
-
-        if ($this->method == 'POST') {
+        if ($this->method == 'HEAD') {
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+        } elseif ($this->method == 'POST') {
             curl_setopt($ch, CURLOPT_POST, true);
             if (!empty($this->uploads)) {
                 $postFields = $this->postParams;
@@ -207,10 +207,16 @@ class P2CurlRequest
             }
         }
 
+        if ($this->auth !== null) {
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+            curl_setopt($ch, CURLOPT_USERPWD, $this->auth);
+        }
+
         if (!empty($this->cookies)) {
             $cookieParts = array();
             foreach ($this->cookies as $name => $value) {
-                $cookieParts[] = urlencode($name) . '=' . urlencode($value);
+                // 生値を連結する (呼び出し側でurlencode済みの値の二重エンコードを防ぐ)
+                $cookieParts[] = $name . '=' . $value;
             }
             curl_setopt($ch, CURLOPT_COOKIE, implode('; ', $cookieParts));
         }
@@ -261,40 +267,57 @@ class P2CurlRequest
         }
 
         $result = curl_exec($ch);
-        $info = curl_getinfo($ch);
         $error = curl_error($ch);
+        $errno = curl_errno($ch);
         curl_close($ch);
 
         if ($result === false) {
-            throw new Exception("cURL Error: " . $error);
+            throw new P2CurlException("cURL Error: " . $error, $errno);
         }
 
-        return new P2CurlResponse($result, $info);
+        return new P2CurlResponse(implode('', $responseHeaders), $result);
+    }
+}
+
+/**
+ * cURLエラーの例外。getNativeCode()でcurl_errno()のエラーコードを返す。
+ */
+class P2CurlException extends Exception
+{
+    public function getNativeCode()
+    {
+        return $this->getCode();
     }
 }
 
 class P2CurlResponse
 {
-    private $status;
+    private $status = 0;
     private $body;
     private $headers = array();
     private $cookies = array();
 
-    public function __construct($result, $info)
+    public function __construct($headerText, $body)
     {
-        $this->status = $info['http_code'];
-        $header_size = $info['header_size'];
-        $header_text = substr($result, 0, $header_size);
-        $this->body = substr($result, $header_size);
+        $this->body = $body;
 
-        foreach (explode("\r\n", $header_text) as $i => $line) {
+        $lines = explode("\r\n", $headerText);
+        // ステータス行からステータスコードをパースする (HTTP/1.x と HTTP/2 の両形式に対応)
+        $statusLine = rtrim($lines[0], "\r");
+        if (preg_match('#^HTTP/\S+\s+(\d+)#', $statusLine, $m)) {
+            $this->status = (int)$m[1];
+        }
+
+        foreach ($lines as $i => $line) {
             if ($i === 0) continue;
+            $line = rtrim($line, "\r");
             if (empty($line)) continue;
-            $parts = explode(': ', $line, 2);
+            $parts = explode(':', $line, 2);
             if (count($parts) == 2) {
-                $this->headers[strtolower($parts[0])] = $parts[1];
-                if (strtolower($parts[0]) === 'set-cookie') {
-                    $this->parseCookie($parts[1]);
+                $name = strtolower(trim($parts[0]));
+                $this->headers[$name] = trim($parts[1]);
+                if ($name === 'set-cookie') {
+                    $this->parseCookie(trim($parts[1]));
                 }
             }
         }

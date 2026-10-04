@@ -117,7 +117,7 @@ class P2ImgurUploader implements P2UploaderInterface
     	$data = fread(fopen($localPath, "rb"), filesize($localPath));
     	$imgur_api = 'https://api.imgur.com/3/image';
 
-    	$req = P2Commun::createHTTPRequest ($imgur_api,HTTP_Request2::METHOD_POST);
+    	$req = P2Commun::createHTTPRequest ($imgur_api,P2CurlRequest::METHOD_POST);
 
         // ƒwƒbƒ_
         $req->setHeader('Authorization', 'Client-ID ' . $this->client_id);
@@ -167,7 +167,7 @@ class P2ImgbbUploader implements P2UploaderInterface
         $data = fread(fopen($localPath, "rb"), filesize($localPath));
         $imgbb_api = 'https://api.imgbb.com/1/upload';
 
-        $req = P2Commun::createHTTPRequest($imgbb_api, HTTP_Request2::METHOD_POST);
+        $req = P2Commun::createHTTPRequest($imgbb_api, P2CurlRequest::METHOD_POST);
 
         $req->addPostParameter('key', $this->api_key);
         $req->addPostParameter('image', base64_encode($data));
@@ -212,7 +212,7 @@ class P2CatboxUploader implements P2UploaderInterface
     public function upload($localPath, $filename)
     {
         $url = 'https://catbox.moe/user/api.php';
-        $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST);
+        $req = P2Commun::createHTTPRequest($url, P2CurlRequest::METHOD_POST);
 
         $req->addPostParameter('reqtype', 'fileupload');
         if ($this->userhash !== '') {
@@ -256,7 +256,7 @@ class P2LitterboxUploader implements P2UploaderInterface
     public function upload($localPath, $filename)
     {
         $url = 'https://litterbox.catbox.moe/resources/internals/api.php';
-        $req = P2Commun::createHTTPRequest($url, HTTP_Request2::METHOD_POST);
+        $req = P2Commun::createHTTPRequest($url, P2CurlRequest::METHOD_POST);
 
         $req->addPostParameter('reqtype', 'fileupload');
         $req->addPostParameter('time', $this->time);

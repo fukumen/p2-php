@@ -291,9 +291,6 @@ if (!$is_ajax && $subhits && $subhits > $limit) {
     );
     $pager_extra_vars = $query_params;
     mb_convert_variables('CP932', 'UTF-8', $pager_extra_vars);
-    if (get_magic_quotes_gpc()) {
-        $pager_extra_vars = array_map('addslashes', $pager_extra_vars);
-    }
     foreach ($pager_extra_vars as $_k => $_v) {
         $pager_options['extraVars'][strtoupper($_k)] = $_v;
     }

@@ -470,7 +470,7 @@ function postIt($host, $bbs, $key, $post, $header)
 
     $post_seikou = false;
     try {
-        $req = P2Commun::createHTTPRequest ($bbs_cgi_url,HTTP_Request2::METHOD_POST, $PostUA);
+        $req = P2Commun::createHTTPRequest ($bbs_cgi_url,P2CurlRequest::METHOD_POST, $PostUA);
 
         // ƒwƒbƒ_
         foreach ($header as $name => $value) {
@@ -631,7 +631,7 @@ function postTalk($host, $bbs, $key, $post, $header)
 
     for ($i = 0; $i < 2; $i++) {
         try {
-            $req = P2Commun::createHTTPRequest($bbs_cgi_url, HTTP_Request2::METHOD_POST, $PostUA);
+            $req = P2Commun::createHTTPRequest($bbs_cgi_url, P2CurlRequest::METHOD_POST, $PostUA);
 
             // POST‚·‚é“à—e
             foreach ($_post as $name => $value) {
