@@ -18,6 +18,7 @@ STATIC_PHP_LIST_URL = "https://dl.static-php.dev/v3/php-bin/common/?format=json"
 REP2_STATIC_PHP_RELEASE_API_URL = "https://api.github.com/repos/fukumen/static-php-cli/releases/latest"
 WINDOWS_PHP_URL_TEMPLATE = "https://windows.php.net/downloads/releases/archives/php-{version}-nts-Win32-vs17-x64.zip"
 AIO_RELEASE_API_URL = "https://api.github.com/repos/fukumen/p2-php/releases/tags/latest"
+DOCKER_HUB_LIBRARY_URL_TEMPLATE = "https://hub.docker.com/_/{image}"
 
 PLATFORMS = {
     'linux-x86_64':   ('static',  'linux',  'x86_64',  'Linux x86_64'),
@@ -484,7 +485,7 @@ def main():
         if alpine_exists:
             print_ok(f"  - Docker Hub (alpine:{target_alpine_latest}): 提供済み")
         else:
-            print_warn(f"  - Docker Hub (alpine:{target_alpine_latest}): 未提供")
+            print_warn(f"  - Docker Hub (alpine:{target_alpine_latest}): 未提供 ({DOCKER_HUB_LIBRARY_URL_TEMPLATE.format(image='alpine')})")
         docker_hub_digests['alpine_patch_tag'] = target_alpine_latest
         docker_hub_digests['alpine_patch_exists'] = alpine_exists
     elif target_alpine_series:
@@ -517,7 +518,7 @@ def main():
         docker_hub_digests['php_alias_tag'] = alias_tag
         base_exists = check_docker_hub_tag("library/php", alias_tag)
         if not base_exists:
-            print_warn(f"  - Docker Hub: ベースイメージ php:{alias_tag} が存在しません")
+            print_warn(f"  - Docker Hub: ベースイメージ php:{alias_tag} が存在しません ({DOCKER_HUB_LIBRARY_URL_TEMPLATE.format(image='php')})")
         elif latest_official_php:
             patch_tag = f"{latest_official_php}-fpm-alpine{target_alpine_series}"
             alias_digests = get_platform_digests("library/php", alias_tag)
@@ -529,9 +530,9 @@ def main():
             if php_reflected is True:
                 print_ok(f"  - Docker Hub (php:{patch_tag}): 反映済み")
             elif php_reflected is False:
-                print_warn(f"  - Docker Hub (php:{patch_tag}): タグは存在しますが、エイリアス {alias_tag} には未反映")
+                print_warn(f"  - Docker Hub (php:{patch_tag}): タグは存在しますが、エイリアス {alias_tag} には未反映 ({DOCKER_HUB_LIBRARY_URL_TEMPLATE.format(image='php')})")
             else:
-                print_warn(f"  - Docker Hub (php:{patch_tag}): manifest 取得失敗")
+                print_warn(f"  - Docker Hub (php:{patch_tag}): manifest 取得失敗 ({DOCKER_HUB_LIBRARY_URL_TEMPLATE.format(image='php')})")
         
     # Caddy（同系列のパッチリリースかを確認し、Docker Hub 反映状況を表示。結果はセクション4の判定でも再利用する）
     caddy_latest = get_official_caddy()
@@ -549,9 +550,9 @@ def main():
         if caddy_reflected is True:
             print_ok(f"  - Docker Hub (caddy:{caddy_patch_tag}): 反映済み")
         elif caddy_reflected is False:
-            print_warn(f"  - Docker Hub (caddy:{caddy_patch_tag}): タグは存在しますが、エイリアス {caddy_alias_tag} には未反映")
+            print_warn(f"  - Docker Hub (caddy:{caddy_patch_tag}): タグは存在しますが、エイリアス {caddy_alias_tag} には未反映 ({DOCKER_HUB_LIBRARY_URL_TEMPLATE.format(image='caddy')})")
         else:
-            print_warn(f"  - Docker Hub (caddy:{caddy_patch_tag}): manifest 取得失敗")
+            print_warn(f"  - Docker Hub (caddy:{caddy_patch_tag}): manifest 取得失敗 ({DOCKER_HUB_LIBRARY_URL_TEMPLATE.format(image='caddy')})")
     
     # Composer
     composer_latest = get_official_composer()
@@ -645,7 +646,7 @@ def main():
             if check_docker_hub_tag("library/php", php_tag):
                 update_reasons.append(f"Alpine の新系列 {alp_latest_mm} が利用可能（Dockerfile.baseは {target_alpine_series}、Docker Hubイメージあり）")
             else:
-                print_warn(f"Alpine の新系列 {alp_latest_mm} が公式リリースされましたが、Docker Hub に php:{php_tag} がまだ用意されていません。")
+                print_warn(f"Alpine の新系列 {alp_latest_mm} が公式リリースされましたが、Docker Hub に php:{php_tag} がまだ用意されていません。({DOCKER_HUB_LIBRARY_URL_TEMPLATE.format(image='php')})")
     # PHP series update（latest_php_series はセクション3で数値比較により算出済み）
     if latest_php_series and target_php_series and latest_php_series != target_php_series:
         update_reasons.append(f"PHP の新系列 {latest_php_series} が利用可能（Dockerfile.baseは {target_php_series}）")
@@ -666,7 +667,7 @@ def main():
             if platform_digests_equal(alias_digests, patch_digests) is True:
                 update_reasons.append(f"Caddy の新系列 {caddy_latest_mm} が利用可能（Dockerfileは {target_caddy_series}、Docker Hubイメージに反映済み）")
             else:
-                print_warn(f"Caddy の新系列 {caddy_latest_mm} が公式リリースされましたが、Docker Hubのエイリアスイメージ {alias_tag} への反映がまだ完了していません。")
+                print_warn(f"Caddy の新系列 {caddy_latest_mm} が公式リリースされましたが、Docker Hubのエイリアスイメージ {alias_tag} への反映がまだ完了していません。({DOCKER_HUB_LIBRARY_URL_TEMPLATE.format(image='caddy')})")
     # Composer update
     target_composer = d_base_vers.get('composer')
     if composer_latest and target_composer and composer_latest != target_composer:
