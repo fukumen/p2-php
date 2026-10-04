@@ -183,7 +183,13 @@ function setFavItaByList($list, $setnum = null)
     // 記録データ設定
     $rec_lines = array();
     foreach (explode(',', $list) as $aList) {
+        if ($aList === '') {
+            continue;
+        }
         list($host, $bbs, $itaj_en) = explode('@', $aList);
+        if (!$host || !$bbs) {
+            continue;
+        }
         $rec_lines[] = "\t{$host}\t{$bbs}\t" . UrlSafeBase64::decode($itaj_en);
     }
 

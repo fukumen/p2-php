@@ -141,7 +141,7 @@ if (!$_conf['ktai'] and !empty($lines)) {
     function dragDropInit() {
         var i = 0;
         var id = '';
-        for (j = 0; j < <?php echo count($lines); ?>; ++j) {
+        for (j = 0; j < <?php echo count($okini_itas); ?>; ++j) {
             id = "li" + j;
             dd[i++] = new ygDDList(id);
             //gVarObj[id] = '<?php echo $host . "@" . $bbs . "@" . $itaj_en; ?>';
@@ -173,18 +173,14 @@ function makeOptionList()
         }
     }
 
-    var val = "";
+    var list = [];
     for (var j = 0; j < values.length; j++) {
-        if (val > "") {
-            val += ",";
-        }
         if (values[j] > "") {
-            val += values[j];
+            list[list.length] = values[j];
         }
     }
-    //alert(val);
 
-    return val;
+    return list.join(",");
 }
 
 function submitApply()
