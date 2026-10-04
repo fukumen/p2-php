@@ -22,6 +22,9 @@ td.italist, td.feedlist {
 .sortList {
 	cursor:move; width:200px; padding:4px 16px 0 0;
 }
+li.dragging {
+	outline:1px dotted {$STYLE['menu_ita_color_h']};
+}
 ul#italist, ul#feedlist {
 	list-style-type:none;
 }

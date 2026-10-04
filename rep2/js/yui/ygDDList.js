@@ -40,10 +40,12 @@ ygDDList.prototype.startDrag = function(x, y) {
 	dragEl.style.color = clickEl.style.color;
 	dragEl.style.border = "1px solid blue";
 
+	clickEl.className += ' dragging';
 };
 
 ygDDList.prototype.endDrag = function(e) {
 	// disable moving the linked element
+	this.getEl().className = this.getEl().className.replace(' dragging', '');
 };
 
 ygDDList.prototype.onDrag = function(e, id) {
