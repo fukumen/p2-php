@@ -1711,6 +1711,7 @@ EOP;
     <tr>
         <th>変数名</th>
         <th>値</th>
+        <th>デフォルト値</th>
         <th>説明</th>
     </tr>\n
 EOP;
@@ -1747,7 +1748,7 @@ function getConfBorderHtml($label)
     if ($_conf['ktai']) {
         $format = '<p>[%s]</p>';
     } else {
-        $format = '<tr class="group"><td colspan="3" align="center">%s</td></tr>';
+        $format = '<tr class="group"><td colspan="4" align="center">%s</td></tr>';
     }
 
     return sprintf($format, p2h($label));
@@ -1772,7 +1773,7 @@ function getGroupEndHtml($flags)
         if (!($flags & P2_EDIT_CONF_USER_HIDDEN)) {
             $ht .= <<<EOP
     <tr class="group">
-        <td colspan="3" align="center">
+        <td colspan="4" align="center">
             <input type="submit" name="submit_save" value="変更を保存する">
             <input type="reset"  name="reset_change" value="変更を取り消す" onclick="return window.confirm('変更を取り消してもよろしいですか？\\n（全てのタブの変更がリセットされます）');">
             <input type="submit" name="submit_default" value="デフォルトに戻す" onclick="return window.confirm('ユーザ設定をデフォルトに戻してもよろしいですか？\\n（やり直しはできません）');">
@@ -1880,6 +1881,7 @@ EOP;
     <tr title="デフォルト値: {$def_views[$name]}">
         <td>{$name}</td>
         <td>{$form_ht}</td>
+        <td>{$def_views[$name]}</td>
         <td>{$description_ht}</td>
     </tr>\n
 EOP;
