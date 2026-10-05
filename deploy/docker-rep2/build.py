@@ -37,7 +37,7 @@ AIODEB_IMAGE_NAME = "rep2-aiodeb:latest"
 STATIC_COMPOSE = """\
 services:
   rep2:
-    image: rep2-static:latest
+    image: %%STATIC_IMAGE%%
     build:
       dockerfile: docker/Dockerfile.static
       additional_contexts:
@@ -47,7 +47,7 @@ services:
 AIODEB_COMPOSE = """\
 services:
   rep2:
-    image: rep2-aiodeb:latest
+    image: %%AIODEB_IMAGE%%
     build:
       dockerfile: docker/Dockerfile.aiodeb
       additional_contexts:
@@ -111,6 +111,11 @@ AGENT_COMPOSE_FILE = "docker-compose.agent.yml"
 
 AGENT_COMMANDS = ("agent-up", "agent-down", "agent-logs", "agent-exec", "agent-test")
 
+# --tag を適用するコマンド (タグ付きイメージを使用) と --tag をエラーにするコマンド。
+# それ以外は check_flag_conflicts() で警告して無視する
+TAG_APPLY_COMMANDS = ("up", "pull", "config") + AGENT_COMMANDS
+TAG_ERROR_COMMANDS = ("tag", "deploy", "upload")
+
 REMOTE_COMMAND = {
     "up": True,
     "build": False,
@@ -128,9 +133,23 @@ REMOTE_COMMAND = {
     "clean": False,
     "sync": False,
     "upload": False,
+    "tag": True,
     "deploy": False,
     "images": True,
 }
+
+TAG_RE = re.compile(r"^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$")
+
+def validate_image_tag(tag):
+    """タグ文字列を Docker タグの形式として検証する (無効なら終了)"""
+    if not TAG_RE.match(tag):
+        print(f"Error: 無効なタグ名です: {tag}")
+        print("タグには英数字と _ . - のみ使用できます (先頭は英数字または _)。")
+        sys.exit(1)
+
+def apply_tag(image_latest, tag):
+    """:latest 付きのイメージ名を指定タグ付きの名前に置き換える"""
+    return image_latest.rsplit(":", 1)[0] + ":" + tag
 
 def load_env(path=".env"):
     """.env を読み込み、未設定の環境変数へ反映する（既存の環境変数が優先される）"""
@@ -162,6 +181,19 @@ def resolve_debug(debug_flag):
 
 def check_flag_conflicts(args):
     """検証モード (--static / --aiodeb) と FLAG 系オプション・ローカル override の排他チェック"""
+    if args.tag:
+        validate_image_tag(args.tag)
+        if args.command in TAG_ERROR_COMMANDS:
+            print(f"Error: --tag は {args.command} と同時に指定できません。")
+            if args.command == "tag":
+                print("tag コマンドのタグ名は位置引数で指定してください (例: ./build.py tag <タグ名>)。")
+            elif args.command == "deploy":
+                print("deploy は build → upload → up の連鎖のため、タグの解釈が中途半端になります。")
+            else:
+                print("upload で転送するのは常に :latest イメージです。リモート側でのタグ付けは tag コマンドを使用してください。")
+            sys.exit(1)
+        if args.command not in TAG_APPLY_COMMANDS:
+            print(f"Warning: --tag は {args.command} では効果がないため無視します。")
     if args.command in AGENT_COMMANDS:
         for flag in ("debug", "static", "aiodeb", "ephemeral"):
             raw = getattr(args, f"raw_{flag}", None) if flag == "debug" else getattr(args, flag)
@@ -398,6 +430,8 @@ def get_agent_compose_args(args):
         print("生成例: openssl rand -hex 32")
         sys.exit(1)
     image_name = "rep2-extra:latest" if args.extra else "rep2:latest"
+    if args.tag:
+        image_name = apply_tag(image_name, args.tag)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     compose = AGENT_COMPOSE.replace("%%AGENT_IMAGE%%", image_name) \
                            .replace("%%AGENT_SECRET_KEY%%", secret_key)
@@ -501,7 +535,7 @@ def list_version_images(env=None):
         return
 
     jst = timezone(timedelta(hours=9))
-    header = ("IMAGE", "BUILT(JST)") + tuple(strip_ver_prefix(k) for k in VER_ENV_KEYS)
+    header = ("IMAGE", "ID", "BUILT(JST)") + tuple(strip_ver_prefix(k) for k in VER_ENV_KEYS)
     rows = []
     for img in sorted(images, key=lambda d: (d.get("Repository", ""), d.get("Tag", ""))):
         ref = f"{img['Repository']}:{img.get('Tag', '')}"
@@ -524,7 +558,7 @@ def list_version_images(env=None):
                     .replace(tzinfo=timezone.utc).astimezone(jst).strftime("%Y-%m-%d %H:%M")
             except ValueError:
                 created = raw
-        rows.append((ref, created) + tuple(env_[strip_ver_prefix(k)] for k in VER_ENV_KEYS))
+        rows.append((ref, img.get("ID", ""), created) + tuple(env_[strip_ver_prefix(k)] for k in VER_ENV_KEYS))
 
     widths = [max(len(row[i]) for row in ([header] + rows)) for i in range(len(header))]
     fmt = "  ".join(f"{{:{w}}}" for w in widths)
@@ -635,6 +669,8 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
     if is_remote:
         remote_host, remote_path = require_remote_config()
     image_name = get_image_name(args)
+    if args.tag and cmd_name in TAG_APPLY_COMMANDS:
+        image_name = apply_tag(image_name, args.tag)
     env = os.environ.copy()
     env["REP2_IMAGE"] = image_name
     if is_remote:
@@ -642,9 +678,13 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
 
     tmp_compose = {}
     if args.aiodeb:
-        tmp_compose["aiodeb"] = write_compose_file("docker-rep2-aiodeb.yml", AIODEB_COMPOSE)
+        aiodeb_image = apply_tag(AIODEB_IMAGE_NAME, args.tag) if args.tag else AIODEB_IMAGE_NAME
+        tmp_compose["aiodeb"] = write_compose_file(
+            "docker-rep2-aiodeb.yml", AIODEB_COMPOSE.replace("%%AIODEB_IMAGE%%", aiodeb_image))
     if args.static:
-        tmp_compose["static"] = write_compose_file("docker-rep2-static.yml", STATIC_COMPOSE)
+        static_image = apply_tag(STATIC_IMAGE_NAME, args.tag) if args.tag else STATIC_IMAGE_NAME
+        tmp_compose["static"] = write_compose_file(
+            "docker-rep2-static.yml", STATIC_COMPOSE.replace("%%STATIC_IMAGE%%", static_image))
     if args.ephemeral and cmd_name in ("up", "down", "pull", "logs", "exec", "config"):
         tmp_compose["ephemeral"] = write_compose_file("docker-rep2-ephemeral.yml", EPHEMERAL_COMPOSE)
     compose_base = get_compose_args(args, is_remote, tmp_compose)
@@ -659,6 +699,9 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
             if args.static: flags.append("--static")
             if args.aiodeb: flags.append("--aiodeb")
             if args.ephemeral: flags.append("--ephemeral")
+            if args.tag:
+                flags.append("--tag")
+                flags.append(args.tag)
             flags.append("--use-remote-yml")
             argv0 = os.path.basename(sys.argv[0])
             remote_cmd = f"cd {remote_path} && ./{argv0} --noremote {' '.join(flags)} up"
@@ -903,6 +946,28 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
     elif cmd_name == "images":
         list_version_images(env)
 
+    elif cmd_name == "tag":
+        tag_name = args.tag_name
+        validate_image_tag(tag_name)
+        if args.static:
+            src_image = STATIC_IMAGE_NAME
+            build_hint = "build-static"
+        elif args.aiodeb:
+            src_image = AIODEB_IMAGE_NAME
+            build_hint = "build-aiodeb"
+        else:
+            src_image = get_image_name(args)
+            build_hint = "build"
+        check = subprocess.run(["docker", "image", "inspect", src_image],
+                               capture_output=True, text=True, env=env)
+        if check.returncode != 0:
+            print(f"Error: タグ付け元のイメージが見つかりません: {src_image}")
+            print(f"先に {build_hint} を実行してください。")
+            sys.exit(1)
+        new_ref = apply_tag(src_image, tag_name)
+        run_cmd(["docker", "tag", src_image, new_ref], env=env)
+        print(f"==> タグを付与しました: {src_image} -> {new_ref}")
+
     elif cmd_name == "agent-up":
         run_cmd(get_agent_compose_args(args) + ["up", "-d"], env=env)
         # rc.init による conf 生成・Web UI の起動待ち (ephemeral のため毎回初期化が走る)
@@ -961,6 +1026,7 @@ def main():
         "prune": "不要な Docker イメージを削除 (docker image prune -f)",
         "clean": "Docker のイメージとビルドキャッシュをすべて削除",
         "sync": "rsync でローカルディレクトリをリモートホストへ同期",
+        "tag": "現在の :latest イメージにタグを付与して保存",
         "upload": "ビルドしたイメージをリモートホストへ転送",
         "deploy": "down -> build(build-static/build-aiodeb) -> upload -> up のデプロイシーケンスを一括実行",
         "images": "rep2 関連イメージの VER_* ENV とビルド時刻 (JST) を一覧表示",
@@ -975,6 +1041,14 @@ def main():
     for cmd, desc in command_descriptions.items():
         command_help += f"  {cmd:<14} : {desc}\n"
     command_help += (
+        "\nタグの保存・使用:\n"
+        "  tag コマンドで現在の :latest イメージにタグを付けて保存できる。\n"
+        "  イメージの種類は --extra / --debug / --static / --aiodeb / --ghcr で決まる。\n"
+        "  例: ./build.py --extra tag 20261005-1  (rep2-extra:latest → rep2-extra:20261005-1)\n"
+        "  --tag を付けて up / pull / config / agent 系を実行すると、保存タグ付きイメージを使用する。\n"
+        "  例: ./build.py --extra --tag 20261005-1 agent-up\n"
+        "  --tag は deploy / upload / tag ではエラー、他のコマンドでは警告して無視する。\n"
+        "  保存タグの削除は docker rmi で行う (docker image prune では削除されない)\n"
         "\nデバッグ:\n"
         "  .env に REP2_BUILD_DEBUG=true が設定されていれば既定で有効、\n"
         "  未設定なら無効 (--debug / --nodebug で強制)\n"
@@ -1006,6 +1080,7 @@ def main():
     parent_parser.add_argument('--aiodeb', dest='aiodeb', action='store_true', help="検証用イメージ (deb パッケージ) を compose で使用する")
     parent_parser.add_argument('--ephemeral', dest='ephemeral', action='store_true', help="データ (/ext) を永続化せずに起動する (tmpfs マウント / down で消滅)")
     parent_parser.add_argument('--nooverride', dest='nooverride', action='store_true', help="docker-compose.override.yml を読み込まない")
+    parent_parser.add_argument('--tag', dest='tag', default=None, help="保存タグの指定 (up / pull / config / agent 系でタグ付きイメージを使用。tag コマンドで付与)")
     parent_parser.add_argument('--remote', action='store_true', default=None, help="リモートホストで実行する (SSH経由 / DOCKER_HOST=ssh://<REP2_REMOTE_HOST>)")
     parent_parser.add_argument('--noremote', dest='remote', action='store_false', help="ローカルホストで実行する")
     parent_parser.add_argument('--use-remote-yml', action='store_true', help=argparse.SUPPRESS)
@@ -1040,6 +1115,9 @@ def main():
             deploy_parser = subparsers.add_parser(cmd, help=desc)
             deploy_parser.add_argument('--src', dest='src', choices=['github', 'local'], default='github',
                                        help="検証モード (--static / --aiodeb) 時の成果物入手先: github=Releases から取得 / local=ローカルビルド (default: github)")
+        elif cmd == 'tag':
+            tag_parser = subparsers.add_parser(cmd, help=desc)
+            tag_parser.add_argument('tag_name', help="付与するタグ名 (例: 20261005-1200)")
         else:
             subparsers.add_parser(cmd, help=desc)
 
