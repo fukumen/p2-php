@@ -32,8 +32,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           api="repos/${{ github.repository }}/actions/workflows/publish-docker-base.yml/runs?per_page=1"
-          queued=$(gh api --retry 3 "${api}&status=queued" --jq '.total_count')
-          running=$(gh api --retry 3 "${api}&status=in_progress" --jq '.total_count')
+          queued=$(gh api "${api}&status=queued" --jq '.total_count')
+          running=$(gh api "${api}&status=in_progress" --jq '.total_count')
           echo "base runs: queued=${queued} in_progress=${running}"
           skip=false
           if [ "${queued}" -gt 0 ] || [ "${running}" -gt 0 ]; then
