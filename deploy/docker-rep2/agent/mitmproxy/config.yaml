@@ -1,0 +1,2 @@
+scripts:
+  - /opt/agent/filter_proxy.py

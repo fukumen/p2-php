@@ -54,6 +54,33 @@ python3 build.py agent-down
 次回の `agent-up` は毎回初期状態（新規ユーザー登録）から始まるため、過去の状態に影響されません。
 通常の `rep2-data/` も参照しません。
 
+## テスト専用 mitmproxy addon の追加
+
+外部 API の応答をモックへ差し替えるなど、テスト専用の mitmproxy addon を追加するときは `agent/agent-compose.override.yml` を作成します。
+build.py は agent 系コマンド（agent-up / agent-down / agent-logs / agent-exec / agent-test）でこ override ファイルがあると自動読み込みします。
+
+テスト用 addon とテスト用 config.yaml は `test/` 配下に置き、
+override ファイルでは volume mount により build.py でエージェント環境用に定義されている config.yaml を差し替えます。
+
+```yaml
+services:
+  filter-proxy:
+    volumes:
+      - ../../../test/mitmproxy_addon/mitmproxy-test.yaml:/home/mitmproxy/.mitmproxy/config.yaml:ro
+      - ../../../test/mitmproxy_addon/mock_hoge.py:/opt/test/mock_hoge.py:ro
+```
+
+テスト用 config.yaml の `scripts` では filter_proxy.py(bbs.cgi への POST を遮断する) と mock_hoge.py(テスト用 addon) を指定します。
+
+```yaml
+scripts:
+  - /opt/agent/filter_proxy.py ← 
+  - /opt/test/mock_hoge.py ←
+```
+
+テスト完了後、override ファイルは削除してください。
+filter_proxy.py は POST 遮断の実現手段であり、テストのために編集しないでください。
+
 ## テストファイルの作成方法
 
 テストファイル（PHP）は以下のルールで作成してください。

@@ -86,6 +86,8 @@ services:
         condition: service_started
   filter-proxy:
     image: mitmproxy/mitmproxy:latest
+    environment:
+      PYTHONUNBUFFERED: "1"
     command:
       - mitmweb
       - -p
@@ -98,16 +100,16 @@ services:
       - web_open_browser=false
       - --set
       - web_password=rep2agent
-      - -s
-      - /opt/agent/filter_proxy.py
     volumes:
-      - ./agent/filter_proxy.py:/opt/agent/filter_proxy.py:ro
+      - ./agent/mitmproxy/config.yaml:/home/mitmproxy/.mitmproxy/config.yaml:ro
+      - ./agent/mitmproxy/filter_proxy.py:/opt/agent/filter_proxy.py:ro
     ports:
       - "127.0.0.1:3128:3128"
       - "127.0.0.1:8081:8081"
 """
 
 AGENT_COMPOSE_FILE = "docker-compose.agent.yml"
+AGENT_COMPOSE_OVERRIDE_FILE = "agent-compose.override.yml"
 
 AGENT_COMMANDS = ("agent-up", "agent-down", "agent-logs", "agent-exec", "agent-test")
 
@@ -435,11 +437,16 @@ def get_agent_compose_args(args):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     compose = AGENT_COMPOSE.replace("%%AGENT_IMAGE%%", image_name) \
                            .replace("%%AGENT_SECRET_KEY%%", secret_key)
-    return [
+    cmd = [
         "docker", "compose",
         "--project-directory", script_dir,
         "-f", write_compose_file(AGENT_COMPOSE_FILE, compose),
     ]
+    override = os.path.join(script_dir, "agent", AGENT_COMPOSE_OVERRIDE_FILE)
+    if os.path.exists(override):
+        print(f"[build.py] agent compose override loaded: {override}")
+        cmd += ["-f", override]
+    return cmd
 
 
 def get_git_info(path="."):
