@@ -105,18 +105,11 @@ jobs:
           fi
           cd ../../
 
-          # --- ZIP / Others ---
-          mkdir -p repo/zip
-          cp dist/*.zip repo/zip/ 2>/dev/null || true
+          # --- Checksums (Pages) ---
           cp dist/php-checksums.txt repo/php-checksums-${{ github.run_number }}.txt 2>/dev/null || true
 
           # Prune old checksum files (keep latest 5)
           ls -1 repo/php-checksums-*.txt 2>/dev/null | sort -Vr | tail -n +6 | xargs -r rm -v -f
-
-          # Prune old ZIP packages (keep latest 5 per architecture)
-          for arch in x86_64 arm64; do
-            ls -1 repo/zip/rep2-allinone-*-windows-${arch}.zip 2>/dev/null | sort -Vr | tail -n +6 | xargs -r rm -v -f
-          done
 
       - name: Generate HTML Indexes
         working-directory: deploy/rep2-allinone
@@ -125,7 +118,6 @@ jobs:
           tree -H '.' -L 2 --noreport --charset utf-8 -T "rep2-allinone Packages" -o index.html
           cd apt && tree -H '.' -L 1 --noreport --charset utf-8 -T "rep2-allinone APT Repository" -o index.html && cd ..
           cd rpm && tree -H '.' -L 1 --noreport --charset utf-8 -T "rep2-allinone RPM Repository" -o index.html && cd ..
-          cd zip && tree -H '.' -L 1 --noreport --charset utf-8 -T "rep2-allinone ZIP Downloads" -o index.html && cd ..
 
       - name: Deploy to GitHub Pages (gh-pages branch)
         uses: peaceiris/actions-gh-pages@v4
@@ -154,9 +146,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if gh release view "$COMMIT_DATE" > /dev/null 2>&1; then
-            gh release upload "$COMMIT_DATE" deploy/rep2-allinone/dist/*-macos-*.tar.gz --clobber
+            gh release upload "$COMMIT_DATE" \
+              deploy/rep2-allinone/dist/*-macos-*.tar.gz \
+              deploy/rep2-allinone/dist/*-windows-*.zip --clobber
           else
-            gh release create "$COMMIT_DATE" deploy/rep2-allinone/dist/*-macos-*.tar.gz \
+            gh release create "$COMMIT_DATE" \
+              deploy/rep2-allinone/dist/*-macos-*.tar.gz \
+              deploy/rep2-allinone/dist/*-windows-*.zip \
               --title "Build $COMMIT_DATE" \
               --notes "Automated build of commit $(git rev-parse --short HEAD)."
           fi
