@@ -171,6 +171,7 @@ jobs:
           # Recreate the release so its tag and published date track the built commit
           if gh release view latest > /dev/null 2>&1; then
             gh release delete latest -y --cleanup-tag
+            sleep 10
           fi
           gh release create latest \
             --target "$GITHUB_SHA" \
