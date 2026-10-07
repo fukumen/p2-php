@@ -77,6 +77,7 @@ services:
       - "127.0.0.1:10089:8443"
     volumes:
       - ../../../test:/var/www/test
+      - ./agent/js-test:/var/www/js-test
     tmpfs:
       - /ext
     environment:
@@ -111,7 +112,7 @@ services:
 AGENT_COMPOSE_FILE = "docker-compose.agent.yml"
 AGENT_COMPOSE_OVERRIDE_FILE = "agent-compose.override.yml"
 
-AGENT_COMMANDS = ("agent-up", "agent-down", "agent-logs", "agent-exec", "agent-test")
+AGENT_COMMANDS = ("agent-up", "agent-down", "agent-logs", "agent-exec", "agent-test", "agent-jstest")
 
 # --tag を適用するコマンド (タグ付きイメージを使用) と --tag をエラーにするコマンド。
 # それ以外は check_flag_conflicts() で警告して無視する
@@ -1010,6 +1011,10 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
         run_cmd(get_agent_compose_args(args) + ["exec", "-T", SERVICE_NAME,
                  "php", container_php_file] + extra_args, env=env)
 
+    elif cmd_name == "agent-jstest":
+        run_cmd(get_agent_compose_args(args) + ["exec", "-T", SERVICE_NAME,
+                 "sh", "/var/www/js-test/run.sh"] + extra_args, env=env)
+
     else:
         print(f"Error: 不明なコマンドです: {cmd_name}")
         sys.exit(1)
@@ -1042,6 +1047,7 @@ def main():
         "agent-logs": "エージェント環境のログを表示",
         "agent-exec": "エージェント環境の rep2 コンテナでシェルまたは指定したコマンドを実行",
         "agent-test": "起動済みエージェント環境で PHP テストを実行 (test/ 配下のファイル)",
+        "agent-jstest": "起動済みエージェント環境で JS 単体テストを実行 (test/ 配下の spec、未構築時は自動セットアップ)",
     }
 
     command_help = "コマンド一覧:\n"

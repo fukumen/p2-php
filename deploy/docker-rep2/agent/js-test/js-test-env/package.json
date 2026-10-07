@@ -1,0 +1,12 @@
+{
+  "name": "rep2-js-test-env",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "vitest": "^3.2.4",
+    "jsdom": "^26.1.0",
+    "iconv-lite": "^0.6.3",
+    "istanbul-lib-instrument": "^6.0.3",
+    "istanbul-lib-coverage": "^3.2.2"
+  }
+}
