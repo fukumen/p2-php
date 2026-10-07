@@ -106,51 +106,40 @@ extract_env() {
 extract_default_php() {
   sed -n 's/^      php-version:.*default:[[:space:]]*"\([0-9.]*\)".*/\1/p' "$WORKFLOW_FILE" | head -n1
 }
-# UPX は workflow の matrix.upx（linux: --with-upx-pack / macOS: 空）を単一ソースとする。
-# 実行中プラットフォームの行を抽出し、SPC_UPX（0/1）でのみ上書きできる
-extract_workflow_upx() {
-  local os arch flag
+# matrix 行の選択は runner ラベルでなく os: / arch: の 2 フィールドで行う。
+select_matrix_line() {
+  local os arch
   os="$(uname -s)"; arch="$(uname -m)"
-  local pattern
   case "$os:$arch" in
-    Linux:x86_64)  pattern='runner: ubuntu-24.04,' ;;
-    Linux:aarch64) pattern='runner: ubuntu-24.04-arm,' ;;
-    Darwin:arm64)  pattern='runner: macos-15,' ;;
-    Darwin:x86_64) pattern='runner: macos-15-intel,' ;;
+    Linux:x86_64)  os=linux arch=x86_64 ;;
+    Linux:aarch64) os=linux arch=aarch64 ;;
+    Darwin:arm64)  os=macos arch=aarch64 ;;
+    Darwin:x86_64) os=macos arch=x86_64 ;;
     *) return 1 ;;
   esac
-  flag="$(grep -F -- "$pattern" "$WORKFLOW_FILE" | sed -n 's/.*upx: "\([^"]*\)".*/\1/p' | head -n1)"
+  grep -F -- "os: $os," "$WORKFLOW_FILE" | grep -F -- "arch: $arch," | head -n1
+}
+# UPX は workflow の matrix.upx（linux: --with-upx-pack / macOS: 空）を単一ソースとする。
+# SPC_UPX（0/1）でのみ上書きできる
+extract_workflow_upx() {
+  local line flag
+  line="$(select_matrix_line)" || return 1
+  flag="$(sed -n 's/.*upx: "\([^"]*\)".*/\1/p' <<< "$line")"
   [ -n "$flag" ] && echo "$flag"
 }
 # config-file-path は workflow の matrix.config-file-path（php.ini 本体の探索パスの
-# 焼き込みパス）を単一ソースとする。実行中プラットフォームの行を抽出する
+# 焼き込みパス）を単一ソースとする。
 extract_workflow_config_file_path() {
-  local os arch
-  os="$(uname -s)"; arch="$(uname -m)"
-  local pattern
-  case "$os:$arch" in
-    Linux:x86_64)  pattern='runner: ubuntu-24.04,' ;;
-    Linux:aarch64) pattern='runner: ubuntu-24.04-arm,' ;;
-    Darwin:arm64)  pattern='runner: macos-15,' ;;
-    Darwin:x86_64) pattern='runner: macos-15-intel,' ;;
-    *) return 1 ;;
-  esac
-  grep -F -- "$pattern" "$WORKFLOW_FILE" | sed -n 's/.*config-file-path: "\([^"]*\)".*/\1/p' | head -n1
+  local line
+  line="$(select_matrix_line)" || return 1
+  sed -n 's/.*config-file-path: "\([^"]*\)".*/\1/p' <<< "$line"
 }
 # scan-dir は workflow の matrix.scan-dir（ini の conf.d スキャン先の焼き込みパス）を
-# 単一ソースとする。実行中プラットフォームの行を抽出する
+# 単一ソースとする。
 extract_workflow_scan_dir() {
-  local os arch
-  os="$(uname -s)"; arch="$(uname -m)"
-  local pattern
-  case "$os:$arch" in
-    Linux:x86_64)  pattern='runner: ubuntu-24.04,' ;;
-    Linux:aarch64) pattern='runner: ubuntu-24.04-arm,' ;;
-    Darwin:arm64)  pattern='runner: macos-15,' ;;
-    Darwin:x86_64) pattern='runner: macos-15-intel,' ;;
-    *) return 1 ;;
-  esac
-  grep -F -- "$pattern" "$WORKFLOW_FILE" | sed -n 's/.*scan-dir: "\([^"]*\)".*/\1/p' | head -n1
+  local line
+  line="$(select_matrix_line)" || return 1
+  sed -n 's/.*scan-dir: "\([^"]*\)".*/\1/p' <<< "$line"
 }
 
 EXTENSIONS="${SPC_EXTENSIONS:-$(extract_env)}"
