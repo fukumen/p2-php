@@ -34,6 +34,8 @@ workflow (.github/workflows/build-rep2-unix.yml) と同一の手順・フラグ�
   --host          host モード（macOS 上で実行）でビルド + 検証（既定: docker モード）
   --verify-only   ビルド済み work/dist/ の検証のみ（docker / PHP パッケージ不要。
                   静的バイナリは依存ゼロのため任意の linux ホストで実行可能）
+  --clean         static-php-cli 側のビルド生成物（buildroot / source / log）を削除して終了
+  --clean-all     --clean の対象に downloads / pkgroot / vendor を加えて削除して終了
 
 環境変数（既定値は workflow からの抽出値）:
   SPC_REPO               static-php-cli のパス（既定: ../../../../static-php-cli）
@@ -50,15 +52,48 @@ EOU
 }
 MODE="docker"
 VERIFY_ONLY=false
+CLEAN=false
+CLEAN_ALL=false
 while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help) usage; exit 0 ;;
     --host)  MODE="host" ;;
     --verify-only) VERIFY_ONLY=true ;;
+    --clean) CLEAN=true ;;
+    --clean-all) CLEAN=true; CLEAN_ALL=true ;;
     *) usage >&2; die "未知のオプション: $1" ;;
   esac
   shift
 done
+
+# ---------------------------------------------------------------
+# clean (--clean / --clean-all: ビルド生成物の削除のみ行い終了する)
+# ---------------------------------------------------------------
+clean_build_artifacts() {
+  [ -n "$SPC_REPO" ] || die "SPC_REPO が解決できません（static-php-cli が見つかりません）"
+  [ -d "$SPC_REPO/.git" ] && [ -f "$SPC_REPO/bin/spc" ] || die "SPC_REPO が static-php-cli の作業ツリーに見えません（.git / bin/spc が無い）: $SPC_REPO"
+  # 対象外: spc-build/work、.spc.cache.php / .spc-doctor.lock（spc が自動再生成）、
+  #   ~/.cache/spc/（doctor のツールチェーンキャッシュ）、/tmp/php-info.json（実行のたびに上書き）
+  local dirs=(buildroot source log)
+  if [ "$CLEAN_ALL" = true ]; then
+    dirs+=(downloads pkgroot vendor)
+  fi
+  if [ "$MODE" = "host" ]; then
+    [ "$(uname -s)" = "Darwin" ] || die "--clean --host は macOS 上でのみ実行できます（linux では --clean のみで実行）"
+    for d in "${dirs[@]}"; do
+      rm -rf "$SPC_REPO/$d"
+    done
+  else
+    command -v docker >/dev/null || die "docker が見つかりません（linux 上の生成物は root 所有のため docker 経由で削除します）"
+    docker run --rm -v "$SPC_REPO:/spc" -w /spc "$DOCKER_IMAGE" rm -rf "${dirs[@]}"
+  fi
+  log "clean 完了: ${dirs[*]}"
+}
+
+if [ "$CLEAN" = true ]; then
+  clean_build_artifacts
+  exit 0
+fi
 
 # ---------------------------------------------------------------
 # workflow からの値抽出（情報の単一ソース）
