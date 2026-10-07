@@ -14,7 +14,6 @@ VERIFY_TAG="${SPC_VERIFY_TAG:-}"   # --verify-only 時のタグ絞り込み（�
 
 DEFAULT_REPO="$(cd "$SCRIPT_DIR/../../../../static-php-cli" 2>/dev/null && pwd || true)"
 SPC_REPO="${SPC_REPO:-$DEFAULT_REPO}"
-SPC_REF="${SPC_REF:-rep2}"
 DOCKER_IMAGE="${SPC_DOCKER_IMAGE:-ubuntu:24.04}"
 EXTRA_BUILD_FLAGS="${SPC_EXTRA_BUILD_FLAGS:-}"   # spc build への追加フラグ（--with-suggests 等、検証実験用）
 
@@ -39,7 +38,6 @@ workflow (.github/workflows/build-rep2-unix.yml) と同一の手順・フラグ�
 
 環境変数（既定値は workflow からの抽出値）:
   SPC_REPO               static-php-cli のパス（既定: ../../../../static-php-cli）
-  SPC_REF                使用するブランチ / タグ（既定: rep2）
   SPC_PHP_VERSION        PHP フルバージョン固定（例: 8.5.9。既定: 系列最新）
   SPC_EXTENSIONS         拡張リストの上書き（パッチ検証時の増減実験用）
   SPC_UPX                UPX 圧縮の上書き（1 で有効、0 で無効。既定: workflow の matrix.upx）
@@ -99,7 +97,7 @@ fi
 # workflow からの値抽出（情報の単一ソース）
 # ---------------------------------------------------------------
 WORKFLOW_FILE="$SPC_REPO/.github/workflows/build-rep2-unix.yml"
-[ -f "$WORKFLOW_FILE" ] || die "workflow が見つかりません: $WORKFLOW_FILE (SPC_REPO/SPC_REF を確認)"
+[ -f "$WORKFLOW_FILE" ] || die "workflow が見つかりません: $WORKFLOW_FILE (SPC_REPO とブランチを確認)"
 
 extract_env() {
   # env: EXTENSIONS: ... の 1 行を抽出（workflow 側で 1 行に固定していること）
@@ -175,7 +173,7 @@ else
   UPX_FLAG="$(extract_workflow_upx || true)"
   [ -n "${UPX_FLAG:-}" ] || UPX_FLAG=""
 fi
-log "SPC_REPO: $SPC_REPO (ref: $SPC_REF)"
+log "SPC_REPO: $SPC_REPO (branch: $(git -C "$SPC_REPO" branch --show-current)$( [ -n "$(git -C "$SPC_REPO" status --porcelain 2>/dev/null)" ] && echo ", dirty"))"
 log "EXTENSIONS: $EXTENSIONS"
 log "PHP: $PHP_VERSION_INPUT  UPX: ${UPX_FLAG:-none}  CONFIG_FILE_PATH: $CONFIG_FILE_PATH  SCAN_DIR: $SCAN_DIR  EXTRA_FLAGS: ${EXTRA_BUILD_FLAGS:-none}  MODE: $MODE"
 
@@ -242,8 +240,9 @@ mkdir -p "$WORK_DIR" "$DIST_DIR"
 # ---------------------------------------------------------------
 # spc の用意（ソースから実行。CI と同一手順）
 # ---------------------------------------------------------------
-git -C "$SPC_REPO" rev-parse --verify "$SPC_REF" >/dev/null 2>&1 || die "ref が存在しません: $SPC_REF"
-log "checkout: $(git -C "$SPC_REPO" log -1 --oneline "$SPC_REF")"
+# ビルドは SPC_REPO の作業ツリーの現状（現在のブランチ + 未コミット変更を含む）で
+# 行われる。ブランチを切り替えて検証する場合は事前に git checkout しておくこと
+log "checkout: $(git -C "$SPC_REPO" log -1 --oneline HEAD)"
 
 # ---------------------------------------------------------------
 # ビルド実行

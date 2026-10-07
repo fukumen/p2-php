@@ -100,7 +100,6 @@ SPC_PHP_VERSION=8.5.9 ./build.sh
 | 変数 | 既定 | 説明 |
 |---|---|---|
 | `SPC_REPO` | `../../../../static-php-cli`（build.sh から相対解決） | static-php のパス |
-| `SPC_REF` | `rep2` | 使用するブランチ / タグ |
 | `SPC_PHP_VERSION` | workflow 抽出値 | PHP バージョン。フルバージョン（例: 8.5.9）指定で完全固定 |
 | `SPC_EXTENSIONS` | workflow 抽出値 | 拡張リストの上書き（パッチ検証時の増減実験用） |
 | `SPC_UPX` | workflow 抽出値 | UPX 圧縮の上書き（`1` で有効、`0` で無効） |
@@ -114,7 +113,7 @@ SPC_PHP_VERSION=8.5.9 ./build.sh
 
 - ビルド内容の制御: `SPC_EXTENSIONS` / `SPC_PHP_VERSION` / `SPC_UPX` / `SPC_EXTRA_BUILD_FLAGS` / `SPC_TAG`
 - 検証（verify）の制御: `SPC_VERIFY_VERSION` / `SPC_VERIFY_TAG`
-- 環境・参照先: `SPC_REPO` / `SPC_REF` / `SPC_DOCKER_IMAGE`
+- 環境・参照先: `SPC_REPO` / `SPC_DOCKER_IMAGE`
 
 ### モードの対応表
 
