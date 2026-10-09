@@ -24,10 +24,12 @@ if(url_v=="" || url_v=="{$ini_url_text}"){
 }
 EOP;
 $onclick_ht = p2h($onclick_ht);
+$urlform_target_at = $_conf['ktai'] ? ' target="_self"' : ' target="read"';
 $htm['urlform'] = <<<EOP
-    <form id="urlform" method="GET" action="{$_conf['read_php']}" target="read">
+    <form id="urlform" method="GET" action="{$_conf['read_php']}"{$urlform_target_at}>
         ƒXƒŒURL‚ğ’¼Úw’è
         <input id="url_text" type="text" value="{$defurl}" name="url" size="60">
+        {$_conf['k_input_ht']}
         <input type="submit" name="btnG" value="•\¦" onclick="{$onclick_ht}">
     </form>\n
 EOP;
