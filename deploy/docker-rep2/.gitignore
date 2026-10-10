@@ -3,6 +3,7 @@ rep2-db/
 caddy-local/
 docker-compose.override.yml
 docker-compose.remote.yml
+agent/agent-compose.override.yml
 php-local.ini
 xdebug-local.ini
 php-fpm-local.conf
