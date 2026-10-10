@@ -23,6 +23,7 @@ python3 build.py agent-up     # エージェント環境を起動（設定適用
 
 - rep2 の Web UI: http://127.0.0.1:10089 （`agent` / `rep2agent` でログイン可能）
 - 通信ログ（mitmweb UI）: http://127.0.0.1:8081（パスワード: rep2agent）
+- mitmproxy は rep2 の外向き通信（5ch 等の外部アクセス）のみを経由します。ブラウザ↔rep2 間のリクエストは観測出来ません
 
 ### テスト実行
 
