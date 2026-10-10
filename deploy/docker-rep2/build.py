@@ -74,7 +74,7 @@ services:
   rep2:
     image: "%%AGENT_IMAGE%%"
     ports:
-      - "127.0.0.1:10089:8443"
+      - "127.0.0.1:%%AGENT_PORT_REP2%%:8443"
     volumes:
       - ../../../test:/var/www/test
       - ./agent/js-test:/var/www/js-test
@@ -92,11 +92,11 @@ services:
     command:
       - mitmweb
       - -p
-      - "3128"
+      - "%%AGENT_PORT_PROXY%%"
       - --web-host
       - 0.0.0.0
       - --web-port
-      - "8081"
+      - "%%AGENT_PORT_MITMWEB%%"
       - --set
       - web_open_browser=false
       - --set
@@ -105,9 +105,13 @@ services:
       - ./agent/mitmproxy/config.yaml:/home/mitmproxy/.mitmproxy/config.yaml:ro
       - ./agent/mitmproxy/filter_proxy.py:/opt/agent/filter_proxy.py:ro
     ports:
-      - "127.0.0.1:3128:3128"
-      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:%%AGENT_PORT_PROXY%%:%%AGENT_PORT_PROXY%%"
+      - "127.0.0.1:%%AGENT_PORT_MITMWEB%%:%%AGENT_PORT_MITMWEB%%"
 """
+
+AGENT_PORT_REP2 = "10089"
+AGENT_PORT_PROXY = "3128"
+AGENT_PORT_MITMWEB = "8081"
 
 AGENT_COMPOSE_FILE = "docker-compose.agent.yml"
 AGENT_COMPOSE_OVERRIDE_FILE = "agent-compose.override.yml"
@@ -437,7 +441,10 @@ def get_agent_compose_args(args):
         image_name = apply_tag(image_name, args.tag)
     script_dir = os.path.dirname(os.path.abspath(__file__))
     compose = AGENT_COMPOSE.replace("%%AGENT_IMAGE%%", image_name) \
-                           .replace("%%AGENT_SECRET_KEY%%", secret_key)
+                           .replace("%%AGENT_SECRET_KEY%%", secret_key) \
+                           .replace("%%AGENT_PORT_REP2%%", AGENT_PORT_REP2) \
+                           .replace("%%AGENT_PORT_PROXY%%", AGENT_PORT_PROXY) \
+                           .replace("%%AGENT_PORT_MITMWEB%%", AGENT_PORT_MITMWEB)
     cmd = [
         "docker", "compose",
         "--project-directory", script_dir,
@@ -977,16 +984,23 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
         print(f"==> タグを付与しました: {src_image} -> {new_ref}")
 
     elif cmd_name == "agent-up":
+        agent_base_url = f"http://127.0.0.1:{AGENT_PORT_REP2}"
         run_cmd(get_agent_compose_args(args) + ["up", "-d"], env=env)
         # rc.init による conf 生成・Web UI の起動待ち (ephemeral のため毎回初期化が走る)
         # 起動直後は 401 (ログインフォーム) が返る。HTTP 応答 (000 以外) が返れば処理が生きている
         run_cmd(["sh", "-c",
-                 "i=0; until code=$(curl -sS --noproxy '*' -o /dev/null "
-                 "-w '%{http_code}' http://127.0.0.1:10089/ 2>/dev/null); "
+                 f"i=0; until code=$(curl -sS --noproxy '*' -o /dev/null "
+                 f"-w '%{{http_code}}' {agent_base_url}/ 2>/dev/null); "
                  '[ -n "$code" ] && [ "$code" != "000" ]; do '
                  "i=$((i+1)); [ $i -ge 60 ] && exit 1; sleep 2; done"])
         script = os.path.normpath(os.path.join(os.path.dirname(__file__), "agent", "agent_setup.sh"))
+        env["AGENT_BASE_URL"] = agent_base_url
+        env["AGENT_PROXY_PORT"] = AGENT_PORT_PROXY
         run_cmd(["sh", script], env=env)
+        print("==> エージェント環境を起動しました")
+        print(f"    rep2       : {agent_base_url} (agent / rep2agent)")
+        print(f"    mitmproxy  : http://127.0.0.1:{AGENT_PORT_PROXY}")
+        print(f"    mitmweb    : http://127.0.0.1:{AGENT_PORT_MITMWEB} (password: rep2agent)")
 
     elif cmd_name == "agent-down":
         run_cmd(get_agent_compose_args(args) + ["down"], env=env)

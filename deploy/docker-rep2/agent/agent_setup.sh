@@ -2,7 +2,7 @@
 # rep2 エージェント環境: 編集画面(edit_conf_user.php)経由でフィルタプロキシ設定を適用する
 set -eu
 
-BASE_URL="http://127.0.0.1:10089"
+BASE_URL="${AGENT_BASE_URL:?AGENT_BASE_URL is required}"
 AGENT_USER="agent"
 AGENT_PASS="rep2agent"
 UA="rep2-agent-setup"
@@ -39,13 +39,13 @@ fi
 location=$(curl -sS --noproxy '*' -A "$UA" -b "$CJ" -c "$CJ" -o /dev/null -w '%{redirect_url}' \
     --data-urlencode "conf_edit[proxy_use]=1" \
     --data-urlencode "conf_edit[proxy_host]=filter-proxy" \
-    --data-urlencode "conf_edit[proxy_port]=3128" \
+    --data-urlencode "conf_edit[proxy_port]=${AGENT_PROXY_PORT:?AGENT_PROXY_PORT is required}" \
     --data-urlencode "conf_edit[ssl_verify_peer]=0" \
     --data-urlencode "csrfid=${csrfid}" \
     -d "submit_save=1" \
     "${BASE_URL}/edit_conf_user.php")
 
 case "$location" in
-    *saved=1*) echo "[agent] applied: proxy=filter-proxy:3128 ssl_verify_peer=0" ;;
+    *saved=1*) echo "[agent] applied: proxy=filter-proxy:${AGENT_PROXY_PORT} ssl_verify_peer=0" ;;
     *) echo "Error: 設定の保存に失敗しました (${location:-no redirect})" >&2; exit 1 ;;
 esac
