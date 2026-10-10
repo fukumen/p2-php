@@ -837,6 +837,11 @@ if ($_conf['expack.ic2.enabled']) {
     include P2EX_LIB_DIR . '/ImageCache2/templates/info.tpl.html';
 }
 
+// ip2host
+if ($_conf['ip2host.enabled']) {
+    include P2EX_LIB_DIR . '/ip2host.inc.php';
+}
+
 echo '</body></html>';
 
 $matomeCache->concat(ob_get_flush());

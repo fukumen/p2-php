@@ -1000,7 +1000,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('ip2host.replace.type', '書き換えのタイミング'),
         array('ip2host.cache.type', 'キャッシュ方法'),
         array('ip2host.cache.size', 'キャッシュの上限数'),
-        array('ip2host.aborn.enabled', '逆引き後のあぼーん処理'),
+        array('ip2host.rdap.enabled', 'RDAPによる組織名の解決<br>※expack.use_curl_multi=0 時 RDAP 解決なし(逆引きのみ)'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
 }

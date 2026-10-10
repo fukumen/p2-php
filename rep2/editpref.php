@@ -468,6 +468,16 @@ EOP;
 EOP;
     echo "</td></tr>\n\n";
 
+    // デバッグツール
+    echo "<tr><td>\n\n";
+    echo <<<EOP
+<fieldset>
+<legend>デバッグツール</legend>
+    <a href="show_log.php{$_conf['k_at_q']}" target="_self">デバッグログ表示</a>
+</fieldset>\n
+EOP;
+    echo "</td></tr>\n\n";
+
     // }}}
 }
 

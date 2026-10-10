@@ -31,6 +31,7 @@ echo $_conf['doctype'];
 	<label for="log-selector">ƒƒOŽí•Ê:</label>
 	<select id="log-selector">
 		<option value="readajax">”ñ“¯ŠúƒXƒŒ•\Ž¦</option>
+		<option value="ip2host">ip2host</option>
 	</select>
 </div>
 <div style="margin-top: 5px;">

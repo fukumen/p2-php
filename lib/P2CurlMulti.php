@@ -9,6 +9,7 @@ class P2CurlMulti
     private $ch;
     private $file_update;
     private $execErrors = array();
+    private $responseHeaders = array();
 
     public function __construct() {
         global $_conf;
@@ -29,7 +30,7 @@ class P2CurlMulti
     }
 
 
-    public function add($key, $url, $header = array(), $before_time = 0) {
+    public function add($key, $url, $header = array(), $before_time = 0, $followLocation = false) {
         global $_conf;
 
         if (empty($url)) { return false; }
@@ -58,7 +59,22 @@ class P2CurlMulti
         curl_setopt($this->ch[$key], CURLOPT_FILETIME, true);
         curl_setopt($this->ch[$key], CURLOPT_HTTPHEADER, $header);
         curl_setopt($this->ch[$key], CURLINFO_HEADER_OUT, true);
-        curl_setopt($this->ch[$key], CURLOPT_HEADER, true);
+        if ($followLocation) {
+            curl_setopt($this->ch[$key], CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($this->ch[$key], CURLOPT_MAXREDIRS, 5);
+            curl_setopt($this->ch[$key], CURLOPT_HEADER, false);
+            $this->responseHeaders[$key] = array();
+            $collected = &$this->responseHeaders[$key];
+            curl_setopt($this->ch[$key], CURLOPT_HEADERFUNCTION, function($handle, $line) use (&$collected) {
+                if (strpos($line, 'HTTP/') === 0) {
+                    $collected = array();
+                }
+                $collected[] = $line;
+                return strlen($line);
+            });
+        } else {
+            curl_setopt($this->ch[$key], CURLOPT_HEADER, true);
+        }
 
         // User-Agent
         if(P2HostMgr::isHost2chs($host) && !P2HostMgr::isNotUse2chsAPI($host) && $_conf['2chapi_use']){
@@ -146,16 +162,18 @@ class P2CurlMulti
             $tmp += array("before_time" =>  $this->file_update[$key], "after_time" => (empty($tmp['filetime']) || $tmp['filetime'] === -1) ? time() : $tmp['filetime']);
 
             $data = curl_multi_getcontent($ch_array);
-            $header_size = $tmp['header_size'];
-            $body = substr($data, $header_size);
-
             $results[$key] = array(
                 'info' => $tmp,
-                'body' => $body,
-                'raw' => $data,
                 'error' => isset($this->execErrors[$key]) ? curl_strerror($this->execErrors[$key]) : '',
                 'errno' => $this->execErrors[$key] ?? 0,
             );
+            if (array_key_exists($key, $this->responseHeaders)) {
+                $results[$key]['headerText'] = implode('', $this->responseHeaders[$key]);
+                $results[$key]['body'] = $data;
+            } else {
+                $results[$key]['body'] = substr($data, $tmp['header_size']);
+                $results[$key]['raw'] = $data;
+            }
         }
         
         return $results;
@@ -169,6 +187,7 @@ class P2CurlMulti
      *                                'url' => (string) 必須,
      *                                'headers' => (array) 送信ヘッダ配列, 省略可能
      *                                'before_time' => (int) If-Modified-Since用タイムスタンプ, 省略可能
+     *                                'follow' => (bool) リダイレクトを追跡する, 省略可能
      *                            ]
      *                            または
      *                            $key => (string) URL文字列
@@ -218,9 +237,9 @@ class P2CurlMulti
                     $headers[] = "{$name}: {$val}";
                 }
             }
-            // add の引数は: $key, $url, $header, $before_time
+            // add の引数は: $key, $url, $header, $before_time, $followLocation
             $before_time = $spec['before_time'] ?? 0;
-            $multi->add($key, $url, $headers, $before_time);
+            $multi->add($key, $url, $headers, $before_time, !empty($spec['follow']));
         }
 
         $multi->execute();
@@ -232,10 +251,14 @@ class P2CurlMulti
                 if (!empty($res['error'])) {
                     $responses[$key] = new P2CurlException("cURL Error: " . $res['error'], $res['errno']);
                 } else {
-                    // コンストラクタは(headerText, body)形式。curl_multiパスではリダイレクトしないため
-                    // header_sizeでの分割は破綻しない
-                    $header_size = $res['info']['header_size'];
-                    $responses[$key] = new P2CurlResponse(substr($res['raw'], 0, $header_size), $res['body']);
+                    // コンストラクタは(headerText, body)形式
+                    if (isset($res['headerText'])) {
+                        // follow 時: HEADERFUNCTION 収集の最終ヘッダのみで構築する
+                        $responses[$key] = new P2CurlResponse($res['headerText'], $res['body']);
+                    } else {
+                        $header_size = $res['info']['header_size'];
+                        $responses[$key] = new P2CurlResponse(substr($res['raw'], 0, $header_size), $res['body']);
+                    }
                 }
             } else {
                 $responses[$key] = new P2CurlException("Request failed without results");

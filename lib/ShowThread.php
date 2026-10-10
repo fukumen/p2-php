@@ -2493,6 +2493,17 @@ abstract class ShowThread
     }
 
     // }}}
+    // {{{ addIp2hostMarker()
+
+    /**
+     * ip2host の収集対象を示す span をワッチョイ IP 部分に付与する
+     */
+    static public function addIp2hostMarker($str)
+    {
+        return preg_replace('/(\[)([0-9a-fA-F.:*]+)/', '<span class="ip2host-ip">$1$2</span>', $str, 1);
+    }
+
+    // }}}
     // {{{ getIdsForRenderJson()
 
     public function getIdsForRenderJson()

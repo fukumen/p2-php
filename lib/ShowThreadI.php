@@ -450,11 +450,15 @@ EOP;
         global $_conf;
 
         // ワッチョイをフィルタリングリンクに変換
-        if ($_conf['flex_idpopup'] == 1 && isset($this->thread->watchoicount)) {
+        if (isset($this->thread->watchoicount)) {
             $pattern_watchoi = '#.*\(((?:[^\s()]+\s+)?(?:([0-9A-Za-z./*+]{4}-)[0-9A-Za-z./*+]{4})(?:\s+\[.+])?)\)#';
             if (preg_match($pattern_watchoi, $name, $wm)) {
                 $watchoi_full = substr($wm[0], strrpos($wm[0], '('));
-                $name = substr_replace($name, $this->watchoiFilter($watchoi_full, $wm[1], $wm[2]), strrpos($name, $watchoi_full), strlen($watchoi_full));
+                if ($_conf['flex_idpopup'] == 1) {
+                    $name = substr_replace($name, $this->watchoiFilter($watchoi_full, $wm[1], $wm[2]), strrpos($name, $watchoi_full), strlen($watchoi_full));
+                } else {
+                    $name = substr_replace($name, self::addIp2hostMarker($watchoi_full), strrpos($name, $watchoi_full), strlen($watchoi_full));
+                }
             }
         }
 
@@ -800,7 +804,7 @@ EOP;
 
         $wid = $_conf['ngaborn_watchoi4'] ? $watchoi_id4 : $watchoi_id;
         if (!isset($this->thread->watchoicount[$wid]) || $this->thread->watchoicount[$wid] <= 1) {
-            return $watchoi_str;
+            return self::addIp2hostMarker($watchoi_str);
         }
 
         $count = $this->thread->watchoicount[$wid];
@@ -832,6 +836,8 @@ EOP;
                 'word'    => $watchoi_id,
             ),
         ), '', '&amp;') . $_conf['k_at_a'];
+
+        $watchoi_str = self::addIp2hostMarker($watchoi_str);
 
         return "<a href=\"{$filter_url}\"{$this->target_at}>{$watchoi_str}</a>{$num_ht}";
     }

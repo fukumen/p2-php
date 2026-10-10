@@ -7,12 +7,11 @@
 
 // {{{ キャッシュ方法
 
-// キャッシュ方法(sessionStorage:0, localStorage:1, サーバー側ファイル:2)
+// キャッシュ方法(sessionStorage:0, localStorage:1)
 $conf_user_def['ip2host.cache.type'] = 0; // (0)
 $conf_user_sel['ip2host.cache.type'] = array(
     '0' => 'sessionStorage(ブラウザ側)',
     '1' => 'localStorage(ブラウザ側)',
-    '2' => 'ファイル(サーバー側)',
 );
 
 // }}}
@@ -38,8 +37,8 @@ $conf_user_rad['ip2host.enabled'] = array('1' => 'する', '0' => 'しない');
 $conf_user_def['ip2host.cache.size'] = 500; // (500)
 $conf_user_rules['ip2host.cache.size'] = array('emptyToDef', 'notIntExceptMinusToDef');
 
-// 逆引き後のあぼーん処理をするか
-$conf_user_def['ip2host.aborn.enabled'] = 1; // (1)
-$conf_user_rad['ip2host.aborn.enabled'] = array('1' => 'する', '0' => 'しない');
+// RDAPによる組織名の解決をするか
+$conf_user_def['ip2host.rdap.enabled'] = 1; // (1)
+$conf_user_rad['ip2host.rdap.enabled'] = array('1' => 'する', '0' => 'しない');
 
 // }}}
