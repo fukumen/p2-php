@@ -370,7 +370,7 @@ var refreshColor = function(rate) {
 
 var toggle = function(idstr) {
     if (this.idlist[idstr])
-        ColoredIDLib.toggle(idstr, this.idlist[idstr], this.colorStyle, hissi);
+        ColoredIDLib.toggle(idstr, this.idlist[idstr], this.colorStyle, this.hissi);
 };
 
 
