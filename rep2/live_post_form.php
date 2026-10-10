@@ -186,7 +186,7 @@ EOP;
 $body_at = ($_conf['ktai']) ? $_conf['k_colors'] : $body_on_load;
 echo <<<EOP
 </head>
-<body{$body_at} onMouseover="window.top.status='{$itaj} / {$ttitle_hd}';" onUnload="clearTimeout(cd_timer)">\n
+<body{$body_at} onMouseover="window.top.status='{$itaj} / {$ttitle_hd}';">\n
 EOP;
 
 P2Util::printInfoHtml();

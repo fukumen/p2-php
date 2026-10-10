@@ -111,7 +111,6 @@ Event = {
 		Event.cache = false;
 	}
 };
-Event.register(window, 'unload', Event.deregisterAll);
 // === dom ===
 document.getElemetsByClassName = function(name,target)
 {

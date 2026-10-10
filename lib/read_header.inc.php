@@ -236,8 +236,8 @@ if ($_conf['live.view_type'] > 1 ) {
 
 if ($_conf['iframe_popup_type'] == 1) {
     echo <<<EOP
-    <script type="text/javascript" src="./js/yui-ext/yui.js"></script>
-    <script type="text/javascript" src="./js/yui-ext/yui-ext-nogrid.js"></script>
+    <script type="text/javascript" src="./js/yui-ext/yui.js?{$_conf['p2_version_id']}"></script>
+    <script type="text/javascript" src="./js/yui-ext/yui-ext-nogrid.js?{$_conf['p2_version_id']}"></script>
     <link rel="stylesheet" type="text/css" href="./js/yui-ext/resources/css/resizable.css">
     <script type="text/javascript" src="js/{$live_view_popup}htmlpopup_resizable.js?{$_conf['p2_version_id']}"></script>\n
 EOP;
@@ -322,7 +322,6 @@ EOP;
 }
 
 $onload_script = '';
-$onUnload_script = '';
 
 if ($_conf['bottom_res_form']) {
     echo "\t<link rel=\"stylesheet\" type=\"text/css\" href=\"css.php?css=post&amp;skin={$skin_en}\">\n";
@@ -345,7 +344,6 @@ if (empty($_GET['one'])) {
 // +live ページ読込時スクリプト
 if (array_key_exists('live', $_GET) && $_GET['live']) {
 	$onload_script .= "startlive();";
-	$onUnload_script = "onUnload=\"stoplive();\"";
 } else {
 	$onload_script .= "";
 }
@@ -415,7 +413,7 @@ include_once P2_LIB_DIR . '/live/live_header.inc.php';
 
 echo <<<EOP
 </head>
-<body{$bodyadd} {$onUnload_script}><div id="popUpContainer"></div>\n
+<body{$bodyadd}><div id="popUpContainer"></div>\n
 EOP;
 
 P2Util::printInfoHtml();

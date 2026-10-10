@@ -155,8 +155,8 @@ if ($_conf['live.view_type'] > 1 ) {
 
 if ($_conf['iframe_popup_type'] == 1) {
     echo <<<EOP
-    <script type="text/javascript" src="./js/yui-ext/yui.js"></script>
-    <script type="text/javascript" src="./js/yui-ext/yui-ext-nogrid.js"></script>
+    <script type="text/javascript" src="./js/yui-ext/yui.js?{$_conf['p2_version_id']}"></script>
+    <script type="text/javascript" src="./js/yui-ext/yui-ext-nogrid.js?{$_conf['p2_version_id']}"></script>
     <link rel="stylesheet" type="text/css" href="./js/yui-ext/resources/css/resizable.css">
     <script type="text/javascript" src="js/{$live_view_popup}htmlpopup_resizable.js?{$_conf['p2_version_id']}"></script>
 EOP;
