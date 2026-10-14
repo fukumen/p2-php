@@ -19,6 +19,8 @@ python3 build.py build        # ローカルイメージ作成（初回のみ）
 python3 build.py agent-up     # エージェント環境を起動（設定適用まで自動）
 ```
 
+カバレッジ取得時は `python3 build.py --debug agent-up` で起動します（debug イメージ + `XDEBUG_MODE=coverage`）。
+
 起動後:
 
 - rep2 : http://127.0.0.1:10089 （`agent` / `rep2agent` でログイン可能）
@@ -54,6 +56,20 @@ python3 build.py agent-down
 データ（ユーザー設定・キャッシュ等）は tmpfs 上にあり、`agent-down` で消滅します。
 次回の `agent-up` は毎回初期状態（新規ユーザー登録）から始まるため、過去の状態に影響されません。
 通常の `rep2-data/` も参照しません。
+
+## カバレッジの取得
+
+`--debug` 付きで起動した環境では、テストスクリプト内で xdebug のカバレッジ関数が使用できます。
+
+```php
+xdebug_start_code_coverage(XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE | XDEBUG_CC_BRANCH_CHECK);
+// ... 対象ロジックを実行 ...
+FileCtl::file_write_contents(__DIR__ . '/coverage.json',
+    json_encode(xdebug_get_code_coverage(), JSON_UNESCAPED_SLASHES));
+```
+
+C1 の確認では branches の hit に加えて branch 間遷移 (`out_hit`) の未実行も確認します
+（分岐ノード単位では if の片側だけの実行でも 100% になるため）。
 
 ## テスト専用 mitmproxy addon の追加
 

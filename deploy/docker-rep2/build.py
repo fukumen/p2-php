@@ -82,6 +82,7 @@ services:
       - /ext
     environment:
       SECRET_KEY: "%%AGENT_SECRET_KEY%%"
+%%AGENT_DEBUG_ENV%%
     depends_on:
       filter-proxy:
         condition: service_started
@@ -202,9 +203,8 @@ def check_flag_conflicts(args):
         if args.command not in TAG_APPLY_COMMANDS:
             print(f"Warning: --tag は {args.command} では効果がないため無視します。")
     if args.command in AGENT_COMMANDS:
-        for flag in ("debug", "static", "aiodeb", "ephemeral"):
-            raw = getattr(args, f"raw_{flag}", None) if flag == "debug" else getattr(args, flag)
-            if raw:
+        for flag in ("static", "aiodeb", "ephemeral"):
+            if getattr(args, flag):
                 print(f"Error: agent 系コマンドと --{flag} は同時に指定できません。")
                 sys.exit(1)
     if args.static and args.aiodeb:
@@ -436,15 +436,18 @@ def get_agent_compose_args(args):
         print("Error: REP2_AGENT_SECRET_KEY に 64 桁の 16 進の文字列(暗号キー)を設定してください (.env に記述できます)。")
         print("生成例: openssl rand -hex 32")
         sys.exit(1)
-    image_name = "rep2-extra:latest" if args.extra else "rep2:latest"
+    image_name = "rep2" + ("-extra" if args.extra else "") + ("-dbg" if args.raw_debug else "")
+    image_name += ":latest"
     if args.tag:
         image_name = apply_tag(image_name, args.tag)
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    debug_env = '      XDEBUG_MODE: "coverage"' if args.raw_debug else ""
     compose = AGENT_COMPOSE.replace("%%AGENT_IMAGE%%", image_name) \
                            .replace("%%AGENT_SECRET_KEY%%", secret_key) \
                            .replace("%%AGENT_PORT_REP2%%", AGENT_PORT_REP2) \
                            .replace("%%AGENT_PORT_PROXY%%", AGENT_PORT_PROXY) \
-                           .replace("%%AGENT_PORT_MITMWEB%%", AGENT_PORT_MITMWEB)
+                           .replace("%%AGENT_PORT_MITMWEB%%", AGENT_PORT_MITMWEB) \
+                           .replace("%%AGENT_DEBUG_ENV%%", debug_env)
     cmd = [
         "docker", "compose",
         "--project-directory", script_dir,
@@ -1079,6 +1082,8 @@ def main():
         "\nデバッグ:\n"
         "  .env に REP2_BUILD_DEBUG=true が設定されていれば既定で有効、\n"
         "  未設定なら無効 (--debug / --nodebug で強制)\n"
+        "  agent 系コマンドでは明示 --debug のとき debug イメージ (rep2-dbg) で起動し、\n"
+        "  XDEBUG_MODE=coverage が有効になる (テストのカバレッジ取得用)\n"
         "\n検証用イメージ:\n"
         "  --static で rep2-static、--aiodeb で rep2-aiodeb をオーバーレイする\n"
         "  イメージの作成は build-static / build-aiodeb コマンドを使う\n"
