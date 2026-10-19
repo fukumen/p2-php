@@ -8,10 +8,9 @@
 /**
  *  最初のログイン画面を表示する
  */
-function printLoginFirst(Login $_login)
+function printLoginFirst(Login $_login, $failReason = null)
 {
     global $STYLE, $_conf;
-    global $_login_failed_flag, $_p2session;
     global $skin_en;
 
     // {{{ データ保存ディレクトリのパーミッションの注意を喚起する
@@ -74,15 +73,7 @@ EOP;
     // }}}
 
     // ログインフォームからの指定
-    if (!empty($GLOBALS['brazil'])) {
-        $add_mail = '.,@-';
-    } else {
-        $add_mail = '';
-    }
-
-    if (preg_match("/^[0-9A-Za-z_{$add_mail}]+\$/", $_login->user_u)) {
-        $hd['form_login_id'] = p2h($_login->user_u);
-    } elseif (!empty($_POST['form_login_id']) && preg_match("/^[0-9A-Za-z_{$add_mail}]+\$/", $_POST['form_login_id'])) {
+    if (!empty($_POST['form_login_id']) && preg_match("/^[0-9A-Za-z_]+\$/", $_POST['form_login_id'])) {
         $hd['form_login_id'] = p2h($_POST['form_login_id']);
     } else {
         $hd['form_login_id'] = '';
@@ -144,60 +135,29 @@ EOP;
     // 新規ユーザ登録処理
     //=================================================================
 
-    if (!file_exists($_conf['auth_user_file']) && !$_login_failed_flag and !empty($_POST['submit_new']) && !empty($_POST['form_login_id']) && !empty($_POST['form_login_pass'])) {
-
-        // {{{ 入力エラーをチェック、判定
-
-        if (!preg_match('/^[0-9A-Za-z_]+$/', $_POST['form_login_id']) || !preg_match('/^[\\x21-\\x7E]+$/', $_POST['form_login_pass'])) {
-            P2Util::pushInfoHtml("<p class=\"info-msg\">rep2 error: 「{$p_str['user']}」名と「{$p_str['password']}」は半角英数字で入力して下さい。</p>");
-            $show_login_form_flag = true;
-
-        // }}}
-        // {{{ 登録処理
-
-        } else {
-
-            $_login->makeUser($_POST['form_login_id'], $_POST['form_login_pass']);
-
-            // 新規登録成功
-            $hd['form_login_id'] = p2h($_POST['form_login_id']);
-            $body_ht .= "<p class=\"info-msg\">○ 認証{$p_str['user']}「{$hd['form_login_id']}」を登録しました</p>";
-            $body_ht .= "<p><a href=\"{$myname}?form_login_id={$hd['form_login_id']}{$_conf['k_at_a']}\">rep2 start</a></p>";
-
-            // セッションが利用されているなら、セッションを更新
-            if (isset($_p2session)) {
-                // ユーザ名とパスXを更新
-                $_SESSION['login_user'] = $_login->user_u;
-                $_SESSION['login_pass_x'] = P2Hash::hash($_login->pass_x);
-            }
-
-            // 要求があれば、補助認証を登録
-            $_login->registerCookie();
-        }
-
-        // }}}
-
-    // {{{ ログインエラーがある
+    if ($failReason === null) {
+        $hd['form_login_id'] = p2h($_login->user_u);
+        $body_ht .= "<p class=\"info-msg\">○ 認証{$p_str['user']}「{$hd['form_login_id']}」を登録しました</p>";
+        $body_ht .= "<p><a href=\"{$myname}?form_login_id={$hd['form_login_id']}{$_conf['k_at_a']}\">rep2 start</a></p>";
 
     } else {
-
-        if (isset($_POST['form_login_id']) || isset($_POST['form_login_pass'])) {
+        if ($failReason === LoginResult::R_NEW_REGIST_INPUT_ERROR) {
             $info_msg_ht = '<p class="info-msg">';
-            if (!$_POST['form_login_id']) {
+            if (!isset($_POST['form_login_id']) || !$_POST['form_login_id']) {
                 $info_msg_ht .= "rep2 error: 「{$p_str['user']}」が入力されていません。<br>";
             }
-            if (!$_POST['form_login_pass']) {
+            if (!isset($_POST['form_login_pass']) || !$_POST['form_login_pass']) {
                 $info_msg_ht .= "rep2 error: 「{$p_str['password']}」が入力されていません。";
             }
             $info_msg_ht .= '</p>';
             P2Util::pushInfoHtml($info_msg_ht);
+
+        } elseif ($failReason === LoginResult::R_NEW_REGIST_PATTERN_ERROR) {
+            P2Util::pushInfoHtml("<p class=\"info-msg\">rep2 error: 「{$p_str['user']}」名と「{$p_str['password']}」は半角英数字で入力して下さい。</p>");
         }
-
+        // ログインフォームを表示する
         $show_login_form_flag = true;
-
     }
-
-    // }}}
 
     //=========================================================
     // HTMLプリント

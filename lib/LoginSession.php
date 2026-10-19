@@ -4,18 +4,19 @@
 $GLOBALS['_SESS_VERSION'] = 1; // セッションのバージョン（全ての稼動途中セッションを強制破棄させたい時にUPしたりする）
 
 // }}}
-// {{{ Session
+// {{{ LoginSession
 
 /**
- * Session Class
+ * LoginSession Class
  *
  * IR, UA, アクセス時間のチェックを伴う、よりセキュアなセッション管理クラス
  * ほとんど自動で働くのであまり気にせず、通常通り $_SESSION の値を取り扱えばよい。
  * ただし、$_SESSION[$this->sess_array]（$_SESSION['_sess_array']） は予約語となっている。
  *
  * ■用例
- * $_session = new Session(); // ※この時点でPHP標準セッションがスタートする
- * if ($msg = $_session->checkSessionError()) { // よりセキュアなセッションチェック
+ * $_session = new LoginSession(); // ※この時点でPHP標準セッションがスタートする
+ * $_session->begin(); // 強化セッションを開始する
+ * if ($msg = $_session->checkSessionErrors()) { // よりセキュアなセッションチェック
  *     p2die($msg);
  * }
  *
@@ -34,7 +35,7 @@ $GLOBALS['_SESS_VERSION'] = 1; // セッションのバージョン（全ての稼動途中セッショ
  *
  * @author aki
  */
-class Session
+class LoginSession
 {
     // {{{ static properties
 
@@ -80,13 +81,14 @@ class Session
     }
 
     // }}}
-    // {{{ _autoBegin()
+    // {{{ begin()
 
     /**
-     * よりセキュアなセッション管理を開始する
+     * 強化セッション管理を開始する
+     *
      * @return bool
      */
-    private function _autoBegin()
+    public function begin()
     {
         // まだ強化セッションが始まっていなかったら
         if (!isset($_SESSION[$this->sess_array]['actime'])) {
@@ -96,8 +98,8 @@ class Session
 
             // セッション変数の登録に失敗したら、エラー
             if (!isset($_SESSION[$this->sess_array]['actime'])) {
-                trigger_error('Session::_autoBegin() セッション変数を登録できませんでした。', E_USER_WARNING);
-                p2die('Session');
+                trigger_error('LoginSession::begin() セッション変数を登録できませんでした。', E_USER_WARNING);
+                p2die('LoginSession');
                 return false;
             }
         }
@@ -122,22 +124,20 @@ class Session
         $_SESSION[$this->sess_array]['ip']         = $_SERVER['REMOTE_ADDR'];
         $_SESSION[$this->sess_array]['ua']         = $_SERVER['HTTP_USER_AGENT'];
         // $_SESSION[$this->sess_array]['referer'] = $_SERVER['HTTP_REFERER'];
+
         $_SESSION[$this->sess_array]['version']    = $GLOBALS['_SESS_VERSION'];
     }
 
     // }}}
-    // {{{ checkSessionError()
+    // {{{ checkSessionErrors()
 
     /**
-     * セッションの妥当性をチェックして、エラーがあればメッセージを得る。アクセス時間の更新もここで。
+     * セッションの妥当性をチェックして、エラーがあればメッセージを得る
      *
-     * @return false|string エラーがあれば、（unSession()して）エラーメッセージを返す。なければfalseを返す。
+     * @return false|string エラーがあればエラーメッセージ、なければfalseを返す。
      */
-    public function checkSessionError()
+    public function checkSessionErrors()
     {
-        // 強化セッション
-        $this->_autoBegin();
-
         $error_msg = '';
 
         if (!isset($_SESSION[$this->sess_array]['actime'])) {
@@ -163,27 +163,20 @@ class Session
             }
         }
 
-        // エラーがあれば、（unSession()して）エラーメッセージを返す。
-        if ($error_msg) {
-            self::unSession();
-            return $error_msg;
-        }
+        return ($error_msg !== '') ? $error_msg : false;
+    }
 
-        // 問題なければ、アクセス時間を更新する
+    // }}}
+    // {{{ updateActime()
+
+    /**
+     * セッションのアクセス時間を更新する (スライディング有効期限)
+     *
+     * @return void
+     */
+    public function updateActime()
+    {
         $_SESSION[$this->sess_array]['actime'] = time();
-
-        // クエリーにSIDを付加する場合は、毎回 session_regenerate_id() する、、と少し不便
-        // 過去アクセス5つ分以前を無効にするとかもできそうだが、
-        /*
-        $sname = session_name();
-        if (!$_COOKIE[$sname]) {
-            $oldID = session_id();
-            session_regenerate_id();
-            unlink(session_save_path() . "/sess_$oldID");
-        }
-        */
-
-        return false;
     }
 
     // }}}
@@ -350,7 +343,7 @@ class Session
      */
     private function setCookieHttpOnly()
     {
-        $ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
+        $ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
 
         // Mac IEは、動作不良を起こすらしいっぽいので対象から外す。（そもそも対応もしていない）
         // Mozilla/4.0 (compatible; MSIE 5.16; Mac_PowerPC)

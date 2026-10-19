@@ -47,11 +47,6 @@ class P2Hash
         return password_verify($password, $hash);
     }
 
-    public function password_needs_rehash($hash)
-    {
-        return password_needs_rehash($hash, PASSWORD_DEFAULT);
-    }
-
     static public function hash($data, $binary = false)
     {
         return hash(self::ALGO, $data, $binary);

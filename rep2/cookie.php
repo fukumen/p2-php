@@ -5,6 +5,8 @@
  * 内部文字エンコーディング: Shift_JIS
  */
 
+define('P2_SESSION_CLOSE_AFTER_AUTHENTICATION', 0);
+
 require_once __DIR__ . '/../init.php';
 
 $_login->authorize(); // ユーザ認証
@@ -13,7 +15,13 @@ $_login->authorize(); // ユーザ認証
 // 書き出し用変数
 
 $return_path = 'login.php';
-$keep_login = isset($_REQUEST['keep_login']) ? $_REQUEST['keep_login'] : '';
+$keep_login = '';
+if (!empty($_REQUEST['register_cookie'])) {
+    $_login->registerCookie();
+    $keep_login = '1';
+} elseif (!empty($_REQUEST['clear_cookie'])) {
+    $_login->clearCookie();
+}
 $keep_login = rawurlencode($keep_login);
 $next_url = "{$return_path}?check_keep_login=1&keep_login={$keep_login}";
 $next_url .= str_replace('&amp;', '&', $_conf['k_at_a']);

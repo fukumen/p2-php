@@ -638,7 +638,8 @@ if ($_conf['session_save'] == 'p2' and session_module_name() == 'files') {
 
 // }}}
 
-$_p2session = new Session(null, null, $_conf['use_cookies']);
+require_once P2_LIB_DIR . '/LoginSession.php';
+$_p2session = new LoginSession(null, null);
 
 // }}}
 // {{{ お気にセット

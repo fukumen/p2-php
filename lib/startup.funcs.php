@@ -28,7 +28,6 @@ function p2_load_class($name)
             P2[A-Z][A-Za-z]* |
             PresetManager |
             Res(?:Article|Filter(?:Element)?|Hist) |
-            Session |
             SettingTxt |
             ShowBrdMenu(?:K|Pc) |
             ShowThread(?:K|I|Pc)? |
