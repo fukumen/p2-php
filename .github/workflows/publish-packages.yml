@@ -9,6 +9,9 @@ on:
       - 'deploy/**'
       - '**.md'
 
+concurrency:
+  group: publish-packages
+
 jobs:
   build_and_publish:
     runs-on: ubuntu-latest
