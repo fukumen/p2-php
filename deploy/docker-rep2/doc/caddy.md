@@ -113,3 +113,91 @@ Cloudflare 以外のプロバイダー（Route53, Google Cloud DNS 等）を使�
 
 **注意：**
 mydns は DNS プラグインが無さそうなので「方法1」のやり方で certbot を使うしか無さそう。
+
+## クライアント証明書による認証（mTLS）
+
+アクセスするブラウザにクライアント証明書を要求する認証（mTLS）を設定できます。HTTPS化とは目的が異なり、こちらはアクセスしてくるクライアントの認証のための機能です。クライアント証明書のやりとりはTLSハンドシェイクの中で行われるため、方法1・方法2のHTTPS化の設定に`client_auth`ブロックを追加する形で使います。Caddyの標準機能で対応できるため、カスタムバイナリは不要です。
+
+### 1. プライベートCAの作成とクライアント証明書の発行
+
+任意のマシンでopensslを使って作成します。
+
+```shell
+# CAの作成（最初に1回だけ実行）
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
+  -keyout ca.key -out ca.pem -subj "/CN=rep2 client CA"
+
+# クライアント証明書の発行（デバイスを追加するときに実行）
+openssl req -newkey rsa:4096 -nodes -keyout client.key -out client.csr -subj "/CN=rep2-user"
+printf "extendedKeyUsage=clientAuth" > client-ext.cnf
+openssl x509 -req -in client.csr -CA ca.pem -CAkey ca.key -CAcreateserial -days 365 \
+  -sha256 -extfile client-ext.cnf -out client.pem
+openssl pkcs12 -export -inkey client.key -in client.pem -certfile ca.pem -out client.p12
+```
+
+各デバイスにインストールするのは`client.p12`です。`ca.pem`はCaddyの設定で使用します。`ca.key`は漏洩すると誰でも証明書を発行できてしまうため厳重に管理してください。デバイスを追加するときは`-subj`のCNをデバイス名に変えてクライアント証明書の発行コマンドを再度実行します。`client.p12`のインストール後は、それ以外の生成ファイルは不要なので削除して構いません。
+
+エクスポート時にパスワードを入力する必要が有ります。このパスワードはデバイスにclient.p12をインストールするときに入力することになります。
+
+### 2. 証明書ファイルの配置
+
+`ca.pem`とサーバー証明書（`server.crt`、`server.key`）を`rep2-data`ディレクトリ（コンテナ内の`/ext`）に配置し、許可するデバイスの`client.pem`を`/ext/clients`ディレクトリに配置します。デバイスの追加・削除は、このディレクトリの`client.pem`を出し入れした後、`docker compose -f /path/to/docker-rep2/docker-compose.yml exec rep2 caddy reload --config /etc/Caddyfile`でCaddyに反映します。
+
+### 3. Caddyfileの作成とマウント
+
+クライアント証明書の設定は`tls`ディレクティブのブロック内に記述するため、rc.entryによる自動生成Caddyfileでは対応できません。カスタムCaddyfileを`/etc/Caddyfile`にマウントすると、自動生成は行われずマウントしたファイルがそのまま使用されます。
+
+方法1を利用している場合は、カスタムCaddyfileを新たに作成して`tls`ディレクティブに証明書のパスを直接記述します（下記のCaddyfileの例がそのまま使えます）。`REP2_TLS_CERT`と`REP2_TLS_KEY`の環境変数による指定は不要になります。
+
+方法2を利用している場合は、マウント済みのCaddyfileの`tls`ブロックに`client_auth`ブロックを追加するだけです。mTLSの設定のためにカスタムバイナリを差し替える必要はありません。
+
+`caddy-local/Caddyfile`:
+```caddy
+:8443 {
+    log {
+        output stderr
+    }
+    tls /ext/server.crt /ext/server.key {
+        client_auth {
+            mode require_and_verify
+            trust_pool file /ext/ca.pem
+            verifier leaf {
+                folder /ext/clients
+            }
+        }
+    }
+    root * /var/www/rep2
+    php_fastcgi 127.0.0.1:9000
+    file_server
+
+    @js_files {
+        path *.js
+    }
+    header @js_files Content-Type "application/javascript; charset=Shift_JIS"
+
+    @css_files {
+        path *.css
+    }
+    header @css_files Content-Type "text/css; charset=Shift_JIS"
+}
+```
+
+`docker-compose.override.yml`:
+```yaml
+services:
+  rep2:
+    volumes:
+      - ./caddy-local/Caddyfile:/etc/Caddyfile
+```
+
+### 4. クライアント証明書のインストール
+
+`client.p12`をアクセスに使うデバイスの証明書ストアにインストールします。
+
+- Windows: ダブルクリックして「個人」ストアにインストール
+- macOS: キーチェーンアクセスにインストール（OpenSSL 3 既定の p12 はインポート不可。エクスポート時に `-macalg sha1 -keypbe PBE-SHA1-3DES -certpbe PBE-SHA1-3DES` を付ける）
+- iOS / Android: OSの設定（プロファイル）からインストール
+- Firefox: OSのストアとは別に独自の証明書ストアを持つため、Firefoxの設定からインストールが必要
+- Linux (Chrome): 設定 → プライバシーとセキュリティ → セキュリティ → 証明書の管理の「あなたの証明書」からインストール
+
+アクセス時にブラウザの証明書選択ダイアログが表示され、`clients`ディレクトリに置かれた証明書であればrep2が表示されます。
