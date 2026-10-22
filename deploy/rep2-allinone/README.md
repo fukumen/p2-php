@@ -89,12 +89,12 @@ brew trust --formula fukumen/tap/rep2-allinone
 
 ### Linux (Debian / RHEL)
 ```bash
-diff -ru /opt/rep2-allinone/p2-php/conf.orig /var/lib/rep2-allinone/conf | iconv -f SHIFT_JIS -t UTF-8
+diff -ru /opt/rep2-allinone/p2-php/conf.orig /var/lib/rep2-allinone/conf | iconv -f CP932 -t UTF-8
 ```
 
 ### macOS (Homebrew)
 ```bash
-diff -ru $(brew --prefix)/opt/rep2-allinone/p2-php/conf.orig $(brew --prefix)/var/lib/rep2-allinone/conf | iconv -f SHIFT_JIS -t UTF-8
+diff -ru $(brew --prefix)/opt/rep2-allinone/p2-php/conf.orig $(brew --prefix)/var/lib/rep2-allinone/conf | iconv -f CP932 -t UTF-8
 ```
 
 -のみの行が表示表示されているようならリポジトリ側で追加されているのでマージが必要です。

@@ -910,7 +910,7 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
 
     elif cmd_name == "confdiff":
         compose_str = " ".join(compose_base)
-        sh_cmd = f"{compose_str} exec {SERVICE_NAME} diff /var/www/conf.orig /ext/conf | iconv -f SHIFT_JIS -t UTF-8"
+        sh_cmd = f"{compose_str} exec {SERVICE_NAME} diff /var/www/conf.orig /ext/conf | iconv -f CP932 -t UTF-8"
         run_cmd(sh_cmd, env=env, shell=True)
 
     elif cmd_name == "prune":

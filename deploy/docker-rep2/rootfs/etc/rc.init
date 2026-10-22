@@ -42,7 +42,7 @@ if ($new_line !== '') {
 }
 EOF
 
-su-exec www-data php /var/www/scripts/ic2.php setup | iconv -f SHIFT_JIS -t UTF-8
+su-exec www-data php /var/www/scripts/ic2.php setup | iconv -f CP932 -t UTF-8
 
 if [ $# -gt 0 ]; then
     exec "$@"

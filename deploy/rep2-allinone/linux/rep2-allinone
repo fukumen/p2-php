@@ -58,7 +58,7 @@ if ($new_line !== '') {
 }
 EOF
 
-./bin/php "$HERE/p2-php/scripts/ic2.php" setup | iconv -f SHIFT_JIS -t UTF-8
+./bin/php "$HERE/p2-php/scripts/ic2.php" setup | iconv -f CP932 -t UTF-8
 
 ./bin/php-fpm -y "$HERE/etc/rep2-php-fpm.conf" -F &
 PHP_PID=$!
