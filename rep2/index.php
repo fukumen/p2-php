@@ -80,6 +80,11 @@ if ($_conf['ktai']) {
     }
 
     $ptitle = "rep2";
+    $passkey_scripts_ht = '';
+    if ($_conf['passkey_auth_mode'] > 0) {
+        $passkey_scripts_ht = '<script type="text/javascript" src="js/simplewebauthn-browser-' . $_conf['simplewebauthn_browser_version'] . '.min.js"></script>' . "\n"
+            . '<script type="text/javascript" src="js/passkey.js?' . $_conf['p2_version_id'] . '"></script>' . "\n";
+    }
     //======================================================
     // PC—p HTMLƒvƒŠƒ“ƒg
     //======================================================
@@ -97,7 +102,7 @@ if ($_conf['ktai']) {
     {$_conf['extra_headers_ht']}
     <title>{$ptitle}</title>
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-</head>\n
+{$passkey_scripts_ht}</head>\n
 EOHEADER;
 
     if ($panes === 'default' || $panes === 'v3') {

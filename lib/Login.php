@@ -25,6 +25,7 @@ class Login
 
     private $hash;
     private $cookie;
+    private $session;
 
     // }}}
     // {{{ constructor
@@ -36,6 +37,7 @@ class Login
     {
         $this->hash = P2Hash::getInstance();
         $this->cookie = new LoginCookie();
+        $this->session = new LoginSession(null, null);
     }
 
     // }}}
@@ -48,6 +50,12 @@ class Login
      */
     public function authorize()
     {
+        // 実効モードがパスキーでcidがあるならログイン画面へ遷移
+        if (P2PasskeyStore::getEffectiveMode() == 2 && $this->cookie->hasCid()) {
+            $this->cookie->clearCookieAuth();
+            $this->applyFail(LoginResult::fail(LoginResult::R_NO_PROOF));
+        }
+
         $ctx = LoginCtx::collect($this);
         $result = LoginProof::checkGate($ctx);
         if ($result === null) {
@@ -57,6 +65,9 @@ class Login
                     break;
                 case LoginCtx::INTENT_FORM_NEW:
                     $result = LoginProof::verifyFormNew($ctx, LoginRegistCtx::collect($this, $ctx));
+                    break;
+                case LoginCtx::INTENT_PASSKEY:
+                    $result = LoginProof::verifyPasskey($ctx, LoginPasskeyCtx::collect($this, $ctx));
                     break;
                 case LoginCtx::INTENT_STATE:
                     $result = LoginProof::verifyState($ctx, LoginStateCtx::collect($this, $ctx));
@@ -85,8 +96,6 @@ class Login
      */
     private function establish(LoginResult $result)
     {
-        global $_p2session;
-
         // effects は LoginProof が実行順序込みで構築した実行計画。
         // case の並び順は LoginProof が構築する順序と同じであり、計画と実行が1対1で対応する
         foreach ($result->effects as $effect) {
@@ -98,6 +107,10 @@ class Login
                 case LoginResult::E_MAKE_USER:
                     $this->makeUser($result->identity, $result->formLoginPass);
                     break;
+                case LoginResult::E_CLEAR_STRENGTHENED:
+                    $this->session->clearStrengthened();
+                    unset($_SESSION['login_passkey_auth']);
+                    break;
                 case LoginResult::E_UNSESSION:
                     LoginSession::unSession();
                     break;
@@ -108,14 +121,18 @@ class Login
                     $this->logLoginSuccess();
                     break;
                 case LoginResult::E_BEGIN_SESSION:
-                    $_p2session->begin();
+                    $this->session->begin();
                     break;
                 case LoginResult::E_UPDATE_ACTIME:
-                    $_p2session->updateActime();
+                    $this->session->updateActime();
                     break;
                 case LoginResult::E_UPDATE_SESSION_VARS:
-                    $_SESSION['login_user']   = $this->user_u;
+                    $_SESSION['login_user'] = $this->user_u;
                     $_SESSION['login_pass_x'] = P2Hash::hash($this->pass_x);
+                    break;
+                case LoginResult::E_UPDATE_SESSION_PASSKEY:
+                    $_SESSION['login_user'] = $this->user_u;
+                    $_SESSION['login_passkey_auth'] = true;
                     break;
                 case LoginResult::E_RECORD_LOGIN_MICROTIME:
                     $_SESSION['login_microtime'] = microtime();
@@ -191,6 +208,10 @@ class Login
                 P2Util::pushInfoHtml('<p>p2 error: ' . p2h($result->extra) . '</p>');
                 break;
 
+            case LoginResult::R_PASSKEY_REJECTED:
+                P2Util::pushInfoHtml('<p>p2 error: ' . p2h($result->extra) . '</p>');
+                break;
+
             case LoginResult::R_LOCKOUT:
                 P2Util::pushInfoHtml('<p>p2 info: ログイン試行回数が多すぎます。<br>ﾀｲ━━━━||Φ|(|ﾟ|∀|ﾟ|)|Φ||━━━━ﾎ!!</p>');
                 break;
@@ -245,6 +266,19 @@ class Login
     }
 
     // }}}
+    // {{{ checkSessionErrors()
+
+    /**
+     * セッションの妥当性をチェックして、エラーがあればメッセージを得る
+     *
+     * @return false|string エラーがあればエラーメッセージ、なければfalseを返す。
+     */
+    public function checkSessionErrors()
+    {
+        return $this->session->checkSessionErrors();
+    }
+
+    // }}}
     // {{{ registerCookie()
 
     /**
@@ -252,12 +286,15 @@ class Login
      *
      * rep2/cookie.php の専用操作 (クッキー認証開始) 用
      *
-     * @return boolean
+     * @return void
      */
     public function registerCookie()
     {
         $device_pixel_ratio = $_SESSION['device_pixel_ratio'] ?? null;
-        return $this->cookie->setCookieCid($this->user_u, $this->pass_x, $device_pixel_ratio);
+        if (!$this->cookie->setCookieCid($this->user_u, $this->pass_x, $device_pixel_ratio)) {
+            // パスキー認証中はログイン画面へ遷移
+            $this->applyFail(LoginResult::fail(LoginResult::R_NO_PROOF));
+        }
     }
 
     // }}}
@@ -272,10 +309,8 @@ class Login
      */
     public function clearCookie()
     {
-        global $_p2session;
-
         $this->cookie->clearCookieAuth();
-        $_p2session->begin();
+        $this->session->begin();
     }
 
     // }}}

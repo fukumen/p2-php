@@ -10,6 +10,13 @@ if (version_compare(PHP_VERSION, '8.2.0', '<')) {
 
 p2_rewrite_vars_for_proxy();
 
+// HTTPS接続なら
+if (isset($_SERVER['HTTPS']) && strcasecmp($_SERVER['HTTPS'], 'on') === 0) {
+    define('P2_HTTPS_CONNECTION', 1);
+} else {
+    define('P2_HTTPS_CONNECTION', 0);
+}
+
 // {{{ ユーザー設定 読込
 
 // ユーザー設定があれば読み込む
@@ -634,12 +641,16 @@ if ($_conf['session_save'] == 'p2' and session_module_name() == 'files') {
     }
 
     session_save_path($_conf['session_dir']);
+    P2Util::session_gc();
 }
 
 // }}}
 
-require_once P2_LIB_DIR . '/LoginSession.php';
-$_p2session = new LoginSession(null, null);
+if ($_conf['passkey_auth_mode'] > 0) {
+    PasskeyChallengeDataStore::gc();
+}
+
+$_login = new Login();
 
 // }}}
 // {{{ お気にセット
@@ -675,9 +686,6 @@ if (!$_conf['ktai'] || $_conf['client_type'] != 'k') {
 if (defined('P2_OUTPUT_XHTML')) {
     $_conf['extra_headers_xht'] = preg_replace('/<((?:link|meta) .+?)>/', '<\\1 />', $_conf['extra_headers_ht']);
 }
-
-// ログインクラスのインスタンス生成（ログインユーザが指定されていなければ、この時点でログインフォーム表示に）
-$_login = new Login();
 
 // }}}
 

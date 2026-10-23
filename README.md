@@ -34,6 +34,7 @@
 * talk.jp対応([詳細はこちら](doc/README-talkjp.md))
 * スマホのスレ表示に非同期(Ajax)モードを追加
 * docker-rep2とrep2-allinoneを同梱
+* パスキー対応([詳細はこちら](doc/README-passkey.md))
 
 なお、5ch以外やpinkでは全くテストしていません。
 

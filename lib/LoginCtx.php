@@ -11,6 +11,7 @@ class LoginCtx
 {
     const INTENT_FORM = 'form';
     const INTENT_FORM_NEW = 'form_new';
+    const INTENT_PASSKEY = 'passkey';
     const INTENT_STATE = 'state';
     const INTENT_NONE = 'none';
 
@@ -68,14 +69,15 @@ class LoginCtx
             $ctx->identity = $_SERVER['REMOTE_USER'];
         }
 
-        if ($ctx->identity !== null) {
-            $login->checkAuthUserFile();
+        $isPasskey = !empty($_POST['assertion']);
+        if ($ctx->identity !== null || $isPasskey) {
+            $login->checkAuthUserFile();    // 副作用あり（許容する）
             $ctx->authFileExists = file_exists($_conf['auth_user_file']);
             $rec_pass_x = null;
             if ($ctx->authFileExists) {
                 include $_conf['auth_user_file'];
                 $ctx->recUser = $rec_login_user_u;
-                if (isset($rec_login_pass_x) && strlen($rec_login_pass_x) > 0) {
+                if (!$isPasskey && isset($rec_login_pass_x) && strlen($rec_login_pass_x) > 0) {
                     $rec_pass_x = $rec_login_pass_x;
                 }
             }
@@ -86,7 +88,9 @@ class LoginCtx
             $ctx->intent = self::INTENT_FORM;
         } elseif (!empty($_POST['submit_new'])) {
             $ctx->intent = self::INTENT_FORM_NEW;
-        } elseif ($ctx->cidCookiePresent || (isset($_SESSION['login_user']) && isset($_SESSION['login_pass_x']))) {
+        } elseif ($isPasskey) {
+            $ctx->intent = self::INTENT_PASSKEY;
+        } elseif ($ctx->cidCookiePresent || (isset($_SESSION['login_user']) && (isset($_SESSION['login_pass_x']) || isset($_SESSION['login_passkey_auth'])))) {
             $ctx->intent = self::INTENT_STATE;
         } else {
             $ctx->intent = self::INTENT_NONE;
@@ -126,7 +130,7 @@ class LoginFormCtx
         $formLoginId = $_POST['form_login_id'] ?? null;
 
         // P2Hash は副作用なし
-        if ($formLoginId == $ctx->identity) {
+        if (!$ctx2->lockout && $formLoginId == $ctx->identity) {
             $ctx2->formVerified = $login->getHash()->password_verify($formLoginPass, $ctx->passX);
         }
 
@@ -164,6 +168,45 @@ class LoginRegistCtx
 }
 
 // }}}
+// {{{ LoginPasskeyCtx
+
+class LoginPasskeyCtx
+{
+    public $requestUri = null;
+    public $devicePixelRatio = null;
+    public $lockout = false;
+    public $passkeyVerified = false;
+    public $failMessage = null;
+
+    /**
+     * passkey 経路用の入力を集める
+     *
+     * @param Login $login
+     * @param LoginCtx $ctx
+     * @return LoginPasskeyCtx
+     */
+    static public function collect(Login $login, LoginCtx $ctx)
+    {
+        $ctx2 = new self();
+        $ctx2->requestUri = $_SERVER['REQUEST_URI'] ?? null;
+        $ctx2->devicePixelRatio = $login->normalizeDevicePixelRatio($_REQUEST['device_pixel_ratio'] ?? null);
+        $ctx2->lockout = $login->checkLockout();    // アクセスログの読み込みのみで副作用なし
+
+        // verifyLoginは副作用あり（許容する）
+        if (!$ctx2->lockout) {
+            try {
+                P2PasskeyAuth::verifyLogin($_POST['assertion']);
+                $ctx2->passkeyVerified = true;
+            } catch (P2PasskeyAuthException $e) {
+                $ctx2->failMessage = $e->getMessage();
+            }
+        }
+
+        return $ctx2;
+    }
+}
+
+// }}}
 // {{{ LoginStateCtx
 
 class LoginStateCtx
@@ -175,6 +218,7 @@ class LoginStateCtx
     public $sessionVerified = false;
     public $logout = false;
     public $sessionUser = null;
+    public $passkeyAuth = false;
 
     /**
      * state 経路用の入力を集める
@@ -185,8 +229,6 @@ class LoginStateCtx
      */
     static public function collect(Login $login, LoginCtx $ctx)
     {
-        global $_p2session;
-
         $ctx2 = new self();
 
         $ctx2->logout = !empty($_REQUEST['logout']);
@@ -204,11 +246,14 @@ class LoginStateCtx
 
         $sessionUser = $_SESSION['login_user'] ?? null;
         $sessionPassX = $_SESSION['login_pass_x'] ?? null;
+        $sessionPasskeyAuth = isset($_SESSION['login_passkey_auth']);
+
+        $ctx2->passkeyAuth = $sessionPasskeyAuth;
 
         // セッション判定 (checkSessionErrors は副作用なし)。cid で成立した場合は判定しない。
-        if (!$ctx2->cidVerified && $sessionUser !== null && $sessionPassX !== null) {
+        if (!$ctx2->cidVerified && $sessionUser !== null && ($sessionPassX !== null || $sessionPasskeyAuth)) {
             $ctx2->sessionChecked = true;
-            $ctx2->sessionError = $_p2session->checkSessionErrors();
+            $ctx2->sessionError = $login->checkSessionErrors();
         }
 
         // P2Hash::hashは副作用無し

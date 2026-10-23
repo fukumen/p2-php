@@ -675,7 +675,7 @@ function ic2_display($url, $params)
     global $_conf, $ini, $thumb, $dpr, $redirect, $id, $uri, $file, $thumbnailer;
 
     if (strncmp($url, '/', 1) === 0) {
-        $s = empty($_SERVER['HTTPS']) ? '' : 's';
+        $s = P2_HTTPS_CONNECTION ? 's' : '';
         if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== '') {
             $host = $_SERVER['HTTP_HOST'];
         } else {

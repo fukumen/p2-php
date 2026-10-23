@@ -4,29 +4,32 @@
  * rep2 - 認証の検証 (verify)
  *
  * INTENT × PASS 着地のマトリクス (○ = 常に設定、△ = 条件付きで設定、ー = 設定されない)
- * | effect                    | FORM PASS | FORM_NEW PASS | STATE PASS① | STATE PASS② | STATE PASS③ | STATE PASS④ |
- * | ------------------------- | --------- | ------------- | ------------ | ------------ | ------------ | ------------ |
- * | reflect_login             | ○        | ー            | ○           | ○           | ○           | ○           |
- * | make_user                 | ー        | ○            | ー           | ー           | ー           | ー           |
- * | unsession                 | ー        | ー            | ー           | ー           | ー           | ○           |
- * | clear_cookie              | ー        | ー            | ー           | ー           | △ (※1)     | ○           |
- * | log_success               | ○        | ○            | ー           | ー           | ー           | ー           |
- * | begin_session             | △ (※2)  | △ (※2)      | ー           | ー           | ー           | ー           |
- * | update_actime             | ー        | ー            | ー           | ー           | ○           | ー           |
- * | update_session_vars       | ○        | ○            | ○           | ○           | ○           | ー           |
- * | record_login_microtime    | ○        | ○            | ○           | ー           | ー           | ー           |
- * | record_device_pixel_ratio | △ (※3)  | △ (※3)      | △ (※4)     | △ (※4)     | ー           | ー           |
- * | register_cookie           | △ (※5)  | △ (※5)      | ー           | ー           | ー           | ー           |
- * | close_session             | △ (※6)  | △ (※6)      | △ (※6)     | △ (※6)     | △ (※6)     | ー           |
- * | logout_redirect           | ー        | ー            | ー           | ー           | ー           | ○           |
- * | redirect                  | △ (※7)  | ー            | ー           | ー           | ー           | ー           |
- * | show_regist_done          | ー        | ○            | ー           | ー           | ー           | ー           |
- * | log_failed                | ー        | ー            | ー           | ー           | ー           | ー           |
+ * | effect                    | FORM PASS | FORM_NEW PASS | PASSKEY PASS | STATE PASS① | STATE PASS② | STATE PASS③ | STATE PASS④ | STATE PASS⑤ |
+ * | ------------------------- | --------- | ------------- | ------------ | ------------ | ------------ | ------------ | ------------ | ------------ |
+ * | reflect_login             | ○        | ー            | ○           | ○           | ○           | ○           | ○           | ○           |
+ * | make_user                 | ー        | ○            | ー           | ー           | ー           | ー           | ー           | ー           |
+ * | clear_strengthened        | ー        | ー            | ー           | ー           | ○           | ー           | ー           | ー           |
+ * | unsession                 | ー        | ー            | ー           | ー           | ー           | ー           | ー           | ○           |
+ * | clear_cookie              | ー        | ー            | ー           | ー           | ー           | △ (※1)     | ー           | ○           |
+ * | log_success               | ○        | ○            | ○           | ー           | ー           | ー           | ー           | ー           |
+ * | begin_session             | △ (※2)  | △ (※2)      | ○           | ー           | ー           | ー           | ー           | ー           |
+ * | update_actime             | ー        | ー            | ー           | ー           | ー           | ○           | ○           | ー           |
+ * | update_session_vars       | ○        | ○            | ー           | ○           | ○           | ○           | ー           | ー           |
+ * | update_session_passkey    | ー        | ー            | ○           | ー           | ー           | ー           | ○           | ー           |
+ * | record_login_microtime    | ○        | ○            | ○           | ○           | ー           | ー           | ー           | ー           |
+ * | record_device_pixel_ratio | △ (※3)  | △ (※3)      | △ (※3)     | △ (※4)     | △ (※4)     | ー           | ー           | ー           |
+ * | register_cookie           | △ (※5)  | △ (※5)      | ー           | ー           | ー           | ー           | ー           | ー           |
+ * | close_session             | △ (※6)  | △ (※6)      | △ (※6)     | △ (※6)     | △ (※6)     | △ (※6)     | △ (※6)     | ー           |
+ * | logout_redirect           | ー        | ー            | ー           | ー           | ー           | ー           | ー           | ○           |
+ * | redirect                  | △ (※7)  | ー            | △ (※7)     | ー           | ー           | ー           | ー           | ー           |
+ * | show_regist_done          | ー        | ○            | ー           | ー           | ー           | ー           | ー           | ー           |
+ * | log_failed                | ー        | ー            | ー           | ー           | ー           | ー           | ー           | ー           |
  *
  * STATE PASS① CID認証OK/通常セッション認証NG
  * STATE PASS② CID認証OK/通常セッション認証OK
  * STATE PASS③ 強化セッション認証OK
- * STATE PASS④ logout時
+ * STATE PASS④ パスキーセッション認証OK
+ * STATE PASS⑤ logout時
  * ※1 CID有り&&認証NG時
  * ※2 クッキー認証無し時
  * ※3 REQUEST dpr 有り時
@@ -50,8 +53,14 @@ class LoginProof
      */
     static public function checkGate(LoginCtx $ctx)
     {
-        // 新規登録は共通ゲートをスキップする
         if ($ctx->intent === LoginCtx::INTENT_FORM_NEW) {
+            return null;
+        }
+
+        if ($ctx->intent === LoginCtx::INTENT_PASSKEY) {
+            if ($ctx->recUser === null) {
+                return LoginResult::fail(LoginResult::R_IDENTITY_MISMATCH);
+            }
             return null;
         }
 
@@ -170,6 +179,46 @@ class LoginProof
     }
 
     // }}}
+    // {{{ verifyPasskey()
+
+    /**
+     * passkey 経路を判定する
+     *
+     * @param LoginCtx $base
+     * @param LoginPasskeyCtx $ctx
+     * @return LoginResult
+     */
+    static public function verifyPasskey(LoginCtx $base, LoginPasskeyCtx $ctx)
+    {
+        if ($ctx->lockout) {
+            return LoginResult::fail(LoginResult::R_LOCKOUT);
+        }
+
+        if (!$ctx->passkeyVerified) {
+            $r = LoginResult::fail(LoginResult::R_PASSKEY_REJECTED, $ctx->failMessage);
+            $r->effects[] = LoginResult::E_LOG_FAILED;
+            return $r;
+        }
+
+        $r = LoginResult::pass($base->recUser, null, $ctx->devicePixelRatio, $ctx->requestUri);
+        $r->effects[] = LoginResult::E_REFLECT_LOGIN;
+        $r->effects[] = LoginResult::E_LOG_SUCCESS;
+        $r->effects[] = LoginResult::E_BEGIN_SESSION;
+        $r->effects[] = LoginResult::E_UPDATE_SESSION_PASSKEY;
+        $r->effects[] = LoginResult::E_RECORD_LOGIN_MICROTIME;
+        if ($ctx->devicePixelRatio !== null) {
+            $r->effects[] = LoginResult::E_RECORD_DEVICE_PIXEL_RATIO;
+        }
+        if (P2_SESSION_CLOSE_AFTER_AUTHENTICATION) {
+            $r->effects[] = LoginResult::E_CLOSE_SESSION;
+        }
+        if ($ctx->requestUri !== null) {
+            $r->effects[] = LoginResult::E_REDIRECT;
+        }
+        return $r;
+    }
+
+    // }}}
     // {{{ verifyState()
 
     /**
@@ -181,8 +230,6 @@ class LoginProof
      */
     static public function verifyState(LoginCtx $base, LoginStateCtx $ctx)
     {
-        $effects = array();
-
         if ($base->cidCookiePresent) {
             if ($ctx->cidVerified) {
                 if ($ctx->logout) {
@@ -195,6 +242,9 @@ class LoginProof
                 }
                 $r = LoginResult::pass($base->identity, $base->passX, $ctx->devicePixelRatio);
                 $r->effects[] = LoginResult::E_REFLECT_LOGIN;
+                if ($ctx->sessionUser !== null) {
+                    $r->effects[] = LoginResult::E_CLEAR_STRENGTHENED;
+                }
                 $r->effects[] = LoginResult::E_UPDATE_SESSION_VARS;
                 if ($ctx->sessionUser === null) {
                     $r->effects[] = LoginResult::E_RECORD_LOGIN_MICROTIME;
@@ -207,19 +257,34 @@ class LoginProof
                 }
                 return $r;
             }
-            // CID認証が通らなければ、古いクッキーをクリアしておく
-            $effects[] = LoginResult::E_CLEAR_COOKIE;
         }
 
         if ($ctx->sessionChecked) {
             if ($ctx->sessionError !== false) {
-                // unsession を先頭に積む (clear_cookie を先に実行すると $_COOKIE の消去で unSession のセッションクッキー掃除が行われない)
-                array_unshift($effects, LoginResult::E_UNSESSION);
                 $extra = $base->cidExpired
                     ? 'クッキー認証の有効期限が切れました。再度ログインしてください。'
                     : $ctx->sessionError;
                 $r = LoginResult::fail(LoginResult::R_SESSION_ERROR, $extra);
-                $r->effects = $effects;
+                $r->effects[] = LoginResult::E_CLEAR_COOKIE;
+                return $r;
+            }
+
+            if ($ctx->passkeyAuth) {
+                if ($ctx->logout) {
+                    $r = LoginResult::pass($base->identity, null);
+                    $r->effects[] = LoginResult::E_REFLECT_LOGIN;
+                    $r->effects[] = LoginResult::E_UNSESSION;
+                    $r->effects[] = LoginResult::E_CLEAR_COOKIE;
+                    $r->effects[] = LoginResult::E_LOGOUT_REDIRECT;
+                    return $r;
+                }
+                $r = LoginResult::pass($base->identity, null);
+                $r->effects[] = LoginResult::E_REFLECT_LOGIN;
+                $r->effects[] = LoginResult::E_UPDATE_ACTIME;
+                $r->effects[] = LoginResult::E_UPDATE_SESSION_PASSKEY;
+                if (P2_SESSION_CLOSE_AFTER_AUTHENTICATION) {
+                    $r->effects[] = LoginResult::E_CLOSE_SESSION;
+                }
                 return $r;
             }
 
@@ -232,11 +297,10 @@ class LoginProof
                     $r->effects[] = LoginResult::E_LOGOUT_REDIRECT;
                     return $r;
                 }
-                $effects[] = LoginResult::E_REFLECT_LOGIN;
-                $effects[] = LoginResult::E_UPDATE_ACTIME;
-                $effects[] = LoginResult::E_UPDATE_SESSION_VARS;
                 $r = LoginResult::pass($base->identity, $base->passX);
-                $r->effects = $effects;
+                $r->effects[] = LoginResult::E_REFLECT_LOGIN;
+                $r->effects[] = LoginResult::E_UPDATE_ACTIME;
+                $r->effects[] = LoginResult::E_UPDATE_SESSION_VARS;
                 if (P2_SESSION_CLOSE_AFTER_AUTHENTICATION) {
                     $r->effects[] = LoginResult::E_CLOSE_SESSION;
                 }
@@ -244,14 +308,13 @@ class LoginProof
             }
 
             // セッションの情報が古いため破棄する
-            array_unshift($effects, LoginResult::E_UNSESSION);
             $r = LoginResult::fail(LoginResult::R_NO_PROOF);
-            $r->effects = $effects;
+            $r->effects[] = LoginResult::E_CLEAR_COOKIE;
             return $r;
         }
 
         $r = LoginResult::fail(LoginResult::R_NO_PROOF);
-        $r->effects = $effects;
+        $r->effects[] = LoginResult::E_CLEAR_COOKIE;
         return $r;
     }
 

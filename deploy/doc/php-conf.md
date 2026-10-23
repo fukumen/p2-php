@@ -53,6 +53,7 @@ php.ini 系の設定値。既定値は PHP 8.5.11 時点の値である。
 | date.timezone | UTC | 定義しない | 定義しない | 定義しない | conf.inc.php の `date_default_timezone_set('Asia/Tokyo')` が実効値 |
 | mbstring.* | （言語別） | 定義しない | 定義しない | 定義しない | `mb_detect_encoding` の候補を常にコード側で明示するため language / detect_order に依存しない |
 | variables_order | EGPCS | 定義しない | 定義しない | 定義しない | 既定値で問題ない |
+| session.gc_probability | 1 | 0 | 0 | 0 | PHP 標準の session GC（files ハンドラ）を無効化する。回収は rep2 の自前 GC（固定確率 1/100）が行い、セッションは `session_timeout_minutes` の 2 倍を寿命として `session_dir` から、challenge ストアは challenge TTL（120 秒）を寿命として削除する。実効的なセッション失効はスライディング失効（`session_timeout_minutes`、既定 30 分）が判定し、GC は物理回収のみを行う。`gc_maxlifetime` は `session_timeout_minutes` と整合させない方針であり、標準 GC が停止しているため既定値（1440 秒 = 24 分）のままでもセッションが先に回収されることはない（`gc_divisor` / `gc_maxlifetime` は既定値のまま） |
 | extension_dir / extension | （なし） | （公式イメージの docker-php-ext 生成物） | 不要（静的リンク組込） | ext / 12 本 | windows のみ指定が必要 |
 
 php-fpm.conf 系（rep2-php-fpm.conf）の設定値。既定値は 8.5.11 時点の値である。

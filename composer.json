@@ -62,6 +62,7 @@
     "roojs/pdo_dataobject": "dev-master",
     "symfony/console": "7.4.*",
     "vectorface/whip": "0.5.*",
+    "report-uri/passkeys-php": "^2.0",
     "cweagans/composer-patches": "^2.0"
   },
   "config": {

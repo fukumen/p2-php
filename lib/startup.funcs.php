@@ -59,9 +59,25 @@ function p2_rewrite_vars_for_proxy()
 {
     global $_conf;
 
-    foreach (array('HTTP_HOST', 'HTTP_PORT', 'REQUEST_URI', 'SCRIPT_NAME', 'PHP_SELF') as $key) {
+    foreach (array('HTTP_HOST', 'HTTP_PORT', 'HTTPS', 'REQUEST_URI', 'SCRIPT_NAME', 'PHP_SELF') as $key) {
         if (array_key_exists($key, $_SERVER)) {
             $_SERVER["X_REP2_ORIG_{$key}"] = $_SERVER[$key];
+        }
+    }
+
+    if ($_conf['reverse_proxy_host'] && $_conf['reverse_proxy_proto']) {
+        if ($_conf['reverse_proxy_proto'] === 'auto') {
+            if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+                $proto = strtolower(trim(explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0]));
+                $_SERVER['HTTPS'] = ($proto === 'https') ? 'on' : 'off';
+            } elseif (isset($_SERVER['HTTP_X_FORWARDED_SSL'])) {
+                $_SERVER['HTTPS'] = (strcasecmp($_SERVER['HTTP_X_FORWARDED_SSL'], 'on') === 0) ? 'on' : 'off';
+            } elseif (isset($_SERVER['HTTP_FORWARDED'])) {
+                $forwarded = explode(',', $_SERVER['HTTP_FORWARDED'])[0];
+                $_SERVER['HTTPS'] = (preg_match('/\bproto\s*=\s*"?https\b/i', $forwarded)) ? 'on' : 'off';
+            }
+        } else {
+            $_SERVER['HTTPS'] = $_conf['reverse_proxy_proto'];
         }
     }
 

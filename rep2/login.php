@@ -68,7 +68,10 @@ if (isset($_POST['form_new_login_pass'])) {
 // 補助認証
 //====================================================
 // Cookie認証
-if ($_login->checkUserPwWithCid()) {
+if ($_conf['passkey_auth_mode'] == 2) {
+    // パスキー専用モードでは cid を利用しないためリンクは非表示
+    $p_htm['auth_cookie'] = '';
+} elseif ($_login->checkUserPwWithCid()) {
     $p_htm['auth_cookie'] = <<<EOP
 Cookie認証登録済[<a href="cookie.php?clear_cookie=1{$_conf['k_at_a']}">解除</a>]<br>
 EOP;

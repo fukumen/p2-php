@@ -20,11 +20,13 @@ class LoginResult
     const R_FORM_REJECTED = 'form_rejected';
     const R_SESSION_ERROR = 'session_error';
     const R_NO_PROOF = 'no_proof';
+    const R_PASSKEY_REJECTED = 'passkey_rejected';
     const R_NEW_REGIST_INPUT_ERROR = 'new_regist_input_error';
     const R_NEW_REGIST_PATTERN_ERROR = 'new_regist_pattern_error';
 
     const E_REFLECT_LOGIN = 'reflect_login';
     const E_MAKE_USER = 'make_user';
+    const E_CLEAR_STRENGTHENED = 'clear_strengthened';
     const E_UNSESSION = 'unsession';
     const E_CLEAR_COOKIE = 'clear_cookie';
     const E_LOG_SUCCESS = 'log_success';
@@ -32,6 +34,7 @@ class LoginResult
     const E_BEGIN_SESSION = 'begin_session';
     const E_UPDATE_ACTIME = 'update_actime';
     const E_UPDATE_SESSION_VARS = 'update_session_vars';
+    const E_UPDATE_SESSION_PASSKEY = 'update_session_passkey';
     const E_RECORD_LOGIN_MICROTIME = 'record_login_microtime';
     const E_RECORD_DEVICE_PIXEL_RATIO = 'record_device_pixel_ratio';
     const E_REGISTER_COOKIE = 'register_cookie';
@@ -61,10 +64,10 @@ class LoginResult
     // {{{ pass()
 
     /**
-     * PASS (form / state Œo˜H)
+     * PASS (form / state / passkey Œo˜H)
      *
      * @param string $identity
-     * @param string $passX
+     * @param string|null $passX
      * @param float|null $devicePixelRatio
      * @param string|null $redirectTo
      * @return LoginResult
@@ -117,6 +120,7 @@ class LoginResult
         $r->status = self::STATUS_FAIL;
         $r->reason = $reason;
         $r->extra = $extra;
+        array_unshift($r->effects, self::E_UNSESSION);
         return $r;
     }
 

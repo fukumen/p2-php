@@ -51,6 +51,17 @@ $_conf['reverse_proxy_port'] = '';  // ("")
 // reverse_proxy_host が無効のときは無視される。
 $_conf['reverse_proxy_path'] = '';  // ("")
 
+// リバースプロキシを通してアクセスする際のプロトコル。
+// $_SERVER['HTTPS'] を上書きし、オリジナルの値を
+// $_SERVER['X_REP2_ORIG_HTTPS'] に書き込む。
+// '' : 何もしない
+// 'auto': $_SERVER['HTTP_X_FORWARDED_PROTO'], $_SERVER['HTTP_X_FORWARDED_SSL'],
+//         $_SERVER['HTTP_FORWARDED'] の順に解析して適用する
+// 'on': https として適用する
+// 'off': http として適用する
+// reverse_proxy_host が無効のときは無視される。
+$_conf['reverse_proxy_proto'] = '';  // ("")
+
 // }}}
 // ----------------------------------------------------------------------
 // {{{ 書き込み
@@ -67,6 +78,9 @@ $_conf['disable_res'] = 0;          // (0)
 
 // sessionデータの保存管理 (PHPデフォルト:'', p2でファイル管理:'p2')
 $_conf['session_save'] = 'p2';      // ('p2')
+
+// セッションのタイムアウト時間 (分。無操作で失効、アクセスのたびに延長)
+$_conf['session_timeout_minutes'] = 30;     // (30)
 
 // Cookie IDの有効期限日数
 $_conf['cid_expire_day'] = 30;      // (30)
@@ -112,6 +126,12 @@ $_conf['external_authentication'] = 0; // (0)
 
 // パスワードハッシュをロースペック用にする（する:1, しない:0）
 $_conf['password_hash_low_spec'] = 0;   // (0)
+
+// パスキー (WebAuthn) 認証モード （無効:0, 併用:1, パスキー専用:2）
+$_conf['passkey_auth_mode'] = 0;    // (0)
+
+// パスキーの最大登録数
+$_conf['passkey_max_registrations'] = 5;    // (5)
 
 // }}}
 // ----------------------------------------------------------------------

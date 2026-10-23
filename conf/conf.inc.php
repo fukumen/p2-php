@@ -15,6 +15,7 @@ $_conf['p2ua'] = "{$_conf['p2name']}/" . substr($_conf['p2version'], 0, 2);
 define('P2_VERSION_ID', sprintf('%u', crc32("{$_conf['p2name']}/{$_conf['p2version']}")));
 
 $_conf['jquery_version'] = '3.7.1';
+$_conf['simplewebauthn_browser_version'] = '14.0.0';
 
 /*
  * 通常はセッションファイルのロック待ちを極力短くするため
@@ -40,7 +41,6 @@ $skin_en    = null;
 $skin_name  = null;
 $skin_uniq  = null;
 $_login     = null;
-$_p2session = null;
 
 $conf_user_def   = array();
 $conf_user_rules = array();
@@ -67,7 +67,7 @@ function p2_init()
 {
     global $MYSTYLE, $STYLE, $debug;
     global $skin, $skin_en, $skin_name, $skin_uniq;
-    global $_conf, $_login, $_p2session;
+    global $_conf, $_login;
 
     // {{{ 基本変数
 
@@ -121,13 +121,6 @@ function p2_init()
         define('P2_OS_WINDOWS', 1);
     } else {
         define('P2_OS_WINDOWS', 0);
-    }
-
-    // HTTPS接続なら
-    if (array_key_exists('HTTPS', $_SERVER) && strcasecmp($_SERVER['HTTPS'], 'on') === 0) {
-        define('P2_HTTPS_CONNECTION', 1);
-    } else {
-        define('P2_HTTPS_CONNECTION', 0);
     }
 
     // ヌルバイト定数
@@ -262,6 +255,7 @@ function p2_init()
         'sid2ch_php'        => 'p2_sid2ch.php',         // 2ch ID認証セッションID記録ファイル (データPHP)
         'siduplift_file'    => 'p2_siduplift.srd',      // UPLIFT ID認証セッションID記録ファイル (シリアライズドデータ)
         'auth_user_file'    => 'p2_auth_user.php',      // 認証ユーザ設定ファイル(データPHP)
+        'passkeys_file'     => 'p2_passkeys.srd',       // パスキークレデンシャル保存ファイル (シリアライズドデータ)
         'login_log_file'    => 'p2_login.log.php',      // ログイン履歴 (データPHP)
         'login_failed_log_file' => 'p2_login_failed.dat.php',   // ログイン失敗履歴 (データPHP)
         'sid2chapi_php'     => 'p2_sid2chapi.php',      // 2ch APIセッションID記録ファイル (データPHP)
@@ -275,12 +269,13 @@ function p2_init()
     $_conf['orig_favita_brd']   = $_conf['favita_brd'];
     $_conf['orig_favlist_idx']  = $_conf['favlist_idx'];
 
-    $_conf['cookie_db_path']    = $_conf['db_dir'] . '/p2_cookies.sqlite3';
-    $_conf['post_db_path']      = $_conf['db_dir'] . '/p2_post_data.sqlite3';
-    $_conf['hostcheck_db_path'] = $_conf['db_dir'] . '/p2_hostcheck_cache.sqlite3';
-    $_conf['matome_db_path']    = $_conf['db_dir'] . '/p2_matome_cache.sqlite3';
-    $_conf['key_db_path']       = $_conf['db_dir'] . '/p2_keys.sqlite3';
-    $_conf['iv2_cache_db_path'] = $_conf['db_dir'] . '/iv2_cache.sqlite3';
+    $_conf['cookie_db_path']            = $_conf['db_dir'] . '/p2_cookies.sqlite3';
+    $_conf['post_db_path']              = $_conf['db_dir'] . '/p2_post_data.sqlite3';
+    $_conf['hostcheck_db_path']         = $_conf['db_dir'] . '/p2_hostcheck_cache.sqlite3';
+    $_conf['matome_db_path']            = $_conf['db_dir'] . '/p2_matome_cache.sqlite3';
+    $_conf['key_db_path']               = $_conf['db_dir'] . '/p2_keys.sqlite3';
+    $_conf['iv2_cache_db_path']         = $_conf['db_dir'] . '/iv2_cache.sqlite3';
+    $_conf['passkey_challenge_db_path'] = $_conf['db_dir'] . '/p2_passkey_challenge.sqlite3';
 
     // }}}
 

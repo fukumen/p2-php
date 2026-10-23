@@ -39,12 +39,12 @@ class LoginSession
 {
     // {{{ static properties
 
-    static public $_session_started = false;
+    static private $_session_started = false;
 
     // }}}
     // {{{ properties
 
-    public $sess_array = '_sess_array';
+    private $sess_array = '_sess_array';
 
     // }}}
     // {{{ constructor
@@ -105,6 +105,19 @@ class LoginSession
         }
 
         return true;
+    }
+
+    // }}}
+    // {{{ clearStrengthened()
+
+    /**
+     * 強化セッションの管理情報を破棄する (通常セッションへ戻す)
+     *
+     * @return void
+     */
+    public function clearStrengthened()
+    {
+        unset($_SESSION[$this->sess_array]);
     }
 
     // }}}
@@ -187,8 +200,15 @@ class LoginSession
      *
      * @return bool
      */
-    private function _checkAcTime($minutes = 30)
+    private function _checkAcTime($minutes = null)
     {
+        global $_conf;
+
+        // 無操作によるセッション失効までの時間 (分)
+        if ($minutes === null) {
+            $minutes = $_conf['session_timeout_minutes'];
+        }
+
         // 最終アクセス時間から、一定時間以上が経過していればExpire
         if ($_SESSION[$this->sess_array]['actime'] + $minutes * 60 < time()) {
             return false;

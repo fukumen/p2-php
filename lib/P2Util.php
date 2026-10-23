@@ -44,14 +44,12 @@ class P2Util
      * ポート番号を削ったホスト名を取得する
      *
      * @param   void
-     * @return  string|null
+     * @return  string|false 取得できない場合はfalse
      */
     static public function getMyHost()
     {
-        if (!isset($_SERVER['HTTP_HOST'])) {
-            return null;
-        }
-        return preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST']);
+        // Hostヘッダはhost[:port]形式のため、プロトコル相対URLとして解析してhost部分を取り出す
+        return parse_url('//' . ($_SERVER['HTTP_HOST'] ?? ''), PHP_URL_HOST);
     }
 
     // }}}
@@ -1227,28 +1225,21 @@ ERR;
     /**
      * セッションファイルのガーベッジコレクション
      *
-     * session.save_pathのパスの深さが2より大きい場合、ガーベッジコレクションは行われないため
-     * 自分でガーベッジコレクションしないといけない。
+     * 固定確率（1/100）で実行し、session_timeout_minutesの2倍より古いセッションファイルを削除する。
+     * PHP標準のGCの設定（gc_probability / gc_maxlifetime）には依存しない。
      *
      * @return  void
-     *
-     * @link http://jp.php.net/manual/ja/ref.session.php#ini.session.save-path
      */
     static public function session_gc()
     {
         global $_conf;
 
-        if (session_module_name() != 'files') {
+        if (mt_rand(1, 100) != 1) {
             return;
         }
 
-        $d = (int)ini_get('session.gc_divisor');
-        $p = (int)ini_get('session.gc_probability');
-        mt_srand();
-        if (mt_rand(1, $d) <= $p) {
-            $m = (int)ini_get('session.gc_maxlifetime');
-            self::garbageCollection($_conf['session_dir'], $m);
-        }
+        $life = $_conf['session_timeout_minutes'] * 2 * 60;
+        self::garbageCollection($_conf['session_dir'], $life, 'sess_');
     }
 
     // }}}
@@ -1391,7 +1382,7 @@ ERR;
      */
     static public function getMyUrl()
     {
-        $s = empty($_SERVER['HTTPS']) ? '' : 's';
+        $s = P2_HTTPS_CONNECTION ? 's' : '';
         
         if (isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] !== '') {
             $host = $_SERVER['HTTP_HOST'];

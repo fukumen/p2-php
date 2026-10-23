@@ -92,6 +92,12 @@ echo <<<EOP
     <li><a href="login2ch.php{$_conf['k_at_q']}">2chログイン管理</a></li>
 EOP;
 
+if ($_conf['passkey_auth_mode'] != 0 && !($_conf['ktai'] && !$_conf['iphone'])) {
+echo <<<EOP
+    <li><a href="passkey.php{$_conf['k_at_q']}">パスキー管理</a></li>
+EOP;
+}
+
 if ($_conf['2chapi_use'] == 1) {
 echo <<<EOP
     <li><a href="auth2chapi.php{$_conf['k_at_q']}">2ch API認証管理</a></li>

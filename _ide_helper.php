@@ -8,6 +8,3 @@ $_login = new Login();
 
 /** @var array $_conf */
 $_conf = array();
-
-/** @var LoginSession $_p2session */
-$_p2session = new LoginSession();
