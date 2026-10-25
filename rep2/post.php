@@ -42,7 +42,7 @@ $newtime = date('gis');
 
 $post_param_keys    = array('bbs', 'key', 'time', 'FROM', 'mail', 'MESSAGE', 'subject', 'submit');
 $post_internal_keys = array('host', 'sub', 'popup', 'rescount', 'ttitle_en');
-$post_optional_keys = array('newthread', 'beres', 'p2res', 'from_read_new', 'maru', 'csrfid', 'proxy');
+$post_optional_keys = array('newthread', 'beres', 'from_read_new', 'maru', 'csrfid', 'proxy');
 $post_p2_flag_keys  = array('b', 'p2_post_confirm_cookie', 'p2_write_token', 'p2_talksid', 'p2_extend_token');
 $header = array();
 
@@ -245,7 +245,6 @@ $post_config_key = PostDataStore::getKeyForConfig($host, $bbs);
 // Ý’è‚ð•Û‘¶
 PostDataStore::set($post_config_key, array(
     'beres' => !empty($_REQUEST['beres']),
-    'p2res' => !empty($_REQUEST['p2res']),
 ));
 
 //================================================================

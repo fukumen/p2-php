@@ -16,11 +16,6 @@ if (!isset($readnew_hidden_ht)) {
     $readnew_hidden_ht = '';
 }
 
-// 公式p2を使ったスレ立ては未実装 (P2Client.php)
-if ($newthread_hidden_ht !== '') {
-    $htm['p2res'] = '';
-}
-
 // レスアンカー
 if ($q_resnum) {
 	$hd['MESSAGE'] = "&gt;&gt;" . $q_resnum . "\r\n";
@@ -114,7 +109,6 @@ $htm['post_form'] = <<<EOP
 <span id="write_reg_byou"></span>
 {$htm['beres']}
 {$htm['talk_account']}
-{$htm['p2res']}
 {$htm['samba']}
 {$htm['k_br']}{$savedraft}
 {$upload_form}

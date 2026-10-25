@@ -16,11 +16,9 @@ $hd['mail'] = '';
 $hd['MESSAGE'] = '';
 $hd['subject'] = '';
 $hd['beres_checked'] = '';
-$hd['p2res_checked'] = '';
 $hd['proxy_checked'] = '';
 
 $htm['beres'] = '';
-$htm['p2res'] = '';
 $htm['talk_account'] = '';
 $htm['sage_cb'] = '';
 $htm['maru_post'] = '';
@@ -90,7 +88,7 @@ if ($lines = FileCtl::file_read_lines($key_idx, FILE_IGNORE_NEW_LINES)) {
 }
 
 // }}}
-// {{{ データベースから前回のPOST失敗データとberes/p2resの設定を読込み
+// {{{ データベースから前回のPOST失敗データとberesの設定を読込み
 
 $post_backup_key = PostDataStore::getKeyForBackup($host, $bbs, $key, !empty($_REQUEST['newthread']));
 $post_config_key = PostDataStore::getKeyForConfig($host, $bbs);
@@ -103,13 +101,10 @@ if ($post_backup = PostDataStore::get($post_backup_key)) {
     $hd['subject'] = p2h($post_backup['subject'] ?? $post_backup['SUBJECT'] ?? '');
 }
 
-// beres/p2res
+// beres
 if ($post_config = PostDataStore::get($post_config_key)) {
     if ($post_config['beres']) {
         $hd['beres_checked'] = ' checked';
-    }
-    if ($post_config['p2res']) {
-        $hd['p2res_checked'] = ' checked';
     }
 }
 
