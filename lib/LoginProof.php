@@ -69,9 +69,7 @@ class LoginProof
         }
 
         if ($ctx->authFileExists && $ctx->identity != $ctx->recUser) {
-            $r = LoginResult::fail(LoginResult::R_IDENTITY_MISMATCH);
-            $r->effects[] = LoginResult::E_LOG_FAILED;
-            return $r;
+            return LoginResult::failLog(LoginResult::R_IDENTITY_MISMATCH, $ctx->identity);
         }
 
         if (!$ctx->passX) {
@@ -98,9 +96,7 @@ class LoginProof
         }
 
         if (!$ctx->formVerified) {
-            $r = LoginResult::fail(LoginResult::R_FORM_REJECTED);
-            $r->effects[] = LoginResult::E_LOG_FAILED;
-            return $r;
+            return LoginResult::failLog(LoginResult::R_FORM_REJECTED, $base->identity);
         }
 
         $r = LoginResult::pass($base->identity, $base->passX, $ctx->devicePixelRatio, $ctx->requestUri);
@@ -195,9 +191,8 @@ class LoginProof
         }
 
         if (!$ctx->passkeyVerified) {
-            $r = LoginResult::fail(LoginResult::R_PASSKEY_REJECTED, $ctx->failMessage);
-            $r->effects[] = LoginResult::E_LOG_FAILED;
-            return $r;
+            // ŒŸØŽ¸”s‚Ì‚½‚ß identity ‚ÍŠm’è‚µ‚È‚¢ (–¢ŒŸØ‚Ì credentialId ‚©‚çƒ†[ƒU[‚ð‹tˆø‚«‚µ‚Ä‹L˜^‚µ‚È‚¢)
+            return LoginResult::failLog(LoginResult::R_PASSKEY_REJECTED, '[passkey]', $ctx->failMessage);
         }
 
         $r = LoginResult::pass($base->recUser, null, $ctx->devicePixelRatio, $ctx->requestUri);

@@ -892,9 +892,9 @@ class P2Util
     /**
      * アクセス情報をログに記録する
      */
-    static public function recAccessLog($logfile, $maxline = 100)
+    static public function recAccessLog($logfile, $user, $maxline = 100)
     {
-        global $_conf, $_login;
+        global $_conf;
 
         require_once P2_CONFIG_DIR . '/conf_lockout.inc.php';
 
@@ -911,7 +911,6 @@ class P2Util
         } else {
             $lines = array();
         }
-        $lines = array_map('rtrim', $lines);
 
         // 変数設定
         $date = date('Y/m/d (D) G:i:s');
@@ -952,8 +951,6 @@ class P2Util
             $referrer = '';
         }
 
-        $user = (isset($_login->user_u)) ? $_login->user_u : '';
-
         // 新しいログ行を設定
         $newdata = implode('<>', array($date, $remote_addr, $remote_host, $user_agent, $referrer, '', $user));
         //$newdata = p2h($newdata);
@@ -964,9 +961,9 @@ class P2Util
         $newdata = str_replace("<>", "\t", $newdata);
 
         // 新しいデータを一番上に追加
-        @array_unshift($lines, $newdata);
+        @array_unshift($lines, $newdata . "\n");
 
-        $cont = implode("\n", $lines) . "\n";
+        $cont = implode("", $lines);
 
         // 書き込み処理
         DataPhp::writeDataPhp($logfile, $cont);

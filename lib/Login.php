@@ -118,7 +118,7 @@ class Login
                     $this->cookie->clearCookieAuth();
                     break;
                 case LoginResult::E_LOG_SUCCESS:
-                    $this->logLoginSuccess();
+                    $this->logLoginSuccess($result->identity);
                     break;
                 case LoginResult::E_BEGIN_SESSION:
                     $this->session->begin();
@@ -180,7 +180,7 @@ class Login
                     $this->cookie->clearCookieAuth();
                     break;
                 case LoginResult::E_LOG_FAILED:
-                    $this->logLoginFailed();
+                    $this->logLoginFailed($result->identity);
                     break;
             }
         }
@@ -489,14 +489,16 @@ EOP;
 
     /**
      * ログインログを記録する
+     *
+     * @param string $identity
      */
-    private function logLoginSuccess()
+    private function logLoginSuccess($identity)
     {
         global $_conf;
 
         if (!empty($_conf['login_log_rec'])) {
             $recnum = $_conf['login_log_rec_num'] ?? 100;
-            P2Util::recAccessLog($_conf['login_log_file'], $recnum);
+            P2Util::recAccessLog($_conf['login_log_file'], $identity, $recnum);
         }
 
         return true;
@@ -507,14 +509,16 @@ EOP;
 
     /**
      * ログイン失敗ログを記録する
+     *
+     * @param string $identity
      */
-    private function logLoginFailed()
+    private function logLoginFailed($identity)
     {
         global $_conf;
 
         if (!empty($_conf['login_log_rec'])) {
             $recnum = $_conf['login_log_rec_num'] ?? 100;
-            P2Util::recAccessLog($_conf['login_failed_log_file'], $recnum);
+            P2Util::recAccessLog($_conf['login_failed_log_file'], $identity, $recnum);
         }
 
         return true;

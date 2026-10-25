@@ -50,6 +50,10 @@ class LoginResult
     public $effects = array();
 
     /* PASS */
+    /**
+     * PASS では確定した identity、FAIL (failLog) では試行された identity
+     * (パスキー経由では固定文字列 '[passkey]')
+     */
     public $identity = null;
     public $passX = null;
     public $redirectTo = null;
@@ -121,6 +125,28 @@ class LoginResult
         $r->reason = $reason;
         $r->extra = $extra;
         array_unshift($r->effects, self::E_UNSESSION);
+        return $r;
+    }
+
+    // }}}
+    // {{{ failLog()
+
+    /**
+     * FAIL （ログイン失敗ログあり)
+     *
+     * @param string $reason
+     * @param string $identity 試行された identity (パスキー経由では '[passkey]')
+     * @param mixed $extra
+     * @return LoginResult
+     */
+    static public function failLog($reason, $identity, $extra = null)
+    {
+        $r = new self();
+        $r->status = self::STATUS_FAIL;
+        $r->reason = $reason;
+        $r->extra = $extra;
+        $r->identity = $identity;
+        $r->effects = array(self::E_UNSESSION, self::E_LOG_FAILED);
         return $r;
     }
 
