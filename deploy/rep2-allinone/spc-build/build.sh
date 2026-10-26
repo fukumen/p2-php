@@ -418,7 +418,6 @@ if (in_array('filter', $exts, true)) {
 }
 if (in_array('iconv', $exts, true)) {
     $t('iconv', function () {
-        // 静的 libiconv 環境でも有効な汎用エンコーディング名を使用（SJIS-win は不可）
         if (iconv('UTF-8', 'UTF-16LE', 'あ') === false) { throw new Exception('iconv convert'); }
     });
 }

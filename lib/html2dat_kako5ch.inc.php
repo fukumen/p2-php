@@ -13,7 +13,7 @@ function html2dat_kako5ch($html, $outputFile) {
     // HTMLファイルを読み込み
     // DOMDocumentはShift_JISのパースに失敗してDOMが壊れることがあるため、
     // コンテンツを取得してエンコーディングをHTML-ENTITIESに変換してから読み込ませます
-    $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'SJIS-win');
+    $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'CP932');
     $doc->loadHTML($html);
     libxml_clear_errors();
 
@@ -132,8 +132,8 @@ function html2dat_kako5ch($html, $outputFile) {
     // 全行を結合
     $outputData = implode("\n", $lines) . "\n";
 
-    // 文字コードを Shift_JIS (CP932) に変換
-    $outputData = mb_convert_encoding($outputData, 'SJIS-win', 'UTF-8');
+    // 文字コードを CP932 に変換
+    $outputData = mb_convert_encoding($outputData, 'CP932', 'UTF-8');
 
     // 出力
     $res = FileCtl::file_write_contents($outputFile, $outputData, 0);

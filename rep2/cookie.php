@@ -2,7 +2,7 @@
 /**
  * rep2 - クッキー認証処理
  *
- * 内部文字エンコーディング: Shift_JIS
+ * 内部文字エンコーディング: CP932
  */
 
 define('P2_SESSION_CLOSE_AFTER_AUTHENTICATION', 0);

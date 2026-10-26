@@ -186,7 +186,7 @@ if (P2_FETCH_SUBJECT_TXT_DEBUG) {
     $debug_output .= PHP_EOL . PHP_EOL;
 
     if (!P2_OS_WINDOWS) {
-        $debug_output = mb_convert_encoding($debug_output, 'UTF-8', 'SJIS-win');
+        $debug_output = mb_convert_encoding($debug_output, 'UTF-8', 'CP932');
     }
 
     if (file_put_contents(P2_FETCH_SUBJECT_TXT_DEBUG_OUTPUT_FILE, $debug_output, LOCK_EX | FILE_APPEND) === false) {

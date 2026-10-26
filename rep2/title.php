@@ -334,7 +334,7 @@ function checkUpdatan2($repo_type, $run_id)
                 if ($latest_run_id > $run_id) {
                     $repo_msg = isset($json['workflow_runs'][0]['head_commit']['message']) ? $json['workflow_runs'][0]['head_commit']['message'] : '';
                     $repo_msg = (string)strtok($repo_msg, "\r\n");
-                    $repo_msg = p2h(mb_convert_encoding($repo_msg, 'Shift_JIS', 'UTF-8'));
+                    $repo_msg = p2h(mb_convert_encoding($repo_msg, 'CP932', 'UTF-8'));
                     $repo_hash = isset($json['workflow_runs'][0]['head_sha']) ? substr($json['workflow_runs'][0]['head_sha'], 0, 7) : '';
                     $repo_date = isset($json['workflow_runs'][0]['head_commit']['timestamp']) ? $json['workflow_runs'][0]['head_commit']['timestamp'] : '';
                     if ($repo_date) {

@@ -144,7 +144,7 @@ if (!empty($_GET) || !empty($_POST)) {
 
     // エンコーディング判定
     if ($hint) {
-        $request_encoding = mb_detect_encoding($hint, 'ASCII,UTF-8,SJIS-win');
+        $request_encoding = mb_detect_encoding($hint, 'ASCII,UTF-8,CP932');
         if ($request_encoding === 'ASCII') {
             p2die('不正なエンコーディング判定ヒントです。');
         }
@@ -152,9 +152,9 @@ if (!empty($_GET) || !empty($_POST)) {
         $request_encoding = null;
     }
 
-    // Shift_JISでなければ変換
-    if ($request_encoding !== 'SJIS-win') {
-        mb_convert_variables('SJIS-win', 'UTF-8,CP932', $_GET, $_POST);
+    // CP932でなければ変換
+    if ($request_encoding !== 'CP932') {
+        mb_convert_variables('CP932', 'UTF-8,CP932', $_GET, $_POST);
     }
 
     // $_REQUEST を再構成

@@ -82,7 +82,7 @@ itaj_en / ttitle_en は UrlSafeBase64 エンコード済みのため URL にそ�
 ## 注意事項
 
 - リクエストパラメータは UTF-8 で送信します(ブラウザの fetch の標準動作)。
-  rep2 はリクエストを init.php の処理で SJIS-win に変換するため、`_hint` パラメータは
+  rep2 はリクエストを init.php の処理で CP932 に変換するため、`_hint` パラメータは
   指定しません
 - 板名・スレタイトルを値に含めるときは itaj_en / ttitle_en(UrlSafeBase64)を使います
 - お気に板を変更した場合、menu フレームは自動では再読み込みされないため、

@@ -44,7 +44,7 @@ function dig2chsearch($query)
 
     $jsontest1 = json_decode($body, true);
 
-    //mb_convert_variables('SHIFT-JIS','UTF-8',$jsontest1);
+    //mb_convert_variables('CP932','UTF-8',$jsontest1);
 
     if ($jsontest1 === NULL) {
 
@@ -81,8 +81,8 @@ function dig2chsearch($query)
                 echo "{$_conf['proxy_host']}:{$_conf['proxy_port']}<br>";
             }
             echo "<b>dig2chに送信したURL(ブラウザでアクセスを試してみてください。)</b><br>{$url}<br>";
-            // 表示のためSJIS化
-            $body = mb_convert_encoding($body, "SJIS", "UTF-8");
+            // 表示のためCP932化
+            $body = mb_convert_encoding($body, "CP932", "UTF-8");
             echo '<b>dig2chからのレスポンス(http://jsonlint.com/ でエラーが無ければおま環)</b><br><textarea readonly rows="30" cols="100" wrap="off">'.$body.'</textarea><br>';
             echo '<b>HTTP_Requestのvar_dump</b><br>';
             var_dump($req);

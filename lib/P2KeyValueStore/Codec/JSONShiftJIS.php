@@ -5,7 +5,7 @@
 /**
  * 値をJSONエンコード・デコードするCodec
  *
- * 文字列は妥当なShift_JISシーケンスでなければならず、
+ * 文字列は妥当なCP932シーケンスでなければならず、
  * 配列のキーは数値かUS-ASCII文字列であることを期待する。
  */
 class P2KeyValueStore_Codec_JSONShiftJIS extends P2KeyValueStore_Codec_JSON
@@ -20,7 +20,7 @@ class P2KeyValueStore_Codec_JSONShiftJIS extends P2KeyValueStore_Codec_JSON
      */
     public function encodeValue($value)
     {
-        mb_convert_variables('UTF-8', 'Shift_JIS', $value);
+        mb_convert_variables('UTF-8', 'CP932', $value);
         return parent::encodeValue($value);
     }
 
@@ -28,7 +28,7 @@ class P2KeyValueStore_Codec_JSONShiftJIS extends P2KeyValueStore_Codec_JSON
     // {{{ decodeValue()
 
     /**
-     * 値をJSONデコードした後、Shift_JISに変換する
+     * 値をJSONデコードした後、CP932に変換する
      *
      * @param string $value
      * @return mixed
@@ -36,7 +36,7 @@ class P2KeyValueStore_Codec_JSONShiftJIS extends P2KeyValueStore_Codec_JSON
     public function decodeValue($json)
     {
         $value = parent::decodeValue($json);
-        mb_convert_variables('SJIS-win', 'UTF-8', $value);
+        mb_convert_variables('CP932', 'UTF-8', $value);
         return $value;
     }
 

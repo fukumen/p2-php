@@ -94,7 +94,7 @@ define('P2_INT_MIN', - PHP_INT_MAX - 1);
 /**
  * 漢字にマッチする正規表現
  */
-//define('P2_REGEX_KANJI', mb_convert_encoding('/[一-龠]/u', 'UTF-8', 'SJIS-win'));
+//define('P2_REGEX_KANJI', mb_convert_encoding('/[一-龠]/u', 'UTF-8', 'CP932'));
 define('P2_REGEX_KANJI', '/[\\x{4e00}-\\x{9fa0}]/u');
 
 /**
@@ -111,7 +111,7 @@ define('P2_REGEX_WAKATI', mb_convert_encoding('/(' . implode('|', array(
     //'[a-z][a-z_\\-]*',
     //'[0-9][0-9.]*',
     '[0-9a-z][0-9a-z_\\-]*',
-)) . ')/u', 'UTF-8', 'SJIS-win'));
+)) . ')/u', 'UTF-8', 'CP932'));
 */
 define('P2_REGEX_WAKATI', '/(
 #[\\x{4e00}-\\x{9fa0}]+[\\x{3041}-\\x{3093}]*|
@@ -135,7 +135,7 @@ define('P2_REGEX_NFD_KANA',
         mb_convert_encoding(
             '/([うか-こさ-そた-とは-ほウカ-コサ-ソタ-トハ-ホゝヽ])%u3099%|([は-ほハ-ホ])%u309A%/u',
             'UTF-8',
-            'SJIS-win'
+            'CP932'
         )
     )
 );
@@ -420,7 +420,7 @@ function p2_si2real($num, $kmg)
  * @param   string $encoding
  * @return  string
  */
-function p2_mb_basename($path, $encoding = 'SJIS-win')
+function p2_mb_basename($path, $encoding = 'CP932')
 {
     if (DIRECTORY_SEPARATOR != '/') {
         $path = str_replace(DIRECTORY_SEPARATOR, '/', $path);
@@ -510,7 +510,7 @@ if (extension_loaded('intl')) {
     function p2_normalize($str)
     {
         return strtolower(Normalizer::normalize(mb_convert_encoding(
-                $str, 'UTF-8', 'SJIS-win'), Normalizer::NFKC));
+                $str, 'UTF-8', 'CP932'), Normalizer::NFKC));
     }
 } else {
     /**
@@ -522,7 +522,7 @@ if (extension_loaded('intl')) {
     function p2_normalize($str)
     {
         return mb_strtolower(mb_convert_kana(mb_convert_encoding(
-                $str, 'UTF-8', 'SJIS-win'), 'KVas', 'UTF-8'), 'UTF-8');
+                $str, 'UTF-8', 'CP932'), 'KVas', 'UTF-8'), 'UTF-8');
     }
 }
 
@@ -558,7 +558,7 @@ function p2_get_highlighting_regex(array $words)
     }
     //rsort($featured_words, SORT_STRING);
 
-    $pattern = mb_convert_encoding(implode(' ', $featured_words), 'SJIS-win', 'UTF-8');
+    $pattern = mb_convert_encoding(implode(' ', $featured_words), 'CP932', 'UTF-8');
     return str_replace(' ', '|', StrCtl::wordForMatch($pattern, 'or'));
 
 }

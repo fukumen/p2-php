@@ -390,7 +390,7 @@ if (strlen($error)) {
 // {{{ èoóÕ
 
 header('Content-Type: application/json');
-mb_convert_variables('UTF-8', 'SJIS-win', $result);
+mb_convert_variables('UTF-8', 'CP932', $result);
 $json = json_encode($result);
 //error_log($json);
 echo $json;

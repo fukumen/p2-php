@@ -124,7 +124,7 @@ function p2_init()
     }
 
     // ヌルバイト定数
-    // mbstring.script_encoding = SJIS-win だと
+    // mbstring.script_encoding = CP932 だと
     // "\0", "\x00" 以降がカットされるので、chr()関数を使う
     define('P2_NULLBYTE', chr(0));
 
@@ -180,7 +180,7 @@ function p2_init()
     // }}}
     // {{{ 文字コードの指定
 
-    mb_internal_encoding('SJIS-win');
+    mb_internal_encoding('CP932');
     mb_http_output('pass');
     //mb_substitute_character(63); // 文字コード変換に失敗した文字が "?" になる
     //mb_substitute_character(0x3013); // 〓
@@ -190,7 +190,7 @@ function p2_init()
 
     if (function_exists('mb_ereg_replace')) {
         define('P2_MBREGEX_AVAILABLE', 1);
-        mb_regex_encoding('SJIS-win');
+        mb_regex_encoding('CP932');
     } else {
         define('P2_MBREGEX_AVAILABLE', 0);
     }
@@ -235,7 +235,7 @@ function p2_init()
     $_conf['detect_hint'] = '◎◇';
     $_conf['detect_hint_input_ht'] = '<input type="hidden" name="_hint" value="◎◇">';
     $_conf['detect_hint_input_xht'] = '<input type="hidden" name="_hint" value="◎◇" />';
-    //$_conf['detect_hint_utf8'] = mb_convert_encoding('◎◇', 'UTF-8', 'SJIS-win');
+    //$_conf['detect_hint_utf8'] = mb_convert_encoding('◎◇', 'UTF-8', 'CP932');
     $_conf['detect_hint_q'] = '_hint=%81%9D%81%9E'; // rawurlencode($_conf['detect_hint'])
     $_conf['detect_hint_q_utf8'] = '_hint=%E2%97%8E%E2%97%87'; // rawurlencode($_conf['detect_hint_utf8'])
 

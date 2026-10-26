@@ -159,7 +159,7 @@ class StrSjis
      */
     static protected function _sjisStringToUnicodePatternCb($m)
     {
-        $u = unpack('C2', mb_convert_encoding($m[0], 'UCS-2BE', 'SJIS-win'));
+        $u = unpack('C2', mb_convert_encoding($m[0], 'UCS-2BE', 'CP932'));
         return sprintf('\\x{%02X%02X}', $u[1], $u[2]);
     }
 

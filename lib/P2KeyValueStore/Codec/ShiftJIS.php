@@ -3,35 +3,35 @@
 // {{{ P2KeyValueStore_Codec_ShiftJIS
 
 /**
- * Shift_JIS (SJIS-win=CP932) ‚Ì•¶š—ñ‚ğUTF-8‚É•ÏŠ·E•œŒ³‚·‚éCodec
+ * CP932 ‚Ì•¶š—ñ‚ğUTF-8‚É•ÏŠ·E•œŒ³‚·‚éCodec
  */
 class P2KeyValueStore_Codec_ShiftJIS implements P2KeyValueStore_Codec_Interface
 {
     // {{{ _encode()
 
     /**
-     * Shift_JIS‚Ì•¶š—ñ‚ğUTF-8‚É•ÏŠ·‚·‚é
+     * CP932‚Ì•¶š—ñ‚ğUTF-8‚É•ÏŠ·‚·‚é
      *
      * @param string $str
      * @return string
      */
     static private function _encode($str)
     {
-        return mb_convert_encoding($str, 'UTF-8', 'SJIS-win');
+        return mb_convert_encoding($str, 'UTF-8', 'CP932');
     }
 
     // }}}
     // {{{ _decode()
 
     /**
-     * UTF-8‚Ì•¶š—ñ‚ğShift_JIS‚É•ÏŠ·‚·‚é
+     * UTF-8‚Ì•¶š—ñ‚ğCP932‚É•ÏŠ·‚·‚é
      *
      * @param string $str
      * @return string
      */
     static private function _decode($str)
     {
-        return mb_convert_encoding($str, 'SJIS-win', 'UTF-8');
+        return mb_convert_encoding($str, 'CP932', 'UTF-8');
     }
 
     // }}}
