@@ -63,7 +63,7 @@
 <!-- Toolbar1 -->
 <table id="sbtoolbar1" class="toolbar" cellspacing="0">
 <tr>
-    <td class="toolbar-title"><span class="itatitle" id="top"><a class="aitatitle" href="<?php echo $htm['tgrep_url']; ?>" target="_blank"><b>tGrep for rep2</b></a></span></td>
+    <td class="toolbar-title"><span class="itatitle" id="top"><b>tGrep for rep2</b></span></td>
     <td class="toolbar-filter">
         <form id="searchForm" name="searchForm" action="<?php echo $htm['php_self']; ?>" method="get" accept-charset="<?php echo $_conf['accept_charset']; ?>">
         <input id="Q" name="Q" <?php echo $htm['search_attr']; ?> />
@@ -183,21 +183,13 @@ foreach ($threads as $o => $t) {
 </tfoot>
 <?php } ?>
 </table>
-<table>
-<tr>
-    <!--dig2ch‚ÌŽg—pðŒ‚Ì‚½‚ß•\Ž¦-->
-    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm0'] ?? '';}?></td>
-    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm1'] ?? '';}?></td>
-    <td><?php if ($_conf['test.search_dig2ch']) { echo $profile['cm2'] ?? '';}?></td>
-</tr>
-</table>
 <?php } ?>
 
 <?php if ($threads) { ?>
 <!-- Toolbar2 -->
 <table id="sbtoolbar2" class="toolbar" cellspacing="0">
 <tr>
-    <td class="toolbar-title"><span class="itatitle" id="bottom"><a class="aitatitle" href="<?php echo $htm['tgrep_url']; ?>" target="_blank"><b>tGrep for rep2</b></a></span></td>
+    <td class="toolbar-title"><span class="itatitle" id="bottom"><b>tGrep for rep2</b></span></td>
     <td class="toolbar-filter">
         <form id="searchForm2" name="searchForm2" action="<?php echo $htm['php_self']; ?>" method="get" accept-charset="<?php echo $_conf['accept_charset']; ?>">
         <input id="Q2" name="Q" <?php echo $htm['search_attr']; ?> />

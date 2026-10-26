@@ -69,10 +69,7 @@ $conf_user_rules['expack.tgrep.recent2_num'] = array('notIntExceptMinusToDef');
 // 検索に使用する検索エンジン
 $conf_user_def['expack.tgrep.engine'] = '4';
 $conf_user_sel['expack.tgrep.engine'] = array(
-    '0' => sprintf('tGrep (%s)', parse_url($_conf['expack.tgrep_url'], PHP_URL_HOST)), // tGrep(互換)サービス
-    '1' => 'dig (dig.5ch.net)', // もうずっとサービス停止中
-    '2' => 're.Find2ch (refind2ch.org)', // https://refind2ch.org/about
-    '3' => '5chスレタイ検索 (ff5ch.syoboi.jp)', // http://z.syoboi.jp/web/ff2ch/
+    '3' => '5chスレタイ検索 (ff5ch.syoboi.jp)', // https://syoboi.jp/app/ff2ch/
     '4' => '5ちゃんねるスレタイ検索 (find.' . $_conf['2ch_domain'] . ')', // http://find.5ch.net/
 );
 

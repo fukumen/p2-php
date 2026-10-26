@@ -24,10 +24,6 @@ $_conf['expack.use_curl_multi'] = 1; // (1)
 // curl による並列ダウンロードの同一ホストに対する最大同時接続数
 $_conf['expack.curl_per_host'] = 6; // (6)
 
-// スレタイ検索をdig.2ch.netで行う
-$_conf['test.search_dig2ch'] = 1; // (1)
-
-
 // }}}
 // {{{ スキン
 

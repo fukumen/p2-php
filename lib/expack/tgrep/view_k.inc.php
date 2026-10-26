@@ -91,7 +91,6 @@ if ($_conf['expack.tgrep.recent_num'] > 0) {
 <?php } ?>
 
 <?php if ($threads) { ?>
-<?php if ($_conf['test.search_dig2ch']) { echo $profile['cm0'];echo $profile['cm1'];echo $profile['cm2'];}?>
 <!-- ThreadList and Pager -->
 <div><a href="#bottom" align="right" title="Й║В╓"<?php echo $_conf['k_accesskey_at']['bottom']; ?>><?php echo $_conf['k_accesskey_st']['bottom']; ?>Бе</a></div>
 <?php

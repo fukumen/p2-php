@@ -77,8 +77,6 @@ function p2_init()
     $_conf['expack.web_url']        = 'https://open774.github.io/p2-php/';
     $_conf['expack.download_url']   = 'https://github.com/open774/p2-php/releases';
     $_conf['expack.history_url']    = 'https://github.com/open774/p2-php/blob/master/doc/README-774.txt';
-    $_conf['expack.tgrep_url']      = 'http://page2.xrea.jp/tgrep/search';
-    $_conf['test.dig2ch_url']       = 'https://dig.5ch.net/';
     $_conf['expack.gate_php']       = '//open774.github.io/p2-php/gate.html';
     $_conf['title_php']             = 'title.php';
     $_conf['menu_php']              = 'menu.php';

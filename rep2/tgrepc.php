@@ -1,8 +1,6 @@
 <?php
 /**
  * スレッドタイトル検索 tGrep クライアント
- *
- * http://page2.xrea.jp/tgrep/ を利用
  */
 
 // {{{ p2基本設定読み込み&認証
@@ -171,8 +169,6 @@ if ($query) {
 
 // 基本変数
 $htm = array();
-//$htm['tgrep_url'] = p2h($_conf['expack.tgrep_url']);
-$htm['tgrep_url'] = p2h($_conf['test.dig2ch_url']);
 $htm['php_self']  = 'tgrepc.php'; //p2h($_SERVER['SCRIPT_NAME']);
 $htm['query']     = (isset($_GET['Q'])) ? p2h($_GET['Q']) : '';
 $htm['query_en']  = (isset($_GET['Q'])) ? rawurlencode($_GET['Q']) : '';
@@ -349,28 +345,7 @@ exit;
 function tgrep_search($query)
 {
     global $_conf;
-    if ($_conf['expack.tgrep.engine'] === "0") {
-        $client = new HTTP_Client();
-        $client->setDefaultHeader('User-Agent', 'p2-tgrep-client');
-        $code = $client->get($_conf['expack.tgrep_url'] . '?' . $query);
-        if (PEAR::isError($code)) {
-            p2die($code->getMessage());
-        } elseif ($code != 200) {
-            p2die("HTTP Error - {$code}");
-        }
-        $response = $client->currentResponse();
-        $result = unserialize($response['body']);
-        if (!$result) {
-            p2die('Error: 検索結果の展開に失敗しました。');
-        }
-        return $result;
-    } elseif ($_conf['expack.tgrep.engine'] === "1") {
-        require_once './dig2ch.php';
-        return dig2chsearch($query);
-    } elseif ($_conf['expack.tgrep.engine'] === "2") {
-        require_once './refind2ch.php';
-        return refind2ch_search($query);
-    } elseif ($_conf['expack.tgrep.engine'] === "3") {
+    if ($_conf['expack.tgrep.engine'] === "3") {
         require_once './ff5ch.php';
         return ff5ch_search($query);
     } elseif ($_conf['expack.tgrep.engine'] === "4") {
