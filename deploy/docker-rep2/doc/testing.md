@@ -72,6 +72,18 @@ FileCtl::file_write_contents(__DIR__ . '/coverage.json',
 C1 の確認では branches の hit に加えて branch 間遷移 (`out_hit`) の未実行も確認します
 （分岐ノード単位では if の片側だけの実行でも 100% になるため）。
 
+- カバレッジの取得は `--debug` 付きで起動した環境でのみ行えます。モードの確認は
+  `getenv('XDEBUG_MODE')` が `coverage` かどうかで行い、`ini_get('xdebug.mode')` や
+  `php -i` は使わないでください。
+- モードが `coverage` でない場合、`xdebug_start_code_coverage()` は Warning を出し、
+  `xdebug_get_code_coverage()` は空配列を返します。branches が出力されないように見えた場合は
+  まずモードを確認してください。
+- branches / paths は `XDEBUG_CC_BRANCH_CHECK` を付けて開始した場合のみ出力されます。
+- 返り値の形式（`XDEBUG_CC_BRANCH_CHECK` の有無による差異、branches / paths の位置、
+  `out_hit` の意味）の詳細は公式ドキュメントを参照してください:
+  [Code Coverage Analysis](https://xdebug.org/docs/code_coverage) の
+  `xdebug_get_code_coverage()` / `xdebug_start_code_coverage()` の節
+
 ## テスト専用 mitmproxy addon の追加
 
 外部 API の応答をモックへ差し替えるなど、テスト専用の mitmproxy addon を追加するときは `agent/agent-compose.override.yml` を作成します。
