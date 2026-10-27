@@ -47,6 +47,10 @@ python3 build.py --extra agent-up
 python3 build.py --extra agent-test ../../../test/my_test.php
 ```
 
+`agent-test` と `agent-exec` はコンテナ内で root として実行されます（php-fpm は www-data）。
+CLI から `/ext` 配下のファイルを保存・更新すると owner が root になり php-fpm から読めなくなるため、
+保存後に `chown www-data:www-data`（必要に応じて `chmod 0600`）で戻してください。
+
 ### 終了
 
 ```bash
