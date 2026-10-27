@@ -121,9 +121,6 @@ $_conf['last_login_log_show'] = 1;  // (1)
 // 新着まとめ読みのキャッシュを残す数 (無効:0, 無限:-1)
 $_conf['matome_cache_max'] = 5; // (5)
 
-// 外部認証を使用したログイン （する:1, しない:0）
-$_conf['external_authentication'] = 0; // (0)
-
 // パスワードハッシュをロースペック用にする（する:1, しない:0）
 $_conf['password_hash_low_spec'] = 0;   // (0)
 

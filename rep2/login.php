@@ -32,8 +32,6 @@ if ($_conf['ktai'] && function_exists('mb_convert_kana')) {
 }
 
 // （携帯）ログイン用URL
-//$user_u_q = $_conf['ktai'] ? "?user={$_login->user_u}" : '';
-//$url = rtrim(dirname(P2Util::getMyUrl()), '/') . '/' . $user_u_q . '&amp;b=k';
 $url = rtrim(dirname(P2Util::getMyUrl()), '/') . '/?b=k';
 
 $p_htm['ktai_url'] = '携帯'.$p_str['login'].'用URL <a href="'.$url.'" target="_blank">'.$url.'</a><br>';
@@ -67,6 +65,8 @@ if (isset($_POST['form_new_login_pass'])) {
 //====================================================
 // 補助認証
 //====================================================
+$passkey_mode = P2PasskeyStore::getEffectiveMode();
+
 // Cookie認証
 if ($_conf['passkey_auth_mode'] == 2) {
     // パスキー専用モードでは cid を利用しないためリンクは非表示
@@ -109,8 +109,10 @@ if (!empty($_REQUEST['check_keep_login'])) {
 //====================================================
 // 認証ユーザ登録フォーム
 //====================================================
-if ($_conf['ktai']) {
-    $login_form_ht = <<<EOP
+$login_form_ht = '';
+if ($passkey_mode != 2) {
+    if ($_conf['ktai']) {
+        $login_form_ht = <<<EOP
 <hr>
 <form id="login_change" method="POST" action="{$_SERVER['SCRIPT_NAME']}" target="_self">
     {$p_str['password']}の変更<br>
@@ -125,8 +127,8 @@ if ($_conf['ktai']) {
 <hr>
 <div class="center">{$_conf['k_to_index_ht']}</div>
 EOP;
-} else {
-    $login_form_ht = <<<EOP
+    } else {
+        $login_form_ht = <<<EOP
 <form id="login_change" method="POST" action="{$_SERVER['SCRIPT_NAME']}" target="_self">
     {$p_str['password']}の変更<br>
     {$_conf['k_input_ht']}
@@ -144,6 +146,7 @@ EOP;
     <input type="submit" name="submit" value="変更登録">
 </form>
 EOP;
+    }
 }
 
 //=========================================================

@@ -111,7 +111,7 @@ $htm['auth_user'] = "<p>ログインユーザ: {$_login->user_u} - " . date("Y/m/d (D) 
 
 // （携帯）ログイン用URL
 $base_url = rtrim(dirname(P2Util::getMyUrl()), '/') . '/';
-$url_b = $base_url . '?user=' . rawurlencode($_login->user_u) . '&b=';
+$url_b = $base_url . '?b=';
 $url_b_ht = p2h($url_b);
 
 // 携帯用ビューを開くブックマークレット

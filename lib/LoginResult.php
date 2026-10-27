@@ -21,6 +21,7 @@ class LoginResult
     const R_SESSION_ERROR = 'session_error';
     const R_NO_PROOF = 'no_proof';
     const R_PASSKEY_REJECTED = 'passkey_rejected';
+    const R_PASSKEY_REQUIRED = 'passkey_required';
     const R_NEW_REGIST_INPUT_ERROR = 'new_regist_input_error';
     const R_NEW_REGIST_PATTERN_ERROR = 'new_regist_pattern_error';
 

@@ -65,7 +65,15 @@ class LoginProof
         }
 
         if ($ctx->identity === null) {
-            return LoginResult::fail(LoginResult::R_NO_IDENTITY);
+            if ($ctx->passkeyOnly) {
+                $result = LoginResult::fail(LoginResult::R_PASSKEY_REQUIRED);
+            } else {
+                $result = LoginResult::fail(LoginResult::R_NO_IDENTITY);
+            }
+            if ($ctx->logout) {
+                $result->effects[] = LoginResult::E_LOGOUT_REDIRECT;
+            }
+            return $result;
         }
 
         if ($ctx->authFileExists && $ctx->identity != $ctx->recUser) {
@@ -227,7 +235,7 @@ class LoginProof
     {
         if ($base->cidCookiePresent) {
             if ($ctx->cidVerified) {
-                if ($ctx->logout) {
+                if ($base->logout) {
                     $r = LoginResult::pass($base->identity, $base->passX);
                     $r->effects[] = LoginResult::E_REFLECT_LOGIN;
                     $r->effects[] = LoginResult::E_UNSESSION;
@@ -259,13 +267,20 @@ class LoginProof
                 $extra = $base->cidExpired
                     ? 'クッキー認証の有効期限が切れました。再度ログインしてください。'
                     : $ctx->sessionError;
-                $r = LoginResult::fail(LoginResult::R_SESSION_ERROR, $extra);
+                if ($base->passkeyOnly) {
+                    $r = LoginResult::fail(LoginResult::R_PASSKEY_REQUIRED, $extra);
+                } else {
+                    $r = LoginResult::fail(LoginResult::R_SESSION_ERROR, $extra);
+                }
                 $r->effects[] = LoginResult::E_CLEAR_COOKIE;
+                if ($base->logout) {
+                    $r->effects[] = LoginResult::E_LOGOUT_REDIRECT;
+                }
                 return $r;
             }
 
             if ($ctx->passkeyAuth) {
-                if ($ctx->logout) {
+                if ($base->logout) {
                     $r = LoginResult::pass($base->identity, null);
                     $r->effects[] = LoginResult::E_REFLECT_LOGIN;
                     $r->effects[] = LoginResult::E_UNSESSION;
@@ -284,7 +299,7 @@ class LoginProof
             }
 
             if ($ctx->sessionVerified) {
-                if ($ctx->logout) {
+                if ($base->logout) {
                     $r = LoginResult::pass($base->identity, $base->passX);
                     $r->effects[] = LoginResult::E_REFLECT_LOGIN;
                     $r->effects[] = LoginResult::E_UNSESSION;

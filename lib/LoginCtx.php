@@ -23,6 +23,8 @@ class LoginCtx
     public $cidCookiePresent = false;
     public $cidInfo = false;
     public $cidExpired = false;
+    public $passkeyOnly = false;
+    public $logout = false;
 
     /**
      * 共通ゲートの入力と intent を集める
@@ -39,6 +41,8 @@ class LoginCtx
 
         $ctx->cidCookiePresent = $cookie->hasCid();
         $ctx->cidInfo = $cookie->getCidInfo();
+        $ctx->passkeyOnly = (P2PasskeyStore::getEffectiveMode() == 2);
+        $ctx->logout = !empty($_REQUEST['logout']);
 
         // 有効期限チェック (副作用なし)
         if ($ctx->cidInfo !== false) {
@@ -52,10 +56,6 @@ class LoginCtx
         if (isset($_REQUEST['form_login_id']) && preg_match($pattern, $_REQUEST['form_login_id'])) {
             $ctx->identity = $_REQUEST['form_login_id'];
 
-        // GET引数での指定
-        } elseif (isset($_REQUEST['user']) && preg_match($pattern, $_REQUEST['user'])) {
-            $ctx->identity = $_REQUEST['user'];
-
         // Cookieで指定
         } elseif ($ctx->cidInfo !== false && !$ctx->cidExpired && preg_match($pattern, $ctx->cidInfo[0])) {
             $ctx->identity = $ctx->cidInfo[0];
@@ -63,10 +63,6 @@ class LoginCtx
         // Sessionで指定
         } elseif (isset($_SESSION['login_user']) && preg_match($pattern, $_SESSION['login_user'])) {
             $ctx->identity = $_SESSION['login_user'];
-
-        // 外部認証で指定
-        } elseif (!empty($_conf['external_authentication']) && isset($_SERVER['REMOTE_USER']) && preg_match($pattern, $_SERVER['REMOTE_USER'])) {
-            $ctx->identity = $_SERVER['REMOTE_USER'];
         }
 
         $isPasskey = !empty($_POST['assertion']);
@@ -216,7 +212,6 @@ class LoginStateCtx
     public $sessionChecked = false;
     public $sessionError = false;
     public $sessionVerified = false;
-    public $logout = false;
     public $sessionUser = null;
     public $passkeyAuth = false;
 
@@ -230,8 +225,6 @@ class LoginStateCtx
     static public function collect(Login $login, LoginCtx $ctx)
     {
         $ctx2 = new self();
-
-        $ctx2->logout = !empty($_REQUEST['logout']);
 
         $cookie = $login->getCookie();
 

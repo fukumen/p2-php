@@ -296,6 +296,19 @@ EOP;
 //]]>
 </script>
 EOP;
+            if ($failReason === LoginResult::R_PASSKEY_REQUIRED) {
+                echo <<<EOP
+<script type="text/javascript">
+//<![CDATA[
+window.addEventListener('load', function () {
+    if (window.isSecureContext && navigator.credentials && window.PublicKeyCredential) {
+        passkeyLogin(document.getElementById('passkey_verify'));
+    }
+});
+//]]>
+</script>
+EOP;
+            }
         }
     }
 

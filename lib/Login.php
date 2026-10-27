@@ -53,7 +53,7 @@ class Login
         // 実効モードがパスキーでcidがあるならログイン画面へ遷移
         if (P2PasskeyStore::getEffectiveMode() == 2 && $this->cookie->hasCid()) {
             $this->cookie->clearCookieAuth();
-            $this->applyFail(LoginResult::fail(LoginResult::R_NO_PROOF));
+            $this->applyFail(LoginResult::fail(LoginResult::R_PASSKEY_REQUIRED));
         }
 
         $ctx = LoginCtx::collect($this);
@@ -182,6 +182,9 @@ class Login
                 case LoginResult::E_LOG_FAILED:
                     $this->logLoginFailed($result->identity);
                     break;
+                case LoginResult::E_LOGOUT_REDIRECT:
+                    header('Location: ' . rtrim(dirname(P2Util::getMyUrl()), '/') . '/');
+                    exit;
             }
         }
 
@@ -206,6 +209,12 @@ class Login
 
             case LoginResult::R_SESSION_ERROR:
                 P2Util::pushInfoHtml('<p>p2 error: ' . p2h($result->extra) . '</p>');
+                break;
+
+            case LoginResult::R_PASSKEY_REQUIRED:
+                if ($result->extra !== null) {
+                    P2Util::pushInfoHtml('<p>p2 error: ' . p2h($result->extra) . '</p>');
+                }
                 break;
 
             case LoginResult::R_PASSKEY_REJECTED:
