@@ -59,7 +59,8 @@ passkey_auth_mode=1(併用)の場合は、従来どおりのユーザー名・�
 * デフォルトは30分。無操作のまま放置するとログアウトになり、次のアクセスで再認証が求められます
 * 操作を続けていればセッションは延長され続けます (スライディングウィンドウ)
 * 失効までの時間は `conf/conf_admin.inc.php` の `$_conf['session_timeout_minutes']` で変更できます(分単位)
-* session_timeout_minutesの制御はrep2側の制御であり、WEBサーバー側のセッションタイムアウト時間の方が短い場合はWEBサーバー側でタイムアウト判定されます
+* session_timeout_minutesの制御はrep2側の制御であり、php.iniのsession.gc_maxlifetimeがこれより短い場合は、PHP側のGCにより先にセッションデータが削除されることがあります
+* docker-rep2とrep2-allinoneでは `session.gc_probability = 0` によりPHP側のGCを無効化しているため、この影響を受けません
 
 パスワードでログインするときに「Cookieにログイン状態を保持」を選択していると、30日間は再ログインなしで利用できます（従来の動作）。
 
