@@ -12,8 +12,6 @@ use ReportUri\Passkeys\WebAuthnException;
 
 class P2PasskeyAuth
 {
-    const COOKIE_NAME = 'PCC';  // Passkey Challenge Cookie
-
     // {{{ findAllCredentials()
 
     /**
@@ -84,9 +82,10 @@ class P2PasskeyAuth
     /**
      * ログイン用のoptionsスクリプトを発行する
      *
-     * challengeをchallengeストアに保存し、passkey.js用のoptionsを組み込んだ<script>要素を返す。
+     * challengeをchallengeストアに保存し、passkey.js用のoptionsを組み込んだ
+     * <script>要素とchallengeストアIDを返す。
      *
-     * @return string 発行したoptionsスクリプト
+     * @return array ['options' => 発行したoptionsスクリプト, 'csid' => challengeストアID]
      * @throws P2PasskeyAuthException 発行に失敗した場合
      */
     static public function issueLoginOptions()
@@ -99,9 +98,12 @@ class P2PasskeyAuth
             requireUserVerification: true
         );
 
-        self::challengeSet(array('challenge' => UrlSafeBase64::encode($webauthn->getChallenge()->getBinaryString())));
+        $csid = self::challengeSet(array('challenge' => UrlSafeBase64::encode($webauthn->getChallenge()->getBinaryString())));
 
-        return self::buildOptionsScript($args->publicKey);
+        return array(
+            'options' => self::buildOptionsScript($args->publicKey),
+            'csid' => $csid,
+        );
     }
 
     // }}}
@@ -110,9 +112,10 @@ class P2PasskeyAuth
     /**
      * 登録用のoptionsスクリプトを発行する
      *
-     * challengeとuserHandleをchallengeストアに保存し、passkey.js用のoptionsを組み込んだ<script>要素を返す。
+     * challengeとuserHandleをchallengeストアに保存し、passkey.js用のoptionsを組み込んだ
+     * <script>要素とchallengeストアIDを返す。
      *
-     * @return string 発行したoptionsスクリプト
+     * @return array ['options' => 発行したoptionsスクリプト, 'csid' => challengeストアID]
      * @throws P2PasskeyAuthException 発行に失敗した場合
      */
     static public function issueCreateOptions()
@@ -131,12 +134,15 @@ class P2PasskeyAuth
             excludeCredentialIds: self::getRawCredentialIds()
         );
 
-        self::challengeSet(array(
+        $csid = self::challengeSet(array(
             'challenge' => UrlSafeBase64::encode($webauthn->getChallenge()->getBinaryString()),
             'userHandle' => $user_handle,
         ));
 
-        return self::buildOptionsScript($args->publicKey);
+        return array(
+            'options' => self::buildOptionsScript($args->publicKey),
+            'csid' => $csid,
+        );
     }
 
     // }}}
@@ -443,43 +449,44 @@ EOP;
     // {{{ challengeSet()
 
     /**
-     * challengeをchallengeストアに保存し、challengeストアIDをPCCに発行する
+     * challengeをchallengeストアに保存し、challengeストアIDを返す
      *
      * @param mixed $data challengeとともに保存するデータ
+     * @return string challengeストアID
      * @throws P2PasskeyAuthException challengeの保存に失敗した場合
      */
     static private function challengeSet($data)
     {
-        $challenge_store_id = UrlSafeBase64::encode(random_bytes(16));
+        $csid = UrlSafeBase64::encode(random_bytes(16));
 
-        if (!PasskeyChallengeDataStore::set($challenge_store_id, $data)) {
+        if (!PasskeyChallengeDataStore::set($csid, $data)) {
             throw new P2PasskeyAuthException('challengeを保存できませんでした');
         }
 
-        P2Util::setCookie(self::COOKIE_NAME, $challenge_store_id, 0);
+        return $csid;
     }
 
     // }}}
     // {{{ challengeTake()
 
     /**
-     * PCCのchallengeストアIDでchallengeストアからchallengeデータを取り出す (取り出したら破棄する)
+     * POSTのchallengeストアIDでchallengeストアからchallengeデータを取り出す (取り出したら破棄する)
      *
      * @return mixed|false challengeデータ (存在しない場合はfalse)
      */
     static private function challengeTake()
     {
-        $challenge_store_id = $_COOKIE[self::COOKIE_NAME] ?? null;
-        if (!$challenge_store_id) {
+        $csid = $_POST['csid'] ?? null;
+        if (!$csid) {
             return false;
         }
 
-        $data = PasskeyChallengeDataStore::getKVS()->get($challenge_store_id, PasskeyChallengeDataStore::TTL);
+        $data = PasskeyChallengeDataStore::getKVS()->get($csid, PasskeyChallengeDataStore::TTL);
         if ($data === null) {
             return false;
         }
 
-        if (!PasskeyChallengeDataStore::delete($challenge_store_id)) {
+        if (!PasskeyChallengeDataStore::delete($csid)) {
             return false;
         }
 

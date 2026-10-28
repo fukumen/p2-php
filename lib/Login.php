@@ -150,7 +150,8 @@ class Login
                     header('Location: ' . rtrim(dirname(P2Util::getMyUrl()), '/') . '/');
                     exit;
                 case LoginResult::E_REDIRECT:
-                    header('Location: ' . $result->redirectTo);
+                    require_once P2_LIB_DIR . '/login_first.inc.php';
+                    printLoginRedirect($result->redirectTo);
                     exit;
                 case LoginResult::E_SHOW_REGIST_DONE:
                     $this->showRegistDone();

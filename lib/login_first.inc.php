@@ -176,6 +176,7 @@ EOP;
     //=========================================================
     // 描画時にchallengeを発行してoptionsを埋め込む (フォーム送信は不要)
     $passkey_options_ht = false;
+    $passkey_csid = false;
     $passkey_login_ht = '';
     if ($_conf['ktai'] && !$_conf['iphone']) {
         // 専用モードでガラケーからアクセスした場合の空白ページ防止
@@ -184,19 +185,23 @@ EOP;
         }
     } elseif ($passkey_mode > 0) {
         try {
-            $passkey_options_ht = P2PasskeyAuth::issueLoginOptions();
+            $passkey_options = P2PasskeyAuth::issueLoginOptions();
+            $passkey_options_ht = $passkey_options['options'];
+            $passkey_csid = $passkey_options['csid'];
         } catch (P2PasskeyAuthException $e) {
             P2Util::pushInfoHtml('<p class="info-msg">p2 error: ' . p2h($e->getMessage()) . '</p>');
             $passkey_options_ht = false;
         }
         if ($passkey_options_ht !== false) {
             // ボタンとパスキー処理スクリプトは options 発行時のみ出力する
+            $csid_ht = p2h($passkey_csid);
             $passkey_login_ht = <<<EOP
 <div id="passkey_login">
     <p id="passkey_msg"></p>
 </div>
 <form id="passkey_verify" method="post" action="{$hd['REQUEST_URI']}">
     <input type="hidden" name="assertion">
+    <input type="hidden" name="csid" value="{$csid_ht}">
     <input type="hidden" name="device_pixel_ratio" value="1">
     <button type="button" id="passkey_btn" onclick="passkeyLogin(this.form)">パスキーでログイン</button>
 </form>\n
@@ -217,6 +222,7 @@ EOP;
     <meta http-equiv="Content-Style-Type" content="text/css">
     <meta http-equiv="Content-Script-Type" content="text/javascript">
     <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
+    <meta name="login-first" content="1">
     <title>{$ptitle}</title>
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">\n
 EOP;
@@ -315,6 +321,60 @@ EOP;
     echo '</body></html>';
 
     return true;
+}
+
+// }}}
+// {{{ printLoginRedirect()
+
+/**
+ *  ログイン成功後の遷移先へ復帰・遷移させる
+ */
+function printLoginRedirect($redirectTo)
+{
+    global $_conf;
+
+    if ($_conf['ktai'] && !$_conf['iphone']) {
+        header('Location: ' . $redirectTo);
+        return;
+    }
+
+    try {
+        $redirect_json = json_encode($redirectTo, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES);
+    } catch (JsonException $e) {
+        p2die('リダイレクト先の URL を変換できませんでした');
+    }
+
+    P2Util::header_nocache();
+    echo $_conf['doctype'];
+    echo <<<EOP
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+    <title>rep2</title>
+    <script type="text/javascript">
+//<![CDATA[
+(function () {
+    var redirectTo = {$redirect_json};
+    if (window.top !== window) {
+        for (var i = 0; i < window.top.frames.length; i++) {
+            try {
+                var f = window.top.frames[i];
+                if (f.document.querySelector('meta[name="login-first"]')) {
+                    f.location.replace(f.location.href);
+                }
+            } catch (e) {
+            }
+        }
+    }
+    window.location.replace(redirectTo);
+})();
+//]]>
+</script>
+</head>
+<body>
+</body>
+</html>
+EOP;
 }
 
 // }}}

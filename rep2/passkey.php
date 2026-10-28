@@ -83,12 +83,15 @@ $count = count($creds);
 
 // challengeは描画時に発行する (放置で失効した場合はverifyがエラーを返すため再読込で回復)
 $passkey_options_ht = false;
+$passkey_csid = false;
 $add_disabled_msg = '';
 if ($count >= $_conf['passkey_max_registrations']) {
     $add_disabled_msg = "<p>登録数が上限 ({$_conf['passkey_max_registrations']}個) に達しています。追加するには削除してください</p>";
 } else {
     try {
-        $passkey_options_ht = P2PasskeyAuth::issueCreateOptions();
+        $passkey_options = P2PasskeyAuth::issueCreateOptions();
+        $passkey_options_ht = $passkey_options['options'];
+        $passkey_csid = $passkey_options['csid'];
     } catch (P2PasskeyAuthException $e) {
         P2Util::pushInfoHtml('<p class="info-msg">p2 error: ' . p2h($e->getMessage()) . '</p>');
         $passkey_options_ht = false;
@@ -118,9 +121,11 @@ EOP;
 // 登録UIの状態
 if ($passkey_options_ht !== false) {
     // ボタンとパスキー処理スクリプトは options 発行時のみ出力する
+    $csid_ht = p2h($passkey_csid);
     $add_form_ht = <<<EOP
 <form id="passkey_verify" method="post" action="passkey.php{$_conf['k_at_q']}">
     <input type="hidden" name="attestation">
+    <input type="hidden" name="csid" value="{$csid_ht}">
     <p><input type="text" id="passkey_name" name="name" size="30" maxlength="50" placeholder="登録名 (例: Chrome on Windows)">
     <button type="button" id="passkey_btn" onclick="passkeyRegister(this.form)">パスキーを追加</button></p>
     <p id="passkey_msg"></p>
