@@ -987,7 +987,7 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
         print(f"==> タグを付与しました: {src_image} -> {new_ref}")
 
     elif cmd_name == "agent-up":
-        agent_base_url = f"http://127.0.0.1:{AGENT_PORT_REP2}"
+        agent_base_url = f"http://localhost:{AGENT_PORT_REP2}"
         run_cmd(get_agent_compose_args(args) + ["up", "-d"], env=env)
         # rc.init による conf 生成・Web UI の起動待ち (ephemeral のため毎回初期化が走る)
         # 起動直後は 401 (ログインフォーム) が返る。HTTP 応答 (000 以外) が返れば処理が生きている
@@ -1002,8 +1002,8 @@ def execute_command(cmd_name, args, extra_args=None, remote_override=None):
         run_cmd(["sh", script], env=env)
         print("==> エージェント環境を起動しました")
         print(f"    rep2       : {agent_base_url} (agent / rep2agent)")
-        print(f"    mitmproxy  : http://127.0.0.1:{AGENT_PORT_PROXY}")
-        print(f"    mitmweb    : http://127.0.0.1:{AGENT_PORT_MITMWEB} (password: rep2agent)")
+        print(f"    mitmproxy  : http://localhost:{AGENT_PORT_PROXY}")
+        print(f"    mitmweb    : http://localhost:{AGENT_PORT_MITMWEB} (password: rep2agent)")
 
     elif cmd_name == "agent-down":
         run_cmd(get_agent_compose_args(args) + ["down"], env=env)

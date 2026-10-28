@@ -13,6 +13,7 @@ docker-rep2 で rep2 の単体テストを実行する手順と、テストフ�
 ```bash
 cd docker-rep2
 # .env に暗号キーを設定（未設定の場合のみ。64桁の16進）
+# build.py agent-up / agent-test / agent-exec で使用するPHPのFPMとCLIに注入される
 echo "REP2_AGENT_SECRET_KEY=$(openssl rand -hex 32)" >> .env
 
 python3 build.py build        # ローカルイメージ作成（初回のみ）
@@ -23,8 +24,8 @@ python3 build.py agent-up     # エージェント環境を起動（設定適用
 
 起動後:
 
-- rep2 : http://127.0.0.1:10089 （`agent` / `rep2agent` でログイン可能）
-- 通信ログ（mitmweb）: http://127.0.0.1:8081（パスワード: rep2agent）
+- rep2 : http://localhost:10089 （`agent` / `rep2agent` でログイン可能）
+- 通信ログ（mitmweb）: http://localhost:8081（パスワード: rep2agent）
 - mitmproxy は rep2 の外向き通信（5ch 等の外部アクセス）のみを経由します。ブラウザ↔rep2 間のリクエストは観測出来ません
 
 ### テスト実行
@@ -45,6 +46,13 @@ upload.php による画像アップロードも実行できません（外部ア
 ```bash
 python3 build.py --extra agent-up
 python3 build.py --extra agent-test ../../../test/my_test.php
+```
+
+コンテナ内でシェルやコマンドを実行するときは `agent-exec` を使います。
+
+```bash
+python3 build.py agent-exec            # 引数なしなら /bin/sh を起動
+python3 build.py agent-exec php -v     # 引数を付けるとそのコマンドを実行
 ```
 
 `agent-test` と `agent-exec` はコンテナ内で root として実行されます（php-fpm は www-data）。
