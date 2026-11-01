@@ -244,6 +244,12 @@ class LoginSession
      */
     private function _checkIP()
     {
+        global $_conf;
+
+        if (!$_conf['session_check_ip']) {
+            return true;
+        }
+
         //$check_level = 1; // 0～4 docomoを考慮すると、1まで
         $check_level = 4; // 今となってはグローバルIPで運用するのは想定外ため、4に変更
 

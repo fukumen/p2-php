@@ -82,6 +82,9 @@ $_conf['session_save'] = 'p2';      // ('p2')
 // セッションのタイムアウト時間 (分。無操作で失効、アクセスのたびに延長)
 $_conf['session_timeout_minutes'] = 30;     // (30)
 
+// セッションのIPチェック（する:1, しない:0）
+$_conf['session_check_ip'] = 1;     // (1)
+
 // Cookie IDの有効期限日数
 $_conf['cid_expire_day'] = 30;      // (30)
 
