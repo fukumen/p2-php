@@ -23,7 +23,7 @@ echo $_conf['doctype'];
 	<title><?php echo $ptitle; ?></title>
 	<script type="text/javascript" src="js/debug_log.js?<?php echo $_conf['p2_version_id']; ?>"></script>
 </head>
-<body <?php echo $_conf['ktai'] ? $_conf['k_colors'] : ''; ?>>
+<body>
 <p><?php echo $ptitle; ?> <span id="log-retention-info"></span></p>
 <div>※ブラウザの sessionStorage に保存しており、タブやウィンドウを閉じると消去されます。</div>
 <hr>
@@ -49,9 +49,11 @@ echo $_conf['doctype'];
 if ($_conf['iphone']) {
 	echo '<a href="javascript:history.back();" class="button">戻る</a>';
 } else {
-	echo '<a href="editpref.php' . $_conf['k_at_q'] . '"' . ($_conf['k_accesskey_at']['up'] ?? '') . '>' . ($_conf['k_accesskey_st']['up'] ?? '') . '設定編集</a>';
+	echo '<a href="editpref.php' . $_conf['k_at_q'] . '">設定編集</a>';
 }
-echo $_conf['k_to_index_ht'];
+if ($_conf['iphone']) {
+    echo $_conf['k_to_index_ht'];
+}
 ?>
 </div>
 <script type="text/javascript">

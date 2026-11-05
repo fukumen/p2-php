@@ -82,7 +82,7 @@ echo <<<EOP
 EOP;
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=read&amp;skin={$skin_en}">
@@ -106,7 +106,7 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="gIsPageLoaded = true;"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="gIsPageLoaded = true;"';
 echo <<<EOP
 </head>
 <body{$body_at}>\n
@@ -115,11 +115,11 @@ EOP;
 P2Util::printInfoHtml();
 
 // 携帯用表示
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "{$ptitle}<br>";
     echo '<div id="header" name="header">';
-    $aResHist->showNaviK("header");
-    echo " <a href=\"#footer\"{$_conf['k_accesskey_at']['bottom']}>{$_conf['k_accesskey_st']['bottom']}▼</a><br>";
+    $aResHist->showNaviK();
+    echo " <a href=\"#footer\">▼</a><br>";
     echo "</div>";
     echo "<hr>";
 
@@ -146,7 +146,7 @@ EOP;
 //==================================================================
 // レス記事 表示
 //==================================================================
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $aResHist->showArticlesK();
 } else {
     $aResHist->showArticles();
@@ -156,10 +156,10 @@ if ($_conf['ktai']) {
 // フッタ 表示
 //==================================================================
 // 携帯用表示
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo '<div id="footer" name="footer">';
-    $aResHist->showNaviK("footer");
-    echo " <a href=\"#header\"{$_conf['k_accesskey_at']['above']}>{$_conf['k_accesskey_st']['above']}▲</a><br>";
+    $aResHist->showNaviK();
+    echo " <a href=\"#header\">▲</a><br>";
     echo "</div>";
     echo "<hr><div class=\"center\">{$_conf['k_to_index_ht']}</div>";
 
@@ -176,7 +176,7 @@ if ($_conf['ktai']) {
 EOP;
 }
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo '</form>'."\n";
 }
 

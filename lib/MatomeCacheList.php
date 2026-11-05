@@ -49,8 +49,6 @@ class MatomeCacheList
         if ($type === null) {
             if ($_conf['iphone']) {
                 $type = 'iphone';
-            } elseif ($_conf['ktai']) {
-                $type = 'ktai';
             } else {
                 $type = 'pc';
             }
@@ -86,7 +84,7 @@ class MatomeCacheList
      */
     static public function getAllList()
     {
-        $types = array('pc', 'ktai', 'iphone');
+        $types = array('pc', 'iphone');
         $lists = array();
         foreach ($types as $type) {
             $lists[$type] = self::getList($type);

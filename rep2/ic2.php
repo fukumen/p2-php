@@ -749,15 +749,7 @@ function ic2_display($url, $params)
                 'q' => $ini["Thumb{$thumb}"]['quality'],
                 'r'  => '0',
             );
-            $mobile = (new Net_UserAgent_Mobile)->singleton();
             $qa = 'size=3 maxlength=3';
-            if ($mobile->isDoCoMo()) {
-                $qa .= ' istyle=4';
-            } elseif ($mobile->isEZweb()) {
-                $qa .= ' format=*N';
-            } elseif ($mobile->isSoftBank()) {
-                $qa .= ' mode=numeric';
-            }
             $_presets = array('' => 'サイズ・品質');
             foreach ($ini['Dynamic']['presets'] as $_preset_name => $_preset_params) {
                 $_presets[$_preset_name] = $_preset_name;
@@ -794,9 +786,9 @@ function ic2_display($url, $params)
             // 表示
             $flexy->setData('p2vid', P2_VERSION_ID);
             $flexy->setData('title', 'IC2::Cached');
-            $flexy->setData('pc', !$_conf['ktai']);
+            $flexy->setData('pc', !$_conf['iphone']);
             $flexy->setData('iphone', $_conf['iphone']);
-            if (!$_conf['ktai']) {
+            if (!$_conf['iphone']) {
                 $flexy->setData('skin', $GLOBALS['skin_name']);
                 //$flexy->setData('stylesheets', array('css'));
                 //$flexy->setData('javascripts', array('js'));
@@ -815,7 +807,7 @@ function ic2_display($url, $params)
                 $img_ext = '.png';
             } else {
                 $img_dir = 'img/';
-                $img_ext = $_conf['ktai'] ? '.gif' : '.png';
+                $img_ext = '.png';
             }
             $stars = array();
             $stars[-1] = $img_dir . (($rank == -1) ? 'sn1' : 'sn0') . $img_ext;
@@ -848,17 +840,6 @@ function ic2_display($url, $params)
                 $flexy->setData('preview', null);
                 $flexy->setData('link', $url);
                 $flexy->setData('info', null);
-            }
-
-            if (!$_conf['ktai'] || $_conf['iphone']) {
-                $flexy->setData('backto', null);
-            } elseif (isset($_REQUEST['from'])) {
-                $flexy->setData('backto', $_REQUEST['from']);
-                $setrank_url .= '&from=' . rawurlencode($_REQUEST['from']);
-            } elseif (isset($_SERVER['HTTP_REFERER'])) {
-                $flexy->setData('backto', $_SERVER['HTTP_REFERER']);
-            } else {
-                $flexy->setData('backto', null);
             }
 
             $flexy->setData('stars', $stars);
@@ -963,11 +944,7 @@ function ic2_error($code, $optmsg = '', $write_log = true)
     }*/
 
     if ($redirect) {
-        if ($_conf['ktai'] && !$_conf['iphone']) {
-            $type = 'gif';
-        } else {
-            $type = 'png';
-        }
+        $type = 'png';
         $img = strval($code) . '.' . $type;
         $path = './img/' . $img;
         $name = 'filename="' . $img . '"';

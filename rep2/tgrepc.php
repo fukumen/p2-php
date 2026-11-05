@@ -42,7 +42,7 @@ $query_params = array();
 if (isset($_GET['Q']) && is_string($_GET['Q']) && strlen($_GET['Q']) > 0) {
     mb_convert_variables('CP932', 'UTF-8,CP932', $_GET['Q']);
     $query_params['q'] = mb_convert_kana($_GET['Q'], 's');
-    $query_params['n'] = $limit = ($_conf['ktai'] || $_conf['iphone']) ? '25' : '100';
+    $query_params['n'] = $limit = ($_conf['iphone']) ? '25' : '100';
     if (isset($_GET['AndOr'])) { $query_params['AndOr'] = $_GET['AndOr'];}
     if (isset($_GET['maxResult'])) {
         $query_params['maxResult'] = $_GET['maxResult'];
@@ -208,19 +208,15 @@ if ($profile) {
 }
 
 // サーチボックスの属性
-if ($_conf['input_type_search']) {
-    $htm['search_attr'] = ' type="search" autosave="rep2.expack.search.thread" results="';
-    $htm['search_attr'] .= $_conf['expack.tgrep.recent2_num'] . '" placeholder="tGrep"';
-} else {
-    $htm['search_attr'] = ' type="text"';
-}
-if (!$_conf['ktai']) {
+$htm['search_attr'] = ' type="search"';
+$htm['search_attr'] .= ' placeholder="tGrep"';
+if (!$_conf['iphone']) {
     $htm['search_attr'] .= ' size="36"';
 }
 $htm['search_attr'] .= ' maxlength="50" value="' . $htm['query'] . '"';
 
 // スタイルシート
-if (!$_conf['ktai'] && !$_conf['iphone']) {
+if (!$_conf['iphone']) {
     $htm['message_background'] = "background-color:#ffffcc;";
     if (isset($STYLE['respop_bgcolor']) || isset($STYLE['respop_background'])) {
         $htm['message_background'] = "background:{$STYLE['respop_bgcolor']} {$STYLE['respop_background']};";
@@ -255,9 +251,6 @@ if (!$_conf['ktai'] && !$_conf['iphone']) {
     if ($_conf['mobile.match_color']) {
         $k_filter_style .= " color: {$_conf['mobile.match_color']};";
     }
-    /*if (!$_conf['mobile.match_bold']) {
-        $k_filter_style .= ' font-weight: normal;';
-    }*/
     if ($k_filter_style) {
         $k_filter_style = 'b.filtering {' . $k_filter_style . ' }';
     }
@@ -290,7 +283,7 @@ if (!$is_ajax && $subhits && $subhits > $limit) {
     foreach ($pager_extra_vars as $_k => $_v) {
         $pager_options['extraVars'][strtoupper($_k)] = $_v;
     }
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         $pager_options['delta'] = 5;
         $pager_options['separator'] = '|';
         $pager_options['spacesBeforeSeparator'] = 1;
@@ -332,7 +325,7 @@ if ($is_ajax) {
         //header('Content-Length: ' . strlen($content));
     }
     echo $content;
-} elseif ($_conf['ktai']) {
+} elseif ($_conf['iphone']) {
     include P2EX_LIB_DIR . '/tgrep/view_k.inc.php';
 } else {
     include P2EX_LIB_DIR . '/tgrep/view.inc.php';

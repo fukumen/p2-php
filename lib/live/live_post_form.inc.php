@@ -56,15 +56,11 @@ if ($_conf['wiki.samba_timer']) {
 
 // 下書き保存
 $savedraft = '';
-if ((!$_conf['ktai'] && $_conf['expack.editor.savedraft'] != 0) ||
+if ((!$_conf['iphone'] && $_conf['expack.editor.savedraft'] != 0) ||
     ($_conf['iphone'] && $_conf['expack.editor.mobile.savedraft'] != 0)) {
     $savedraft = <<<EOP
 <input id="post_draft_button" type="button" value="下書き保存" onclick="DraftKakiko.saveDraftForm(this.form)">
 <span id="post_draft_msg" class="autosave-info"></span>
-EOP;
-} elseif ($_conf['ktai'] && $_conf['expack.editor.mobile.savedraft']) {
-    $savedraft = <<<EOP
-<input type="submit" name="savedraft" value="下書保存">
 EOP;
 }
 
@@ -84,13 +80,9 @@ $html_cmd_options = '';
 foreach ($commands_name as $cmd) {
     $html_cmd_options .= '<option value="' . p2h($cmd) . '">' . p2h($cmd) . "</option>\n";
 }
-if (!$_conf['ktai'] || $_conf['iphone']) {
-    $htm['name_select_html'] = '<select id="name_cmd_select" style="display:inline-block;width:auto;" onchange="document.getElementById(\'FROM\').value=this.value;">' . "\n" .
-        '<option value="">コマンド</option>' . "\n" .
-        $html_cmd_options . '</select>' . "\n";
-} else {
-    $htm['name_select_html'] = '';
-}
+$htm['name_select_html'] = '<select id="name_cmd_select" style="display:inline-block;width:auto;" onchange="document.getElementById(\'FROM\').value=this.value;">' . "\n" .
+    '<option value="">コマンド</option>' . "\n" .
+    $html_cmd_options . '</select>' . "\n";
 
 // 文字コード判定用文字列を先頭に仕込むことでmb_convert_variables()の自動判定を助ける
 $htm['post_form'] = <<<EOP

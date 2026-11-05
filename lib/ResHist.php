@@ -179,7 +179,7 @@ EOP;
      * 携帯用ナビを表示する
      * 表示範囲もセットされる
      */
-    public function showNaviK($position)
+    public function showNaviK()
     {
         global $_conf;
 
@@ -211,26 +211,14 @@ EOP;
         $this->resrange['nofirst'] = false;
 
         if ($disp_navi['from'] > 1) {
-            if ($position == 'footer') {
-                $mae_ht = <<<EOP
-<a href="read_res_hist.php?from={$disp_navi['mae_from']}{$_conf['k_at_a']}"{$_conf['k_accesskey_at']['prev']}>{$_conf['k_accesskey_st']['prev']}前</a>
-EOP;
-            } else {
-                $mae_ht = <<<EOP
+            $mae_ht = <<<EOP
 <a href="read_res_hist.php?from={$disp_navi['mae_from']}{$_conf['k_at_a']}">前</a>
 EOP;
-            }
         }
         if ($disp_navi['end'] < $list_disp_all_num) {
-            if ($position == 'footer') {
-                $tugi_ht = <<<EOP
-<a href="read_res_hist.php?from={$disp_navi['tugi_from']}{$_conf['k_at_a']}"{$_conf['k_accesskey_at']['next']}>{$_conf['k_accesskey_st']['next']}次</a>
-EOP;
-            } else {
-                $tugi_ht = <<<EOP
+            $tugi_ht = <<<EOP
 <a href="read_res_hist.php?from={$disp_navi['tugi_from']}{$_conf['k_at_a']}">次</a>
 EOP;
-            }
         }
 
         if (!$disp_navi['all_once']) {

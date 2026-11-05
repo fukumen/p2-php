@@ -288,18 +288,6 @@ class LoginSession
      */
     private function _checkUA()
     {
-        // {{{ docomo‚ÍUTNŽž‚ÉUAŒã•”‚ª•Ï‚í‚é‚Ì‚Å‹@Ží–¼‚ÅŒŸØ‚·‚é
-
-        $mobile = (new Net_UserAgent_Mobile)->singleton();
-        if ($mobile->isDoCoMo()) {
-            $mobile_b = Net_UserAgent_Mobile::factory($_SESSION[$this->sess_array]['ua']);
-            if ($mobile_b->getModel() == $mobile->getModel()) {
-                return true;
-            }
-        }
-
-        // }}}
-
         // $offset = 12;
         if (empty($offset)) {
             $offset = strlen($_SERVER['HTTP_USER_AGENT']);

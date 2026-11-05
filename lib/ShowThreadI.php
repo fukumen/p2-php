@@ -22,8 +22,6 @@ class ShowThreadI extends ShowThread
     public $am_side_of_id = false;
     public $am_on_spm = false;
 
-    public $aas_rotate = '90°回転'; // AAS 回転リンク文字列
-
     public $respopup_at = ' onclick="return iResPopUp(this, event);"';  // レスポップアップ・イベントハンドラ
     public $target_at = ' target="_blank"';    // 引用、省略、ID、NG等のリンクターゲット
     public $check_st = 'check';   // 省略、NG等のリンク文字列
@@ -114,11 +112,6 @@ class ShowThreadI extends ShowThread
         // ImageCache2初期化
         if (P2_IMAGECACHE_AVAILABLE == 2) {
             ExpackLoader::initImageCache($this);
-        }
-
-        // AAS 初期化
-        if (P2_AAS_AVAILABLE) {
-            ExpackLoader::initAAS($this);
         }
 
         // SPM初期化
@@ -612,7 +605,6 @@ EOP;
         $_spm_bbs = StrCtl::toJavaScript($this->thread->bbs);
         $_spm_key = StrCtl::toJavaScript($this->thread->key);
         $_spm_ls = StrCtl::toJavaScript($this->thread->ls);
-        $_spm_rnum_range = (int)$_conf['mobile.rnum_range'];
         $_spm_rref_params = 'rf[field]=' . ResFilter::FIELD_NUMBER .
             '&rf[method]=' . ResFilter::METHOD_JUST .
             '&rf[match]=' . ResFilter::MATCH_ON .
@@ -635,7 +627,6 @@ var {$this->spmObjName} = {
     'bbs':'{$_spm_bbs}',
     'key':'{$_spm_key}',
     'ls':'{$_spm_ls}',
-    'rnum_range': '{$_spm_rnum_range}',
     'rref_params': '{$_spm_rref_params}',
     'ngaborn_popup': {$_spm_ngaborn_popup},
     'ngaborn_bbsonly': {$_spm_ngaborn_bbsonly},
@@ -936,67 +927,6 @@ EOP;
     }
 
     // }}}
-    // {{{ ktaiExtUrl()
-
-    /**
-     * 携帯用外部URL変換
-     *
-     * @param   string $full
-     * @param   string $url
-     * @param   string $str
-     * @return  string
-     */
-    public function ktaiExtUrl($full, $url, $str)
-    {
-        global $_conf;
-
-        // 通勤ブラウザ
-        $tsukin_link = '';
-        if ($_conf['mobile.use_tsukin']) {
-            $tsukin_url = 'http://www.sjk.co.jp/c/w.exe?y=' . rawurlencode($url);
-            if ($_conf['through_ime']) {
-                $tsukin_url = P2Util::throughIme($tsukin_url);
-            }
-            $tsukin_link = '<a href="' . $tsukin_url . '">通</a>';
-        }
-
-        // jigブラウザWEB http://bwXXXX.jig.jp/fweb/?_jig_=
-        $jig_link = '';
-        /*
-        $jig_url = 'http://bwXXXX.jig.jp/fweb/?_jig_=' . rawurlencode($url);
-        if ($_conf['through_ime']) {
-            $jig_url = P2Util::throughIme($jig_url);
-        }
-        $jig_link = '<a href="'.$jig_url.'">j</a>';
-        */
-
-        if ($tsukin_link || $jig_link) {
-            $ext_pre = '(' . $tsukin_link . (($tsukin_link && $jig_link) ? '|' : '') . $jig_link . ')';
-        } else {
-            $ext_pre = '';
-        }
-
-        if ($_conf['through_ime']) {
-            $url = P2Util::throughIme($url);
-        }
-        return $ext_pre . '<a href="' . $url . '">' . $str . '</a>';
-    }
-
-    // }}}
-    // {{{ ktaiExtUrlCallback()
-
-    /**
-     * 携帯用外部URL変換
-     *
-     * @param   array $s 正規表現にマッチした要素の配列
-     * @return  string
-     */
-    public function ktaiExtUrlCallback(array $s)
-    {
-        return $this->ktaiExtUrl($s[0], $s[1], $s[2]);
-    }
-
-    // }}}
     // {{{ transLinkDo()から呼び出されるURL書き換えメソッド
     /**
      * これらのメソッドは引数が処理対象パターンに合致しないとfalseを返し、
@@ -1260,18 +1190,11 @@ EOP;
                 if (!is_null($pre_thumb_limit_k)) $pre_thumb_limit_k--;
             }
 
-            if (!empty($_SERVER['REQUEST_URI'])) {
-                $backto = '&amp;from=' . rawurlencode($_SERVER['REQUEST_URI']);
-            } else {
-                $backto = '';
-            }
-
             $result = "";
 
             if (is_null($img_str)) {
-                $result .= sprintf('<a href="%s%s">[IC2:%s:%s]</a>',
+                $result .= sprintf('<a href="%s">[IC2:%s:%s]</a>',
                     $img_url,
-                    $backto,
                     p2h($purl['host']),
                     p2h(basename($purl['path']))
                 );

@@ -253,7 +253,7 @@ if (!empty($isTaborn)) {
     $tastr1 = "通常";
     $tastr2 = "あぼーんする";
     $taborndo = 1;
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         $taborndo_title_at = ' title="スレッド一覧で非表示にします"';
     }
 }
@@ -274,7 +274,7 @@ if (file_exists($aThread->keydat) or file_exists($aThread->keyidx)) {
 //=================================================================
 // HTMLプリント
 //=================================================================
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $target_read_at = '';
     $target_sb_at = '';
 } else {
@@ -283,11 +283,7 @@ if ($_conf['ktai']) {
 }
 
 $motothre_url = $aThread->getMotoThread();
-if (P2HostMgr::isHost2chs($aThread->host)) {
-    $motothre_org_url = $aThread->getMotoThread(true);
-} else {
-    $motothre_org_url = $motothre_url;
-}
+$motothre_org_url = $motothre_url;
 
 
 if (isset($title_msg)) {
@@ -313,7 +309,7 @@ echo <<<EOHEADER
 EOHEADER;
 
 $body_onload = '';
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=info&amp;skin={$skin_en}">
@@ -327,7 +323,7 @@ EOSCRIPT;
     }
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : $body_onload;
+$body_at = ($_conf['iphone']) ? '' : $body_onload;
 echo <<<EOP
 </head>
 <body{$body_at}>
@@ -339,7 +335,7 @@ echo "<p>\n";
 echo "<b><a class=\"thre_title\" href=\"{$_conf['read_php']}?{$common_q}{$_conf['k_at_a']}\"{$target_read_at}>",(isset($title_msg) ? $hd['ttitle_name'] : $aThread->ttitle_hd),"</a></b>\n";echo "</p>\n";
 
 // 携帯なら冒頭で表示
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     if (!empty($info_msg)) {
         echo "<p>" . $info_msg . "</p>\n";
     }
@@ -351,15 +347,15 @@ if (checkRecent($aThread->host, $aThread->bbs, $aThread->key) or checkResHist($a
     $offrec_ht = '';
 }
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo "<table cellspacing=\"0\">\n";
 }
 print_info_line("元スレ", "<a href=\"{$motothre_url}\" target=\"_blank\">{$motothre_url}</a>");
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     print_info_line("ホスト", $aThread->host);
 }
 print_info_line("板", "<a href=\"{$_conf['subject_php']}?host={$aThread->host}&amp;bbs={$aThread->bbs}{$_conf['k_at_a']}\"{$target_sb_at}>{$hd['itaj']}</a>");
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     print_info_line("key", $aThread->key);
 }
 if ($existLog) {
@@ -376,7 +372,7 @@ if ($aThread->gotnum) {
 }
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     if (file_exists($aThread->keydat)) {
         if ($aThread->length) {
             print_info_line("datサイズ", $aThread->length.' バイト');
@@ -397,11 +393,11 @@ print_info_line("殿堂入り", $pal_ht);
 print_info_line("表示", $taborn_ht);
 
 // PC
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo "</table>\n";
 }
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     if (!empty($info_msg)) {
         echo "<span class=\"info-msg\">{$info_msg}</span>\n";
     } else {
@@ -410,7 +406,7 @@ if (!$_conf['ktai']) {
 }
 
 // 携帯コピペ用フォーム
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo getCopypaFormHtml($motothre_org_url, $hd['ttitle_name']);
 }
 
@@ -430,7 +426,7 @@ EOP;
 
 // }}}
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr><div class=\"center\">{$_conf['k_to_index_ht']}</div>";
 }
 
@@ -452,7 +448,7 @@ function print_info_line($s, $c_ht)
     global $_conf;
 
     // 携帯
-    if ($_conf['ktai']) {
+    if ($_conf['iphone']) {
         echo "{$s}: {$c_ht}<br>";
     // PC
     } else {

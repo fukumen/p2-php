@@ -41,12 +41,10 @@ class ThreadList
     {
         global $_conf;
 
-        $halfwidth = ($_conf['ktai'] && !$_conf['iphone']);
-
         switch ($name) {
         case 'recent':
             $this->spmode = $name;
-            $this->ptitle = $halfwidth ? '最近読んだｽﾚ' : '最近読んだスレ';
+            $this->ptitle = '最近読んだスレ';
             break;
         case 'res_hist':
             $this->spmode = $name;
@@ -54,11 +52,11 @@ class ThreadList
             break;
         case 'fav':
             $this->spmode = $name;
-            $this->ptitle = $halfwidth ? 'お気にｽﾚ' : 'お気にスレ';
+            $this->ptitle = 'お気にスレ';
             break;
         case 'taborn':
             $this->spmode = $name;
-            $this->ptitle = $this->itaj . ($halfwidth ? ' (ｱﾎﾞﾝ中)' : ' (あぼーん中)');
+            $this->ptitle = $this->itaj . ' (あぼーん中)';
             break;
         case 'soko':
             $this->spmode = $name;
@@ -66,7 +64,7 @@ class ThreadList
             break;
         case 'palace':
             $this->spmode = $name;
-            $this->ptitle = $halfwidth ? 'ｽﾚの殿堂' : 'スレの殿堂';
+            $this->ptitle = 'スレの殿堂';
             break;
         case 'merge_favita':
             $this->spmode = $name;

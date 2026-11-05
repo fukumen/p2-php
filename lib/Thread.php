@@ -220,7 +220,7 @@ class Thread
 
         if ($this->_ttitle_ht === null) {
             // 一覧表示用に長さを切り詰めてから htmlspecialchars() したもの
-            if ($_conf['ktai']) {
+            if ($_conf['iphone']) {
                 $tt_max_len = $_conf['mobile.sb_ttitle_max_len'];
                 $tt_trim_len = $_conf['mobile.sb_ttitle_trim_len'];
                 $tt_trim_pos = $_conf['mobile.sb_ttitle_trim_pos'];
@@ -499,25 +499,12 @@ class Thread
     /**
      * 元スレURLを返す
      *
-     * @param   bool    $force_pc   trueなら携帯モードでもPC用の元スレURLを返す
      * @param   string  $ls         レス表示番号or範囲。nullならlsプロパティを使う
      *                              掲示板によっては無視される場合もある
      * @return  string  元スレURL
      */
-    public function getMotoThread($force_pc = false, $ls = null)
+    public function getMotoThread($ls = null)
     {
-        global $_conf;
-
-        if ($force_pc) {
-            $mobile = false;
-        } elseif ($_conf['iphone']) {
-            $mobile = false;
-        } elseif ($_conf['ktai']) {
-            $mobile = true;
-        } else {
-            $mobile = false;
-        }
-
         if ($ls === null) {
             $ls = $this->ls;
         }
@@ -525,40 +512,20 @@ class Thread
 
         // 2ch系
         if (P2HostMgr::isHost2chs($this->host)) {
-            // PC
-            if (!$mobile) {
-                $motothre_url = "{$scheme}://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/{$ls}";
-            // 携帯
-            } else {
-                if (P2HostMgr::isHostBbsPink($this->host)) {
-                    //$motothre_url = "{$scheme}://{$this->host}/test/r.i/{$this->bbs}/{$this->key}/{$ls}";
-                    $motothre_url = "{$scheme}://speedo.ula.cc/test/r.so/{$this->host}/{$this->bbs}/{$this->key}/{$ls}"; 
-                } else {
-                    $mail = rawurlencode($_conf['my_mail']);
-                    // c.2chはl指定に非対応なので、代わりにn
-                    $ls = (substr($ls, 0, 1) == 'l') ? 'n' : $ls;
-                    $motothre_url = "{$scheme}://c.2ch.net/test/--3!mail={$mail}/{$this->bbs}/{$this->key}/{$ls}";
-                }
-            }
+            $motothre_url = "{$scheme}://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/{$ls}";
 
         // まちBBS
         } elseif (P2HostMgr::isHostMachiBbs($this->host)) {
-            if ($mobile) {
-                $motothre_url = "{$scheme}://{$this->host}/bbs/read.pl?IMODE=TRUE&BBS={$this->bbs}&KEY={$this->key}";
-            } else {
-                $motothre_url = "{$scheme}://{$this->host}/bbs/read.cgi/{$this->bbs}/{$this->key}/{$ls}";
-            }
+            $motothre_url = "{$scheme}://{$this->host}/bbs/read.cgi/{$this->bbs}/{$this->key}/{$ls}";
 
         // まちびねっと
         } elseif (P2HostMgr::isHostMachiBbsNet($this->host)) {
             $motothre_url = "{$scheme}://{$this->host}/test/read.cgi?bbs={$this->bbs}&key={$this->key}";
-            if ($mobile) { $motothre_url .= '&imode=true'; }
 
         // JBBSしたらば
         } elseif (P2HostMgr::isHostJbbsShitaraba($this->host)) {
             list($host, $category) = explode('/', P2HostMgr::adjustHostJbbs($this->host), 2);
-            $bbs_cgi = ($mobile) ? 'i.cgi' : 'read.cgi';
-            $motothre_url = "{$scheme}://{$host}/bbs/{$bbs_cgi}/{$category}/{$this->bbs}/{$this->key}/{$ls}";
+            $motothre_url = "{$scheme}://{$host}/bbs/read.cgi/{$category}/{$this->bbs}/{$this->key}/{$ls}";
 
         // talk
         } elseif (P2HostMgr::isHostTalk ($this->host)) {

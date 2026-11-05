@@ -4,12 +4,11 @@
  */
 
 require_once P2_LIB_DIR . '/get_info.inc.php';
-require_once P2_LIB_DIR . '/spm_k.inc.php';
 
 // {{{ •Ï”
 // {{{ Šî–{•Ï”
 
-$motothre_url = $aThread->getMotoThread(false, '1-10');
+$motothre_url = $aThread->getMotoThread('1-10');
 $ttitle_en = UrlSafeBase64::encode($aThread->ttitle);
 $ttitle_en_q = '&amp;ttitle_en=' . $ttitle_en;
 $bbs_q = '&amp;bbs=' . $aThread->bbs;

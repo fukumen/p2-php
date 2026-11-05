@@ -10,14 +10,14 @@ $_login->authorize(); // ユーザ認証
 if (!empty($_GET['saved'])) {
     P2Util::pushInfoHtml('<p>○設定を更新保存しました</p>');
 
-    if (!$_conf['iphone'] && !$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
     }
 }
 if (!empty($_GET['defaulted'])) {
     P2Util::pushInfoHtml('<p>○設定をデフォルトに戻しました</p>');
 
-    if (!$_conf['iphone'] && !$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
     }
 }
@@ -118,7 +118,7 @@ if (!empty($_POST['submit_save'])) {
 // }}}
 // {{{ 携帯で表示するグループ
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     if (isset($_REQUEST['edit_conf_user_group_en'])) {
         $selected_group = UrlSafeBase64::decode($_REQUEST['edit_conf_user_group_en']);
     } elseif (isset($_REQUEST['edit_conf_user_group'])) {
@@ -193,7 +193,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <script type="text/javascript" src="js/basic.js?{$_conf['p2_version_id']}"></script>
     <script type="text/javascript" src="js/tabber/tabber.js?{$_conf['p2_version_id']}"></script>
@@ -205,21 +205,21 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : '';
+$body_at = '';
 echo <<<EOP
 </head>
 <body{$body_at}>\n
 EOP;
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu"><a href="editpref.php">設定管理</a> &gt; {$ptitle} （<a href="{$me}">リロード</a>）</p>\n
 EOP;
 }
 
 // 携帯用表示
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $htm['form_submit'] = <<<EOP
 <input type="submit" name="submit_save" value="変更を保存する">\n
 EOP;
@@ -234,7 +234,7 @@ echo <<<EOP
 EOP;
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo $active_tab_hidden_ht;
     echo <<<EOP
 <div class="tabber">
@@ -582,7 +582,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 // }}}
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 </div><!-- end of tab -->
 </div><!-- end of child tabset "rep2基本設定" -->
@@ -607,13 +607,8 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('mobile.text_color', '基本文字色'),
         array('mobile.link_color', 'リンク色'),
         array('mobile.vlink_color', '訪問済みリンク色'),
-        array('mobile.newthre_color', '新着スレッドマークの色'),
-        array('mobile.ttitle_color', 'スレッドタイトルの色'),
-        array('mobile.newres_color', '新着レス番号の色'),
         array('mobile.ngword_color', 'NGワードの色'),
-        array('mobile.onthefly_color', 'オンザフライレス番号の色'),
         array('mobile.match_color', 'フィルタリングでマッチしたキーワードの色'),
-        array('mobile.display_accesskey', 'アクセスキーの番号を表示'),
         array('mobile.save_packet', 'パケット量を減らすため、全角英数・カナ・スペースを半角に変換'),
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
@@ -653,9 +648,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('mobile.ryaku_size', 'レスを省略したときの表示サイズ'),
         array('mobile.aa_ryaku_size', 'AAらしきレスを省略するサイズ (0なら無効)'),
         array('mobile.before_respointer', 'ポインタの何コ前のレスから表示するか'),
-        array('mobile.use_tsukin', '外部リンクに通勤ブラウザ(通)を利用'),
         array('mobile.use_picto', '画像リンクにpic.to(ﾋﾟ)を利用'),
-        array('mobile.link_youtube', 'YouTubeのリンクをサムネイル表示'),
 
         array('mobile.bbs_noname_name', 'デフォルトの名無し名を表示'),
         array('mobile.date_zerosuppress', '日付の0を省略表示'),
@@ -664,7 +657,6 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('mobile.underline_id', 'ID末尾の&quot;O&quot;に下線を引く'),
         array('mobile.strip_linebreaks', '文末の改行と連続する改行を除去'),
 
-        array('mobile.copy_divide_len', '「写」のコピー用テキストボックスを分割する文字数'),
         array('mobile.link_wikipedia', '[[単語]]をWikipediaへのリンクにする'),
         array('mobile.backlink_list', '逆参照リストの表示'),
         array('mobile.backlink_list.suppress', '携帯閲覧時、逆参照リストを省略表示する数（この数より多いレスは省略表示。0:省略しない）'),
@@ -705,7 +697,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 // }}}
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 </div><!-- end of tab -->
 </div><!-- end of child tabset "携帯端末設定" -->
@@ -728,7 +720,6 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
     $conflist = array(
         array('expack.tgrep.quicksearch', '一発検索'),
         array('expack.tgrep.recent_num', '検索履歴を記録する数（記録しない:0）'),
-        array('expack.tgrep.recent2_num', 'サーチボックスに検索履歴を記録する数、Safari専用（記録しない:0）'),
         array('expack.tgrep.engine', '検索に使用する検索エンジン')
     );
     printEditConfGroupHtml($groupname, $conflist, $flags);
@@ -1009,7 +1000,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 // }}}
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 </div><!-- end of tab -->
 </div><!-- end of child tabset "拡張パック設定" -->
@@ -1086,7 +1077,7 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 // }}}
 
 // PC用表示
-if (empty($_conf['ktai'])) {
+if (empty($_conf['iphone'])) {
 	echo <<<EOP
 </div><!-- end of tab -->
 </div><!-- end of child tabset "+live" -->
@@ -1108,33 +1099,27 @@ EOP;
 
 
 // 携帯なら
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo <<<EOP
 <hr>
 <form method="GET" action="{$_SERVER['SCRIPT_NAME']}">
 <select name="edit_conf_user_group_en">
 EOP;
-    if ($_conf['iphone']) {
-        echo '<optgroup label="rep2基本設定">';
-    }
+    echo '<optgroup label="rep2基本設定">';
     foreach ($groups as $groupname) {
-        if ($_conf['iphone']) {
-            if ($groupname == 'tGrep') {
-                echo '</optgroup><optgroup label="拡張パック設定">';
-            } elseif ($groupname == '表示設定') {
-                echo '</optgroup><optgroup label="+live設定">';
-            } elseif ($groupname == 'subject-i') {
-                echo '</optgroup><optgroup label="iPhone設定">';
-            }
+        if ($groupname == 'tGrep') {
+            echo '</optgroup><optgroup label="拡張パック設定">';
+        } elseif ($groupname == '表示設定') {
+            echo '</optgroup><optgroup label="+live設定">';
+        } elseif ($groupname == 'subject-i') {
+            echo '</optgroup><optgroup label="iPhone設定">';
         }
         $group_ht = p2h($groupname);
         $group_en = UrlSafeBase64::encode($groupname);
         $selected = ($selected_group == $groupname) ? ' selected' : '';
         echo "<option value=\"{$group_en}\"{$selected}>{$group_ht}</option>";
     }
-    if ($_conf['iphone']) {
-        echo '</optgroup>';
-    }
+    echo '</optgroup>';
     echo <<<EOP
 </select>
 <input type="submit" value="の設定を編集">
@@ -1143,15 +1128,9 @@ EOP;
 <hr>
 <div class="center">
 EOP;
-    if ($_conf['iphone']) {
-        echo <<<EOP
+    echo <<<EOP
 <a href="javascript:history.back();" class="button">戻る</a>
 EOP;
-    } else {
-        echo <<<EOP
-<a href="editpref.php{$_conf['k_at_q']}"{$_conf['k_accesskey_at']['up']}>{$_conf['k_accesskey_st']['up']}設定編集</a>
-EOP;
-    }
     echo <<<EOP
 {$_conf['k_to_index_ht']}
 </div>
@@ -1661,7 +1640,7 @@ function getGroupShowFlags($group_key, $conf_key = null)
 
     if (empty($selected_group) || ($selected_group != 'all' && $selected_group != $group_key)) {
         $flags |= P2_EDIT_CONF_USER_HIDDEN;
-        if ($_conf['ktai']) {
+        if ($_conf['iphone']) {
             $flags |= P2_EDIT_CONF_USER_SKIPPED;
         }
     }
@@ -1695,7 +1674,7 @@ function getGroupSepaHtml($title, $flags)
     $admin_php = ($flags & P2_EDIT_CONF_FILE_ADMIN_EX) ? 'conf_admin_ex' : 'conf_admin';
 
     // PC用
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         $ht = <<<EOP
 <div class="tabbertab" title="{$title}">
 <h4>{$title}</h4>\n
@@ -1745,7 +1724,7 @@ function getConfBorderHtml($label)
 {
     global $_conf;
 
-    if ($_conf['ktai']) {
+    if ($_conf['iphone']) {
         $format = '<p>[%s]</p>';
     } else {
         $format = '<tr class="group"><td colspan="4" align="center">%s</td></tr>';
@@ -1768,7 +1747,7 @@ function getGroupEndHtml($flags)
     global $_conf;
 
     // PC用
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         $ht = '';
         if (!($flags & P2_EDIT_CONF_USER_HIDDEN)) {
             $ht .= <<<EOP
@@ -1818,7 +1797,7 @@ function getEditConfHtml($name, $description_ht, $flags)
     if ($flags & (P2_EDIT_CONF_USER_HIDDEN | P2_EDIT_CONF_USER_DISABLED)) {
         $form_ht = getEditConfHidHtml($name);
         // 携帯ならそのまま返す
-        if ($_conf['ktai']) {
+        if ($_conf['iphone']) {
             return $form_ht;
         }
         if ($name_view === '') {
@@ -1843,7 +1822,7 @@ function getEditConfHtml($name, $description_ht, $flags)
         $def_views[$name] = p2h($conf_user_rad[$name][$key]);
     // input 入力式なら
     } else {
-        if (!$_conf['ktai']) {
+        if (!$_conf['iphone']) {
             $input_size_at = sprintf(' size="%d"', ($flags & P2_EDIT_CONF_USER_LONGTEXT) ? 40 : 20);
         } else {
             $input_size_at = '';
@@ -1870,10 +1849,6 @@ EOP;
     // iPhone用
     if ($_conf['iphone']) {
         return "<fieldset><legend>{$name}</legend>{$description_ht}<br>{$form_ht}</fieldset>\n";
-
-    // 携帯用
-    } elseif ($_conf['ktai']) {
-        return "[{$name}]<br>{$description_ht}<br>{$form_ht}<br><br>\n";
 
     // PC用
     } else {

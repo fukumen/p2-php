@@ -65,7 +65,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <script type="text/javascript" src="js/basic.js?{$_conf['p2_version_id']}"></script>
     <link rel="stylesheet" href="css.php?css=style&amp;skin={$skin_en}" type="text/css">
@@ -74,21 +74,21 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onLoad="top.document.title=self.document.title;"';
+$body_at = ($_conf['iphone']) ? '' : ' onLoad="top.document.title=self.document.title;"';
 echo <<<EOP
 </head>
 <body{$body_at}>\n
 EOP;
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu"><a href="editpref.php">設定管理</a> &gt; {$ptitle_top}</p>\n
 EOP;
 }
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $htm['form_submit'] = <<<EOP
         <tr class="group">
             <td colspan="8" align="center">
@@ -122,7 +122,7 @@ $usage = <<<EOP
 <li>Ident: 画像URLの一意性条件</li>
 </ul>
 EOP;
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $usage = mb_convert_kana($usage, 'k');
 }
 echo <<<EOP
@@ -134,7 +134,7 @@ echo <<<EOP
 EOP;
 
 // PC用表示（table）
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <table class="edit_conf_user" cellspacing="0">
         <tr>
@@ -198,7 +198,7 @@ if (!empty($formdata)) {
 }
 
 // PCなら
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo '</table>'."\n";
 }
 
@@ -206,10 +206,10 @@ echo '</form>'."\n";
 
 
 // 携帯なら
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo <<<EOP
 <hr>
-<a {$_conf['accesskey']}="{$_conf['k_accesskey']['up']}" href="editpref.php{$_conf['k_at_q']}">{$_conf['k_accesskey']['up']}.設定編集</a>
+<a href="editpref.php{$_conf['k_at_q']}">設定編集</a>
 {$_conf['k_to_index_ht']}
 EOP;
 }

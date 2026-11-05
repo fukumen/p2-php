@@ -16,7 +16,7 @@ if (!isset($STYLE['conf_b_width'])) { $STYLE['conf_b_width'] = $STYLE['respop_b_
 if (!isset($STYLE['conf_b_color'])) { $STYLE['conf_b_color'] = $STYLE['respop_b_color']; }
 
 $conf_border = "{$STYLE['conf_b_style']} {$STYLE['conf_b_width']} {$STYLE['conf_b_color']}";
-$conf_infowin_fontsize = $_conf['ktai'] ? $STYLE['fontsize'] : $STYLE['infowin_fontsize'];
+$conf_infowin_fontsize = $_conf['iphone'] ? $STYLE['fontsize'] : $STYLE['infowin_fontsize'];
 
 $ss = <<<EOSTYLE
 

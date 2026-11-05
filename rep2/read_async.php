@@ -24,8 +24,6 @@ $bbs  = $_GET['bbs'];
 $key  = $_GET['key'];
 $mode = isset($_GET['q']) ? (int)$_GET['q'] : 0;
 
-$_conf['ktai'] = false;
-
 //==================================================================
 // ƒƒCƒ“
 //==================================================================
@@ -133,9 +131,6 @@ if ($aThread->rescount) {
 // }}}
 // {{{ –{‘Ìo—Í
 
-if (UA::isSafariGroup()) {
-    $node = P2Util::encodeResponseTextForSafari($node);
-}
 echo $node;
 
 // }}}

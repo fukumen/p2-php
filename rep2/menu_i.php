@@ -129,10 +129,6 @@ EODARK;
     <?php echo $_conf['touch_icon_ht'] ?? ''; ?>
     <script type="text/javascript" src="iui/iui.js?<?php echo $_conf['p2_version_id']; ?>"></script>
     <script type="text/javascript" src="js/json2.js?<?php echo $_conf['p2_version_id']; ?>"></script>
-<?php /*if (UA::isAndroidWebKit()) { ?>
-    <script type="text/javascript">window.jsxpath = { 'useNative': false };</script>
-    <script type="text/javascript" src="js/javascript-xpath.js?<?php echo $_conf['p2_version_id']; ?>"></script>
-<?php }*/ ?>
     <script type="text/javascript" src="js/iphone.js?<?php echo $_conf['p2_version_id']; ?>"></script>
     <script type="text/javascript" src="js/menu_i.js?<?php echo $_conf['p2_version_id']; ?>"></script>
 <?php

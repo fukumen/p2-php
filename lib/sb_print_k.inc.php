@@ -17,18 +17,10 @@ function sb_print_k($aThreadList)
     //=================================================
 
     if (!$aThreadList->threads) {
-        if ($_conf['iphone']) {
-            if ($aThreadList->spmode == 'fav' && $sb_view == 'shinchaku') {
-                echo '<p class="empty">お気にスレに新着なかったぽ</p>';
-            } else {
-                echo '<p class="empty">該当サブジェクトはなかったぽ</p>';
-            }
+        if ($aThreadList->spmode == 'fav' && $sb_view == 'shinchaku') {
+            echo '<p class="empty">お気にスレに新着なかったぽ</p>';
         } else {
-            if ($aThreadList->spmode == 'fav' && $sb_view == 'shinchaku') {
-                echo '<p>お気にｽﾚに新着なかったぽ</p>';
-            } else {
-                echo '<p>該当ｻﾌﾞｼﾞｪｸﾄはなかったぽ</p>';
-            }
+            echo '<p class="empty">該当サブジェクトはなかったぽ</p>';
         }
         return;
     }
@@ -87,15 +79,12 @@ function sb_print_k($aThreadList)
         $show_unum = true;
     }
 
-    if ($_conf['iphone']) {
-        echo '<ul class="subject">';
-    }
+    echo '<ul class="subject">';
 
     $i = 0;
     foreach ($aThreadList->threads as $aThread) {
         $i++;
         $midoku_ari = '';
-        $anum_ht = ''; //#r1
         $htm = array('ita' => '', 'rnum' => '', 'unum' => '', 'sim' => '');
 
         $bbs_q = '&amp;bbs=' . $aThread->bbs;
@@ -114,51 +103,27 @@ function sb_print_k($aThreadList)
         if ($show_unum && $aThread->isKitoku()) {
             $htm['unum'] = "{$aThread->unum}";
 
-            // iPhone用
-            if ($_conf['iphone']) {
-                $classunum = 'num unread';
+            $classunum = 'num unread';
 
-                // 新着あり
-                if ($aThread->unum >= 1) {
-                    $midoku_ari = true;
-                    $classunum .= ' new';
-                }
-
-                // subject.txtにない時
-                if (!$aThread->isonline) {
-                    $htm['unum'] = '-';
-                    $classunum .= ' offline';
-                }
-
-                $htm['unum'] = "<span class=\"{$classunum}\">{$htm['unum']}</span>";
-            } else {
-                $anum_ht = sprintf('#r%d', min($aThread->rescount, $aThread->rescount - $aThread->nunum + 1 - $_conf['respointer']));
-
-                // 新着あり
-                if ($aThread->unum >= 1) {
-                    $midoku_ari = true;
-                    $htm['unum'] = "<font color=\"{$STYLE['mobile_subject_newres_color']}\">{$aThread->unum}</font>";
-                }
-
-                // subject.txtにない時
-                if (!$aThread->isonline) {
-                    $htm['unum'] = '-';
-                }
-
-                $htm['unum'] = "[{$htm['unum']}]";
+            // 新着あり
+            if ($aThread->unum >= 1) {
+                $midoku_ari = true;
+                $classunum .= ' new';
             }
+
+            // subject.txtにない時
+            if (!$aThread->isonline) {
+                $htm['unum'] = '-';
+                $classunum .= ' offline';
+            }
+
+            $htm['unum'] = "<span class=\"{$classunum}\">{$htm['unum']}</span>";
         }
 
         // 新規スレ
-        if ($_conf['iphone']) {
-            $classtitle = 'title';
-            if ($aThread->new) {
-                $classtitle .= ' new';
-            }
-        } else {
-            if ($show_unum && $aThread->new) {
-                $htm['unum'] = "<font color=\"{$STYLE['mobile_subject_newthre_color']}\">新</font>";
-            }
+        $classtitle = 'title';
+        if ($aThread->new) {
+            $classtitle .= ' new';
         }
 
         // 総レス数 =============================================
@@ -197,7 +162,6 @@ function sb_print_k($aThreadList)
         if ($aThreadList->spmode == 'soko' || $aThreadList->spmode == 'palace') {
             $rescount_q = '';
             $offline_q = '&amp;offline=true';
-            $anum_ht = '';
         // subject.txt にない場合
         } elseif (!$aThread->isonline) {
             $offline_q = '&amp;offline=true';
@@ -207,7 +171,7 @@ function sb_print_k($aThreadList)
         $ttitle_ht = $aThread->ttitle_ht;
         if (strlen($ttitle_ht) == 0) {
             // 見かけ上のタイトルなので携帯対応URLである必要はない
-            $ttitle_ht = p2h($aThread->getMotoThread(true, ''));
+            $ttitle_ht = p2h($aThread->getMotoThread(''));
         }
 
         // 全角英数カナスペースを半角に
@@ -215,23 +179,15 @@ function sb_print_k($aThreadList)
             $ttitle_ht = mb_convert_kana($ttitle_ht, 'rnsk');
         }
 
-        if ($_conf['iphone']) {
-            $htm['rnum'] = "<span class=\"num count\">{$rescount_ht}</span>";
-            if ($aThread->similarity) {
-                $htm['sim'] .= sprintf(' <span class="num score">%0.1f%%</span>', $aThread->similarity * 100);
-            }
-        } else {
-            $htm['rnum'] = "({$rescount_ht})";
-            if ($aThread->similarity) {
-                $htm['sim'] .= sprintf(' %0.1f%%', $aThread->similarity * 100);
-            }
+        // 総レス数 =============================================
+        $htm['rnum'] = "<span class=\"num count\">{$rescount_ht}</span>";
+        if ($aThread->similarity) {
+            $htm['sim'] .= sprintf(' <span class="num score">%0.1f%%</span>', $aThread->similarity * 100);
         }
 
         $thre_url = "{$_conf['read_php']}?{$host_bbs_key_q}";
-        if ($_conf['iphone']) {
-            $thre_url .= '&amp;ttitle_en=' . UrlSafeBase64::encode($aThread->ttitle);
-        }
-        $thre_url .= "{$rescount_q}{$offline_q}{$_conf['k_at_a']}{$anum_ht}";
+        $thre_url .= '&amp;ttitle_en=' . UrlSafeBase64::encode($aThread->ttitle);
+        $thre_url .= "{$rescount_q}{$offline_q}{$_conf['k_at_a']}";
 
         // オンリー>>1
         $onlyone_url = "{$_conf['read_php']}?{$host_bbs_key_q}&amp;one=true&amp;k_continue=1{$_conf['k_at_a']}";
@@ -253,45 +209,29 @@ function sb_print_k($aThreadList)
             }
         }
 
-        // アクセスキー
-        /*
-        $access_ht = '';
-        if ($aThread->torder >= 1 and $aThread->torder <= 9) {
-            $access_ht = " {$_conf['accesskey']}=\"{$aThread->torder}\"";
-        }
-        */
-
         //====================================================================================
         // スレッド一覧 table ボディ HTMLプリント <tr></tr>
         //====================================================================================
 
         //ボディ
-        if ($_conf['iphone']) {
-            // information bubble用の隠しスレッド情報。
-            // torderの指示子が"%d"でないのはmerge_favitaのため
-            $thre_info = sprintf('[%s] %s (%01.1fレス/日)',
-                                 $aThread->torder,                 // 順序
-                                 date('y/m/d H:i', $aThread->key), // スレ立て日時
-                                 $aThread->dayres                  // 勢い。切り上げなし
-                                 );
+        // information bubble用の隠しスレッド情報。
+        // torderの指示子が"%d"でないのはmerge_favitaのため
+        $thre_info = sprintf('[%s] %s (%01.1fレス/日)',
+                             $aThread->torder,                 // 順序
+                             date('y/m/d H:i', $aThread->key), // スレ立て日時
+                             $aThread->dayres                  // 勢い。切り上げなし
+                             );
 
-            if ($htm['ita'] !== '') {
-                $htm['ita'] = "<span class=\"ita\">{$htm['ita']}</span>";
-            }
+        if ($htm['ita'] !== '') {
+            $htm['ita'] = "<span class=\"ita\">{$htm['ita']}</span>";
+        }
 
-            echo <<<EOP
+        echo <<<EOP
 <li><a href="{$thre_url}"><span class="info">{$thre_info}</span> {$htm['unum']} <span class="{$classtitle}">{$ttitle_ht}</span> {$htm['rnum']} {$htm['sim']} {$htm['ita']}</a></li>\n
 EOP;
-        } else {
-            echo <<<EOP
-<div>{$htm['unum']}{$aThread->torder}.<a href="{$thre_url}">{$ttitle_ht}</a> {$htm['rnum']} {$htm['sim']} {$htm['ita']}</div>\n
-EOP;
-        }
     }
 
-    if ($_conf['iphone']) {
-        echo '</ul>';
-    }
+    echo '</ul>';
 }
 
 // }}}

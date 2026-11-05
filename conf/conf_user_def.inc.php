@@ -256,17 +256,9 @@ $conf_user_rules['mobile.aa_ryaku_size'] = array('notIntExceptMinusToDef');
 $conf_user_def['mobile.before_respointer'] = 0; // (0)
 $conf_user_rules['mobile.before_respointer'] = array('notIntExceptMinusToDef');
 
-// 携帯閲覧時、外部リンクに通勤ブラウザ(通)を利用(する:1, しない:0)
-$conf_user_def['mobile.use_tsukin'] = 1; // (1)
-$conf_user_rad['mobile.use_tsukin'] = array('1' => 'する', '0' => 'しない');
-
 // 携帯閲覧時、画像リンクにpic.to(ﾋﾟ)を利用(する:1, しない:0)
 $conf_user_def['mobile.use_picto'] = 1; // (1)
 $conf_user_rad['mobile.use_picto'] = array('1' => 'する', '0' => 'しない');
-
-// 携帯閲覧時、YouTubeのリンクをサムネイル表示（する:1, しない:0, サムネイル表示だけでリンクしない:2）
-$conf_user_def['mobile.link_youtube'] = 0; // (0)
-$conf_user_rad['mobile.link_youtube'] = array('1' => 'する', '0' => 'しない', '2' => 'ｻﾑﾈｲﾙ表示だけでﾘﾝｸしない');
 
 // 携帯閲覧時、デフォルトの名無し名を表示（する:1, しない:0）
 $conf_user_def['mobile.bbs_noname_name'] = 0; // (0)
@@ -287,10 +279,6 @@ $conf_user_rad['mobile.clip_time_sec'] = array('1' => 'する', '0' => 'しない');
 // 携帯閲覧時、ID末尾の"O"に下線を追加（する:1, しない:0）
 $conf_user_def['mobile.underline_id'] = 0; // (0)
 $conf_user_rad['mobile.underline_id'] = array('1' => 'する', '0' => 'しない');
-
-// 携帯閲覧時、「写」のコピー用テキストボックスを分割する文字数
-$conf_user_def['mobile.copy_divide_len'] = 0; // (0)
-$conf_user_rules['mobile.copy_divide_len'] = array('notIntExceptMinusToDef');
 
 // 携帯閲覧時、[[単語]]をWikipediaへのリンクにする（する:1, しない:0）
 $conf_user_def['mobile.link_wikipedia'] = 0; // (0)

@@ -151,7 +151,7 @@ $flexy->setData('php_self', $_SERVER['SCRIPT_NAME']);
 $flexy->setData('p2vid', P2_VERSION_ID);
 $flexy->setData('skin', $skin_en);
 $flexy->setData('isPopUp', $isPopUp);
-$flexy->setData('pc', !$_conf['ktai']);
+$flexy->setData('pc', !$_conf['iphone']);
 $flexy->setData('iphone', $_conf['iphone']);
 $flexy->setData('doctype', $_conf['doctype']);
 $flexy->setData('extra_headers',   $_conf['extra_headers_ht']);

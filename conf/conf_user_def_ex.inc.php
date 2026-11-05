@@ -23,33 +23,13 @@ $conf_user_rules['mobile.link_color'] = array('notHtmlColorToDef');
 $conf_user_def['mobile.vlink_color'] = ""; // ("")
 $conf_user_rules['mobile.vlink_color'] = array('notHtmlColorToDef');
 
-// 新着スレッドマーク
-$conf_user_def['mobile.newthre_color'] = "#ff0000"; // ("#ff0000")
-$conf_user_rules['mobile.newthre_color'] = array('notHtmlColorToDef');
-
-// スレッドタイトル
-$conf_user_def['mobile.ttitle_color'] = "#1144aa"; // ("#1144aa")
-$conf_user_rules['mobile.ttitle_color'] = array('notHtmlColorToDef');
-
-// 新着レス番号
-$conf_user_def['mobile.newres_color'] = "#ff6600"; // ("#ff6600")
-$conf_user_rules['mobile.newres_color'] = array('notHtmlColorToDef');
-
 // NGワード
 $conf_user_def['mobile.ngword_color'] = "#bbbbbb"; // ("#bbbbbb")
 $conf_user_rules['mobile.ngword_color'] = array('notHtmlColorToDef');
 
-// オンザフライレス番号
-$conf_user_def['mobile.onthefly_color'] = "#00aa00"; // ("#00aa00")
-$conf_user_rules['mobile.onthefly_color'] = array('notHtmlColorToDef');
-
 // フィルタリングでマッチしたキーワード
 $conf_user_def['mobile.match_color'] = ""; // ("")
 $conf_user_rules['mobile.match_color'] = array('notHtmlColorToDef');
-
-// アクセスキーの番号を表示（しない:0, する:1, 絵文字:2）
-$conf_user_def['mobile.display_accesskey'] = 1; // (1)
-$conf_user_rad['mobile.display_accesskey'] = array('2' => '絵文字', '1' => '表示', '0' => '非表示');
 
 // }}}
 // {{{ tGrep
@@ -61,10 +41,6 @@ $conf_user_rad['expack.tgrep.quicksearch'] = array('1' => '表示', '0' => '非表示
 // 検索履歴を記録する数（off:0）
 $conf_user_def['expack.tgrep.recent_num'] = 10; // (10)
 $conf_user_rules['expack.tgrep.recent_num'] = array('notIntExceptMinusToDef');
-
-// サーチボックスに検索履歴を記録する数、Safari専用（off:0）
-$conf_user_def['expack.tgrep.recent2_num'] = 10; // (10)
-$conf_user_rules['expack.tgrep.recent2_num'] = array('notIntExceptMinusToDef');
 
 // 検索に使用する検索エンジン
 $conf_user_def['expack.tgrep.engine'] = '4';

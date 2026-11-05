@@ -1441,7 +1441,7 @@ ERR;
             return;
         }
 
-        if ($_conf['ktai'] && $_conf['mobile.save_packet']) {
+        if ($_conf['iphone'] && $_conf['mobile.save_packet']) {
             echo mb_convert_kana($_info_msg_ht, 'rnsk');
         } else {
             echo $_info_msg_ht;
@@ -1485,21 +1485,6 @@ ERR;
         } else {
             return false;
         }
-    }
-
-    // }}}
-    // {{{ encodeResponseTextForSafari()
-
-    /**
-     * XMLHttpRequestのレスポンスをSafari用にエンコードする
-     *
-     * @return string
-     */
-    static public function encodeResponseTextForSafari($response, $encoding = 'CP932')
-    {
-        $response = mb_convert_encoding($response, 'UTF-8', $encoding);
-        $response = mb_encode_numericentity($response, array(0x80, 0xFFFF, 0, 0xFFFF), 'UTF-8');
-        return $response;
     }
 
     // }}}

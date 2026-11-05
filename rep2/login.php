@@ -25,16 +25,11 @@ $p_str = array(
 );
 
 // 携帯用表示文字列変換
-if ($_conf['ktai'] && function_exists('mb_convert_kana')) {
+if ($_conf['iphone'] && function_exists('mb_convert_kana')) {
     foreach ($p_str as $k => $v) {
         $p_str[$k] = mb_convert_kana($v, 'rnsk');
     }
 }
-
-// （携帯）ログイン用URL
-$url = rtrim(dirname(P2Util::getMyUrl()), '/') . '/?b=k';
-
-$p_htm['ktai_url'] = '携帯'.$p_str['login'].'用URL <a href="'.$url.'" target="_blank">'.$url.'</a><br>';
 
 //====================================================
 // ユーザ登録処理
@@ -111,7 +106,7 @@ if (!empty($_REQUEST['check_keep_login'])) {
 //====================================================
 $login_form_ht = '';
 if ($passkey_mode != 2) {
-    if ($_conf['ktai']) {
+    if ($_conf['iphone']) {
         $login_form_ht = <<<EOP
 <hr>
 <form id="login_change" method="POST" action="{$_SERVER['SCRIPT_NAME']}" target="_self">
@@ -165,7 +160,7 @@ echo <<<EOP
     <title>{$p_str['ptitle']}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=login&amp;skin={$skin_en}">
@@ -174,13 +169,13 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="setWinTitle();"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="setWinTitle();"';
 echo <<<EOP
 </head>
 <body{$body_at}>
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu"><a href="setting.php">ログイン管理</a> &gt; {$p_str['ptitle']}</p>
 EOP;

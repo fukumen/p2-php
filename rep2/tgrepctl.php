@@ -28,13 +28,13 @@ if (isset($_GET['file'])) {
         $include_file = P2EX_LIB_DIR . '/tgrep/menu_recent.inc.php';
         break;
     default:
-        if ($_conf['ktai']) {
+        if ($_conf['iphone']) {
             include P2_BASE_DIR . '/tgrepc.php';
         }
         exit;
     }
 } else {
-    if ($_conf['ktai']) {
+    if ($_conf['iphone']) {
         include P2_BASE_DIR . '/tgrepc.php';
     }
     exit;
@@ -91,7 +91,7 @@ unset($_GET['clear'], $_GET['file'], $_GET['purge'], $_GET['query'],
 // {{{ èoóÕ
 
 P2Util::header_nocache();
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     include P2_BASE_DIR . '/tgrepc.php';
 } else {
     header('Content-Type: text/html; charset=Shift_JIS');
@@ -99,9 +99,6 @@ if ($_conf['ktai']) {
     ob_start();
     include $include_file;
     $buf = ob_get_clean();
-    if (UA::isSafariGroup()) {
-        $buf = P2Util::encodeResponseTextForSafari($buf);
-    }
     echo $buf;
 }
 

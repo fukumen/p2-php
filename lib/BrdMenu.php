@@ -130,7 +130,7 @@ class BrdMenu
                         $GLOBALS['ita_mikke']['itaj_en'] = $aBrdMenuIta->itaj_en;
 
                         // マーキング
-                        if ($_conf['ktai'] && is_string($_conf['k_filter_marker'])) {
+                        if ($_conf['iphone'] && is_string($_conf['k_filter_marker'])) {
                             $aBrdMenuIta->itaj_ht = StrCtl::filterMarking($GLOBALS['word_fm'], $aBrdMenuIta->itaj, $_conf['k_filter_marker']);
                         } else {
                             $aBrdMenuIta->itaj_ht = StrCtl::filterMarking($GLOBALS['word_fm'], $aBrdMenuIta->itaj);
@@ -145,7 +145,7 @@ class BrdMenu
 
                     // 検索が見つからなくて、さらに携帯の時
                     } else {
-                        if ($_conf['ktai']) {
+                        if ($_conf['iphone']) {
                             continue;
                         }
                     }

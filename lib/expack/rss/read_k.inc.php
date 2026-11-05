@@ -16,7 +16,7 @@ echo <<<EOH
 {$_conf['extra_headers_ht']}
 <title>{$title}</title>
 </head>
-<body{$_conf['k_colors']}>
+<body>
 {$info_msg_ht}
 <h1>{$ch_title}</h1>
 <hr>
@@ -97,15 +97,14 @@ function rss_print_content_k($item, $num, $count)
     $prev_item_num = $num - 1;
     $next_item_num = $num + 1;
     if ($prev_item_num >= 0) {
-        $prev_item_ht = "<a href=\"read_rss.php?xml={$xml_en}&amp;num={$prev_item_num}\"{$_conf['k_accesskey_at']['prev']}>{$_conf['k_accesskey_st']['prev']}‘O</a>";
+        $prev_item_ht = "<a href=\"read_rss.php?xml={$xml_en}&amp;num={$prev_item_num}\">‘O</a>";
     }
     if ($next_item_num <= $count) {
-        $next_item_ht = "<a href=\"read_rss.php?xml={$xml_en}&amp;num={$next_item_num}\"{$_conf['k_accesskey_at']['next']}>{$_conf['k_accesskey_st']['next']}ŽŸ</a>";
+        $next_item_ht = "<a href=\"read_rss.php?xml={$xml_en}&amp;num={$next_item_num}\">ŽŸ</a>";
     }
 
     // •\Ž¦
-    if ($_conf['iphone']) {
-        echo <<<EOP
+    echo <<<EOP
 <h3>{$item_title}</h3>
 <div>{$creator_ht}{$date_ht} <a href="{$link_orig}">’¼</a>{$view_jig}</div>
 <hr>
@@ -116,20 +115,6 @@ function rss_print_content_k($item, $num, $count)
 {$_conf['k_to_index_ht']}
 </div>\n
 EOP;
-    } else {
-        echo <<<EOP
-<h3>{$item_title}</h3>
-<div>{$creator_ht}{$date_ht} <a href="{$link_orig}">’¼</a>{$view_jig}</div>
-<hr>
-<div>{$description_ht}</div>
-<hr>
-<div>{$prev_item_ht} {$next_item_ht}<br>
-<a href="subject_rss.php?xml={$xml_en}"{$_conf['k_accesskey_at'][5]}>{$_conf['k_accesskey_st'][5]}{$ch_title}</a><br>
-<a href="menu_k.php?view=rss"{$_conf['k_accesskey_at'][9]}>{$_conf['k_accesskey_st'][9]}RSS</a>
-{$_conf['k_to_index_ht']}
-</div>\n
-EOP;
-    }
 }
 
 // }}}

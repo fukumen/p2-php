@@ -15,7 +15,7 @@ echo <<<EOH
 {$_conf['extra_headers_ht']}
 <title>{$title}</title>
 </head>
-<body{$_conf['k_colors']}>
+<body>
 {$info_msg_ht}
 <p><b>{$title}</b></p>
 <hr>\n
@@ -78,7 +78,7 @@ echo "</ol>\n";
 echo <<<EOF
 <hr>
 <div class="center">
-<a href="menu_k.php?view=rss"{$_conf['k_accesskey_at'][9]}>{$_conf['k_accesskey_st'][9]}RSS</a>
+<a href="menu_i.php">RSS</a>
 {$_conf['k_to_index_ht']}
 </div>
 <hr>

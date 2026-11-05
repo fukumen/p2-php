@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "54760da4f0a5517b7ab3562c9e18a6fb",
+    "content-hash": "7ed1c510cfd00d4a9e6b783679bb1126",
     "packages": [
         {
             "name": "cweagans/composer-configurable-plugin",
@@ -165,56 +165,6 @@
                 "source": "https://github.com/jakeasmith/http_build_url"
             },
             "time": "2017-05-01T15:36:40+00:00"
-        },
-        {
-            "name": "nanasess/net_useragent_mobile",
-            "version": "1.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/nanasess/Net_UserAgent_Mobile.git",
-                "reference": "aea2235359a0c4f32d3b329a6cdff5e2a78e9042"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/nanasess/Net_UserAgent_Mobile/zipball/aea2235359a0c4f32d3b329a6cdff5e2a78e9042",
-                "reference": "aea2235359a0c4f32d3b329a6cdff5e2a78e9042",
-                "shasum": ""
-            },
-            "require": {
-                "pear/pear-core-minimal": "*"
-            },
-            "require-dev": {
-                "pear/pear": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "Net": "./"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "include-path": [
-                "./"
-            ],
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "KUBO Atsuhiro",
-                    "email": "kubo@iteman.jp"
-                },
-                {
-                    "name": "Kentaro Ohkouchi",
-                    "email": "nanasess@fsm.ne.jp"
-                }
-            ],
-            "description": "Net_UserAgent_Mobile parses HTTP_USER_AGENT strings of (mainly Japanese) mobile HTTP user agents. It'll be useful in page dispatching by user agents. This package was ported from Perl's HTTP::MobileAgent. See http://search.cpan.org/search?mode=module&query=HTTP-MobileAgent",
-            "support": {
-                "issues": "https://github.com/nanasess/Net_UserAgent_Mobile/issues",
-                "source": "https://github.com/nanasess/Net_UserAgent_Mobile"
-            },
-            "time": "2019-02-05T08:25:51+00:00"
         },
         {
             "name": "openpsa/quickform",
@@ -2953,5 +2903,5 @@
         "php": "8.2",
         "ext-gettext": "0"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.11.0"
 }

@@ -47,7 +47,7 @@ function printLoginFirst(Login $_login, $failReason = null)
     );
 
     // 携帯用表示文字列全角→半角変換
-    if ($_conf['ktai'] && function_exists('mb_convert_kana')) {
+    if ($_conf['iphone'] && function_exists('mb_convert_kana')) {
         foreach ($p_str as $k => $v) {
             $p_str[$k] = mb_convert_kana($v, 'rnsk');
         }
@@ -64,8 +64,6 @@ function printLoginFirst(Login $_login, $failReason = null)
         $keep_login_disabled = ' disabled';
         $keep_login_note = ' (パスキー専用モードでは無効)';
     }
-
-    $mobile = (new Net_UserAgent_Mobile)->singleton();
 
     $keep_login_checked = ' checked';
     if (isset($_POST['submit_new']) || isset($_POST['submit_member'])) {
@@ -95,23 +93,11 @@ EOP;
         $hd['form_login_pass'] = '';
     }
 
-    // docomoならpasswordにしない
-    if ($mobile->isDoCoMo()) {
-        $type = 'text';
-    } else {
-        $type = 'password';
-    }
+    $type = 'password';
 
     // {{{ ログイン用フォームを生成
 
     $hd['REQUEST_URI'] = p2h($_SERVER['REQUEST_URI']);
-    if ($mobile->isDoCoMo()) {
-        if (strpos($hd['REQUEST_URI'], '?') === false) {
-            $hd['REQUEST_URI'] .= '?guid=ON';
-        } else {
-            $hd['REQUEST_URI'] .= '&amp;guid=ON';
-        }
-    }
 
     if (file_exists($_conf['auth_user_file'])) {
         $submit_ht = '<input type="submit" name="submit_member" value="ユーザログイン">';
@@ -119,21 +105,14 @@ EOP;
         $submit_ht = '<input type="submit" name="submit_new" value="新規登録">';
     }
 
-    if ($_conf['ktai']) {
-        //$k_roman_input_at = ' istyle="3" format="*m" mode="alphabet"';
-        $k_roman_input_at = ' istyle="3" format="*x" mode="alphabet"';
-        $k_input_size_at = '';
-    } else {
-        $k_roman_input_at = '';
-        $k_input_size_at = ' size="32"';
-    }
+    $k_input_size_at = $_conf['iphone'] ? '' : ' size="32"';
     $login_form_ht = '';
     if ($passkey_mode != 2) {
         $login_form_ht = <<<EOP
 <form id="login" method="post" action="{$hd['REQUEST_URI']}" target="_self">
     {$_conf['k_input_ht']}
-    {$p_str['user']}: <input type="text" name="form_login_id" value="{$hd['form_login_id']}"{$k_roman_input_at}{$k_input_size_at}><br>
-    {$p_str['password']}: <input type="{$type}" name="form_login_pass" value="{$hd['form_login_pass']}"{$k_roman_input_at}><br>
+    {$p_str['user']}: <input type="text" name="form_login_id" value="{$hd['form_login_id']}"{$k_input_size_at}><br>
+    {$p_str['password']}: <input type="{$type}" name="form_login_pass" value="{$hd['form_login_pass']}"><br>
     {$auth_sub_input_ht}
     <br>
     {$submit_ht}
@@ -178,12 +157,7 @@ EOP;
     $passkey_options_ht = false;
     $passkey_csid = false;
     $passkey_login_ht = '';
-    if ($_conf['ktai'] && !$_conf['iphone']) {
-        // 専用モードでガラケーからアクセスした場合の空白ページ防止
-        if ($passkey_mode == 2) {
-            $passkey_login_ht = '<p>パスキー専用モードのためガラケーからはログインできません</p>';
-        }
-    } elseif ($passkey_mode > 0) {
+    if ($passkey_mode > 0) {
         try {
             $passkey_options = P2PasskeyAuth::issueLoginOptions();
             $passkey_options_ht = $passkey_options['options'];
@@ -238,7 +212,7 @@ EOP;
 \n/* ]]> */
 </style>\n
 EOP;
-    } elseif (!$_conf['ktai']) {
+    } else {
         echo <<<EOP
 <style type="text/css">
 /* <![CDATA[ */\n
@@ -332,11 +306,6 @@ EOP;
 function printLoginRedirect($redirectTo)
 {
     global $_conf;
-
-    if ($_conf['ktai'] && !$_conf['iphone']) {
-        header('Location: ' . $redirectTo);
-        return;
-    }
 
     try {
         $redirect_json = json_encode($redirectTo, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES);

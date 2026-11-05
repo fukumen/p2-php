@@ -17,10 +17,6 @@ if ($_conf['iphone']) {
     include P2_LIB_DIR . '/toolbar_i.inc.php';
     define('READ_HEADER_INC_PHP', P2_LIB_DIR . '/read_header_i.inc.php');
     define('READ_FOOTER_INC_PHP', P2_LIB_DIR . '/read_footer_i.inc.php');
-// ågë—
-} elseif ($_conf['ktai']) {
-    define('READ_HEADER_INC_PHP', P2_LIB_DIR . '/read_header_k.inc.php');
-    define('READ_FOOTER_INC_PHP', P2_LIB_DIR . '/read_footer_k.inc.php');
 // PC
 } else {
     define('READ_HEADER_INC_PHP', P2_LIB_DIR . '/read_header.inc.php');
@@ -46,7 +42,7 @@ if (array_key_exists('rf', $_REQUEST) && is_array($_REQUEST['rf'])) {
     $resFilter = ResFilter::configure($_REQUEST['rf']);
     if ($resFilter->hasWord()) {
         $do_filtering = true;
-        if ($_conf['ktai']) {
+        if ($_conf['iphone']) {
             $page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
             $resFilter->setRange($_conf['mobile.rnum_range'], $page);
         }
@@ -124,7 +120,7 @@ $aThread->setTitleFromLocal();
 //===========================================================
 // ï\é¶ÉåÉXî‘ÇÃîÕàÕÇê›íË
 //===========================================================
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $before_respointer = $_conf['mobile.before_respointer'];
 } else {
     $before_respointer = $_conf['before_respointer'];
@@ -151,7 +147,7 @@ if ($aThread->isKitoku()) {
         $aThread->ls = $from_num . '-';
     }
 
-    if ($_conf['ktai'] && strpos($aThread->ls, 'n') === false) {
+    if ($_conf['iphone'] && strpos($aThread->ls, 'n') === false) {
         $aThread->ls = $aThread->ls . 'n';
     }
 
@@ -174,7 +170,7 @@ $aThread->lsToPoint();
 //===============================================================
 $ptitle_ht = p2h($aThread->itaj) . ' / ' . $aThread->ttitle_hd;
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     include READ_HEADER_INC_PHP;
 
     echo "PCÇÃÇ›é¿ãµÇ≈Ç´Ç‹Ç∑ÅB";

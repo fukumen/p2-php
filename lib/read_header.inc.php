@@ -20,8 +20,8 @@ $latest_st      = 'ÅV';
 $dores_st       = '‘ž'; // 'ƒŒƒX';
 $aborn_st       = '‚ ‚Ú‚ñ';
 
-$motothre_url = $aThread->getMotoThread(false);
-$motothre_origin_url = $aThread->getMotoThread(false, '');
+$motothre_url = $aThread->getMotoThread();
+$motothre_origin_url = $aThread->getMotoThread('');
 $ttitle_en = UrlSafeBase64::encode($aThread->ttitle);
 $ttitle_en_q = '&amp;ttitle_en=' . $ttitle_en;
 $bbs_q = '&amp;bbs=' . $aThread->bbs;

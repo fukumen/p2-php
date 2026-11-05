@@ -18,7 +18,7 @@ $me_url = P2Util::getMyUrl();
 $me_dir_url = dirname($me_url);
 $me_url_b = p2h(rtrim($me_dir_url, '/') . '/?b=');
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
 
     //=========================================================
     // 携帯用 インデックス
@@ -28,12 +28,8 @@ if ($_conf['ktai']) {
         header('Location: '.$me_dir_url . '/read.php?' . $_SERVER['QUERY_STRING']);
         exit;
     }
-    if ($_conf['iphone']) {
-        include P2_WWW_DIR . '/menu_i.php';
-        exit;
-    }
-    require_once P2_LIB_DIR . '/index_print_k.inc.php';
-    index_print_k();
+    include P2_WWW_DIR . '/menu_i.php';
+    exit;
 
 } else {
     //=========================================
@@ -128,7 +124,6 @@ EOMAINFRAME;
     <body>
         <h1>{$ptitle}</h1>
         <ul>
-            <li>　携帯用URL: <a href="{$me_url_b}k">{$me_url_b}k</a></li>
             <li>iPhone用URL: <a href="{$me_url_b}i">{$me_url_b}i</a></li>
         </ul>
     </body>

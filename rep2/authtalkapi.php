@@ -65,7 +65,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=login2ch&amp;skin={$skin_en}">
@@ -74,9 +74,9 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="setWinTitle();"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="setWinTitle();"';
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu"><a href="setting.php">ログイン管理</a> &gt; {$ptitle}</p>
 EOP;
@@ -122,7 +122,7 @@ EOFORM;
     $form_now_log = 'talk API 認証/ログインしていません</p>';
 }
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $id_input_size_at = " size=\"30\"";
     $pass_input_size_at = " size=\"24\"";
 }
@@ -135,7 +135,7 @@ echo "<div id=\"login_status\">";
 echo $form_now_log;
 echo "</div>";
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr>";
 }
 
@@ -163,7 +163,7 @@ echo <<<EOFORM
 </form>\n
 EOFORM;
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr>";
 }
 
@@ -171,7 +171,7 @@ if ($_conf['ktai']) {
 // フッタHTML表示
 //================================================================
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr><div class=\"center\">{$_conf['k_to_index_ht']}</div>";
 }
 

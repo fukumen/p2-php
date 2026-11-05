@@ -417,7 +417,7 @@ abstract class ShowThread
         $to = $aThread->resrange['to'];
         $nofirst = $aThread->resrange['nofirst'];
 
-        $is_ktai = $_conf['ktai'];
+        $is_iphone = $_conf['iphone'];
         $resFilter = ResFilter::getFilter();
         if ($resFilter && $resFilter->hasWord()) {
             $do_filtering = true;
@@ -506,7 +506,7 @@ abstract class ShowThread
             $this->thread->readnum = $rn;
         }
 
-        if ($do_filtering && !$is_ktai) {
+        if ($do_filtering && !$is_iphone) {
             $buf['body'] .= "<script type=\"text/javascript\">filterCount({$filter_hits});</script>\n";
         }
 
@@ -756,7 +756,7 @@ abstract class ShowThread
                 if ($nong) {
                     $intersections = null;
                 } else {
-                    $info_suffix = '(' . (($_conf['ktai']) ? 'ｱﾎﾞﾝ' : 'あぼーん') . ')';
+                    $info_suffix = '(' . (($_conf['iphone']) ? 'ｱﾎﾞﾝ' : 'あぼーん') . ')';
                 }
             } elseif (!$nong) {
                 $intersections = array_intersect($references, $this->_ng_nums);
@@ -885,7 +885,7 @@ abstract class ShowThread
             $ngaborns_hits['ng_msg']++;
             $type |= $this->_markNgAborn($i, self::NG_MSG, true);
             $info[] = sprintf('NG%s:%s',
-                              ($_conf['ktai']) ? 'ﾜｰﾄﾞ' : 'ワード',
+                              ($_conf['iphone']) ? 'ﾜｰﾄﾞ' : 'ワード',
                               p2h($a_ng_msg));
         }
 
@@ -1220,7 +1220,7 @@ abstract class ShowThread
 
             // http or ftp のURL
         } elseif ($s['url']) {
-            if ($_conf['ktai'] && $s[9] == 'ftp') {
+            if ($_conf['iphone'] && $s[9] == 'ftp') {
                 return $orig;
             }
             $url = preg_replace('/^t?(tps?)$/', 'ht$1', $s[9]) . '://' . $s[10];

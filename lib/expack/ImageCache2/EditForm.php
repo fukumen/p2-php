@@ -14,7 +14,7 @@ class ImageCache2_EditForm
     static public function header($hiddens, $mode)
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mf_head = new HTML_Template_Flexy_Element('form', array(
             'name' => 'edit',
             'id' => 'edit',
@@ -45,7 +45,7 @@ class ImageCache2_EditForm
     static public function submit($id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mf_submit = new HTML_Template_Flexy_Element('input', array(
             'type' => 'submit',
             'name' => 'edit_submit',
@@ -63,7 +63,7 @@ class ImageCache2_EditForm
     static public function remove($id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mf_remove = new HTML_Template_Flexy_Element('input', array(
             'type' => 'submit',
             'name' => 'edit_remove',
@@ -81,7 +81,7 @@ class ImageCache2_EditForm
     static public function toblack($id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mf_toblack = new HTML_Template_Flexy_Element('input', array(
             'type' => 'checkbox',
             'name' => 'edit_toblack',
@@ -99,7 +99,7 @@ class ImageCache2_EditForm
     static public function reset($id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mf_reset = new HTML_Template_Flexy_Element('input', array(
             'type' => 'reset',
             'name' => 'edit_reset',
@@ -117,7 +117,7 @@ class ImageCache2_EditForm
     static public function checkAllOn($id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mf_allon = new HTML_Template_Flexy_Element('input', array(
             'type' => 'button',
             'id' => 'edit_checkAllOn' . $id,
@@ -135,7 +135,7 @@ class ImageCache2_EditForm
     static public function checkAllOff($id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mf_alloff = new HTML_Template_Flexy_Element('input', array(
             'type' => 'button',
             'id' => 'edit_checkAllOff' . $id,
@@ -153,7 +153,7 @@ class ImageCache2_EditForm
     static public function checkAllReverse($id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mf_allreverse = new HTML_Template_Flexy_Element('input', array(
             'type' => 'button',
             'id' => 'edit_checkAllReverse' . $id,
@@ -171,7 +171,7 @@ class ImageCache2_EditForm
     static public function selectRank($range, $id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mfa_select = array(
             'name' => 'setrank',
             'id' => 'edit_rank' . $id,
@@ -203,7 +203,7 @@ class ImageCache2_EditForm
     static public function textMemo($id = '')
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $mfa_text = array(
             'type' => 'text',
             'name' => 'addmemo',
@@ -213,10 +213,8 @@ class ImageCache2_EditForm
             'flexy:xhtml' => $is_xhtml,
             '/' => $is_xhtml,
         );
-        if ($_conf['ktai']) {
-            unset($mfa_text['id'], $mfa_text['size']);
-        }
         if ($_conf['iphone']) {
+            unset($mfa_text['id'], $mfa_text['size']);
             $mfa_text['autocorrect'] = 'off';
             $mfa_text['autocapitalize'] = 'off';
         }
@@ -230,7 +228,7 @@ class ImageCache2_EditForm
     static public function imgManager($img, $status)
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         global $ini;
 
         $mng = array();
@@ -352,7 +350,7 @@ class ImageCache2_EditForm
     static public function imgChecker($img)
     {
         global $_conf;
-        $is_xhtml = !$_conf['ktai'];
+        $is_xhtml = !$_conf['iphone'];
         $chk = array();
 
         $mfa_checkbox = array(
@@ -364,7 +362,7 @@ class ImageCache2_EditForm
             'flexy:xhtml' => $is_xhtml,
             '/' => $is_xhtml,
         );
-        if ($_conf['ktai']) {
+        if ($_conf['iphone']) {
             unset($mfa_checkbox['id'], $mfa_checkbox['onclick']);
         }
         $mf_change = new HTML_Template_Flexy_Element('input', $mfa_checkbox);

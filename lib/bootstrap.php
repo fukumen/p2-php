@@ -84,7 +84,6 @@ if (file_exists($_conf['conf_user_file'])) {
 
 // コマンドラインモードではここまで
 if (defined('P2_CLI_RUN')) {
-    $_conf['ktai'] = false;
     $_conf['iphone'] = false;
     $_conf['ext_win_target_at'] = '';
     return;
@@ -170,72 +169,15 @@ if (!empty($_GET) || !empty($_POST)) {
 // }}}
 // {{{ 端末判定
 
-$_conf['ktai'] = false;
 $_conf['iphone'] = false;
-$_conf['input_type_search'] = false;
-
-$_conf['accesskey'] = 'accesskey';
 $_conf['accept_charset'] = 'Shift_JIS';
 $_conf['extra_headers_ht'] = '';
 
-$_conf['use_cookies'] = true;
-
 $userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
-$mobile = (new Net_UserAgent_Mobile)->singleton($userAgent);
 
 // iPhone, iPod Touch or Android
 if (UA::isIPhoneGroup($userAgent)) {
-    $_conf['ktai'] = true;
     $_conf['iphone'] = true;
-    $_conf['input_type_search'] = true;
-
-// PC等
-} elseif ($mobile->isNonMobile()) {
-    // Safari
-    if (UA::isSafariGroup($userAgent)) {
-        $_conf['input_type_search'] = true;
-
-    // Windows Mobile
-    } elseif (UA::isClientOSWindowsCE()) {
-        $_conf['ktai'] = true;
-
-    // 携帯ゲーム機
-    } elseif (UA::isNintendoDS($userAgent) || UA::isPSP($userAgent)) {
-        $_conf['ktai'] = true;
-    }
-
-// 携帯
-} else {
-    $_conf['ktai'] = true;
-
-    // NTT docomo iモード
-    if ($mobile->isDoCoMo()) {
-        // iモードブラウザ2.0からCookieに対応している
-        $_conf['use_cookies'] = UA::isIModeBrowser2();
-
-    // au EZweb
-    //} elseif ($mobile->isEZweb()) {
-    //    $_conf['use_cookies'] = true;
-
-    // SoftBank Mobile
-    } elseif ($mobile->isSoftBank()) {
-        // 3GC型端末はnonumber属性をサポートしないのでaccesskeyを使う
-        if (!$mobile->isType3GC()) {
-            $_conf['accesskey'] = 'DIRECTKEY';
-            // 3GC型端末とW型端末以外はCookieをサポートしない
-            if (!$mobile->isTypeW()) {
-                $_conf['use_cookies'] = false;
-            }
-        }
-
-    // WILLCOM AIR-EDGE
-    //} elseif ($mobile->isWillcom()) {
-    //    $_conf['use_cookies'] = true;
-
-    // その他
-    //} else {
-    //    $_conf['use_cookies'] = true;
-    }
 }
 
 // }}}
@@ -244,7 +186,7 @@ if (UA::isIPhoneGroup($userAgent)) {
 // b=pc はまだリンク先が完全でない?
 // b=i はCSSでWebKitの独自拡張/先行実装プロパティを多用している
 
-$_conf['b'] = $_conf['client_type'] = ($_conf['iphone'] ? 'i' : ($_conf['ktai'] ? 'k' : 'pc'));
+$_conf['b'] = $_conf['client_type'] = ($_conf['iphone'] ? 'i' : 'pc');
 $_conf['view_forced_by_query'] = false;
 $_conf['k_at_a'] = '';
 $_conf['k_at_q'] = '';
@@ -257,7 +199,6 @@ if (isset($_REQUEST['b'])) {
     case 'pc':
         if ($_conf['b'] != 'pc') {
             $_conf['b'] = 'pc';
-            $_conf['ktai'] = false;
             $_conf['iphone'] = false;
         }
         break;
@@ -266,17 +207,7 @@ if (isset($_REQUEST['b'])) {
     case 'i':
         if ($_conf['b'] != 'i') {
             $_conf['b'] = 'i';
-            $_conf['ktai'] = true;
             $_conf['iphone'] = true;
-        }
-        break;
-
-    // 強制携帯ビュー指定
-    case 'k':
-        if ($_conf['b'] != 'k') {
-            $_conf['b'] = 'k';
-            $_conf['ktai'] = true;
-            $_conf['iphone'] = false;
         }
         break;
 
@@ -320,7 +251,7 @@ if ($_conf['expack.user_agent']) {
 
 $skin_name = $default_skin_name = 'conf_user_style';
 $skin = P2_CONFIG_DIR . '/conf_user_style.inc.php';
-if (!$_conf['ktai'] && $_conf['expack.skin.enabled']) {
+if (!$_conf['iphone'] && $_conf['expack.skin.enabled']) {
     // 保存されているスキン名
     $saved_skin_name = null;
     if (file_exists($_conf['expack.skin.setting_path'])) {
@@ -409,13 +340,11 @@ foreach ($STYLE as $K => $V) {
     }
 }
 
-if (!$_conf['ktai'] || $_conf['iphone']) {
-    if (!function_exists('p2_fontconfig_apply_custom')) {
-        include P2_LIB_DIR . '/fontconfig.inc.php';
-    }
-
-    p2_fontconfig_apply_custom();
+if (!function_exists('p2_fontconfig_apply_custom')) {
+    include P2_LIB_DIR . '/fontconfig.inc.php';
 }
+
+p2_fontconfig_apply_custom();
 
 // }}}
 // {{{ 携帯・iPhone用変数
@@ -435,22 +364,6 @@ EOS;
 <meta name="format-detection" content="telephone=no">
 {$_conf['touch_icon_ht']}
 <style type="text/css">body { -webkit-text-size-adjust: none; }</style>
-EOS;
-        break;
-
-    // 強制携帯ビュー時
-    case 'k':
-        $_conf['extra_headers_ht'] .= <<<EOS
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=yes">
-<meta name="format-detection" content="telephone=no">
-{$_conf['touch_icon_ht']}
-<style type="text/css">
-body { word-break: normal; word-break: break-all; -webkit-text-size-adjust: none; }
-* { font-family: sans-serif; font-size: medium; line-height: 150%; }
-h1 { font-size: xx-large; }
-h2 { font-size: x-large; }
-h3 { font-size: large; }
-</style>
 EOS;
         break;
 
@@ -482,15 +395,6 @@ EOS;
 <script type="text/javascript" src="js/iphone.js?{$_conf['p2_version_id']}"></script>
 EOS;
 }
-/*
-// AndroidではJavaScript-XPathを使う
-if ($_conf['iphone'] && UA::isAndroidWebKit()) {
-    $_conf['extra_headers_ht'] .= <<<EOS
-<script type="text/javascript">window.jsxpath = { 'useNative': false };</script>
-<script type="text/javascript" src="js/javascript-xpath.js?{$_conf['p2_version_id']}"></script>
-EOS;
-}
-*/
 // iPhone用スキン
 if ($_conf['iphone'] && isset($_conf['expack.iphone.skin'])) {
     if (strpos($_conf['expack.iphone.skin'], DIRECTORY_SEPARATOR) === false) {
@@ -504,119 +408,28 @@ EOS;
     }
 }
 
-// 携帯用「トップに戻る」リンクとaccesskey
+// iPhone用「トップに戻る」リンク
 
-// デフォルト値
-$accesskeys = array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#');
-$_conf['k_accesskey_at'] = array();
-foreach ($accesskeys as $key) {
-    $_conf['k_accesskey_at'][$key] = " accesskey=\"{$key}\"";
-}
-$_conf['k_accesskey_st'] = array_combine($accesskeys, array_fill(0, count($accesskeys), ''));
-
-if ($_conf['ktai']) {
-    // iPhone
-    if ($_conf['iphone']) {
-        // 強制iPhoneビュー以外はaccesskeyを使わない
-        if ($_conf['client_type'] == 'i') {
-            $_conf['k_accesskey_at'] = $_conf['k_accesskey_st'];
-        }
-        $_conf['k_to_index_ht'] = <<<EOP
-<a href="index.php{$_conf['k_at_q']}" class="button"{$_conf['k_accesskey_at'][0]}>TOP</a>
+if ($_conf['iphone']) {
+    $_conf['k_to_index_ht'] = <<<EOP
+<a href="index.php{$_conf['k_at_q']}" class="button">TOP</a>
 EOP;
-
-    // その他
-    } else {
-        // SoftBank Mobile 旧型端末
-        if ($_conf['accesskey'] == 'DIRECTKEY') {
-            $_conf['k_accesskey_at'] = array();
-            foreach ($accesskeys as $key) {
-                $_conf['k_accesskey_at'][$key] = " directkey=\"{$key}\" nonumber";
-            }
-        }
-
-        switch ($_conf['mobile.display_accesskey']) {
-        case 2:
-            if (!function_exists('p2_get_emoji')) {
-                include P2_LIB_DIR . '/emoji.inc.php';
-            }
-            $emoji = p2_get_emoji($mobile);
-            //$emoji = p2_get_emoji(Net_UserAgent_Mobile::factory('KDDI-SA31 UP.Browser/6.2.0.7.3.129 (GUI) MMP/2.0'));
-            $_conf['k_accesskey_st'] = array();
-            foreach ($accesskeys as $key) {
-                $_conf['k_accesskey_st'][$key] = $emoji[$key];
-            }
-            break;
-        case 0:
-            break;
-        case 1:
-        default:
-            $_conf['k_accesskey_st'] = array();
-            foreach ($accesskeys as $key) {
-                $_conf['k_accesskey_st'][$key] = $key . '.';
-            }
-        }
-
-        $_conf['k_to_index_ht'] = <<<EOP
-<a href="index.php{$_conf['k_at_q']}"{$_conf['k_accesskey_at'][0]}>{$_conf['k_accesskey_st'][0]}TOP</a>
-EOP;
-    }
-
-    foreach ($_conf['k_accesskey'] as $name => $key) {
-        $_conf['k_accesskey_at'][$name] = $_conf['k_accesskey_at'][$key];
-        $_conf['k_accesskey_st'][$name] = $_conf['k_accesskey_st'][$key];
-    }
 }
 
 // }}}
-// {{{ 携帯用カラーリングの調整処理
+// {{{ iPhone用カラーリングの調整処理
 
-$_conf['k_colors'] = '';
-
-if ($_conf['ktai']) {
-    // 基本色
-    if (!$_conf['iphone']) {
-        if ($_conf['mobile.background_color']) {
-            $_conf['k_colors'] .= ' bgcolor="' . p2h($_conf['mobile.background_color']) . '"';
-        }
-        if ($_conf['mobile.text_color']) {
-            $_conf['k_colors'] .= ' text="' . p2h($_conf['mobile.text_color']) . '"';
-        }
-        if ($_conf['mobile.link_color']) {
-            $_conf['k_colors'] .= ' link="' . p2h($_conf['mobile.link_color']) . '"';
-        }
-        if ($_conf['mobile.vlink_color']) {
-            $_conf['k_colors'] .= ' vlink="' . p2h($_conf['mobile.vlink_color']) . '"';
-        }
-    }
-
-    // 文字色
-    if ($_conf['mobile.newthre_color']) {
-        $STYLE['mobile_subject_newthre_color'] = p2h($_conf['mobile.newthre_color']);
-    }
-    if ($_conf['mobile.newres_color']) {
-        $STYLE['mobile_read_newres_color']    = p2h($_conf['mobile.newres_color']);
-        $STYLE['mobile_subject_newres_color'] = p2h($_conf['mobile.newres_color']);
-    }
-    if ($_conf['mobile.ttitle_color']) {
-        $STYLE['mobile_read_ttitle_color'] = p2h($_conf['mobile.ttitle_color']);
-    }
+if ($_conf['iphone']) {
+    // NGワード
     if ($_conf['mobile.ngword_color']) {
         $STYLE['mobile_read_ngword_color'] = p2h($_conf['mobile.ngword_color']);
-    }
-    if ($_conf['mobile.onthefly_color']) {
-        $STYLE['mobile_read_onthefly_color'] = p2h($_conf['mobile.onthefly_color']);
     }
 
     // マーカー
     if ($_conf['mobile.match_color']) {
-        if ($_conf['iphone']) {
-            $_conf['extra_headers_ht'] .= sprintf('<style type="text/css">b.filtering, span.matched { color: %s; }</style>',
-                                                  p2h($_conf['mobile.match_color']));
-            $_conf['k_filter_marker'] = '<span class="matched">\\1</span>';
-        } else {
-            $_conf['k_filter_marker'] = '<font color="' . p2h($_conf['mobile.match_color']) . '">\\1</font>';
-        }
+        $_conf['extra_headers_ht'] .= sprintf('<style type="text/css">b.filtering, span.matched { color: %s; }</style>',
+                                              p2h($_conf['mobile.match_color']));
+        $_conf['k_filter_marker'] = '<span class="matched">\\1</span>';
     } else {
         $_conf['k_filter_marker'] = false;
     }
@@ -677,10 +490,7 @@ if ($_conf['expack.misc.multi_favs']) {
 // {{{ misc.
 
 // DOCTYPE HTML 宣言
-$_conf['doctype'] = '';
-if (!$_conf['ktai'] || $_conf['client_type'] != 'k') {
-    $_conf['doctype'] = "<!DOCTYPE html>\n";
-}
+$_conf['doctype'] = "<!DOCTYPE html>\n";
 
 // XHTMLヘッダ要素
 if (defined('P2_OUTPUT_XHTML')) {

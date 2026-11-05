@@ -8,13 +8,13 @@ require_once P2EX_LIB_DIR . '/rss/common.inc.php';
 // {{{ ImageCache2との連携判定
 
 if ($GLOBALS['_conf']['expack.rss.with_imgcache'] &&
-    ((!$GLOBALS['_conf']['ktai'] && $GLOBALS['_conf']['expack.ic2.enabled'] % 2 == 1) ||
-    ($GLOBALS['_conf']['ktai'] && $GLOBALS['_conf']['expack.ic2.enabled'] >= 2)))
+    ((!$GLOBALS['_conf']['iphone'] && $GLOBALS['_conf']['expack.ic2.enabled'] % 2 == 1) ||
+    ($GLOBALS['_conf']['iphone'] && $GLOBALS['_conf']['expack.ic2.enabled'] >= 2)))
 {
     if (!class_exists('ImageCache2_Switch', false)) {
         require P2EX_LIB_DIR . '/ImageCache2/Switch.php';
     }
-    if (ImageCache2_Switch::get($GLOBALS['_conf']['ktai'])) {
+    if (ImageCache2_Switch::get($GLOBALS['_conf']['iphone'])) {
         if (!function_exists('rss_get_image')) {
             require P2EX_LIB_DIR . '/rss/getimage.inc.php';
         }
@@ -372,7 +372,7 @@ function rss_desc_tag_cleaner($tag)
                     if (P2_RSS_IMAGECACHE_AVAILABLE) {
                         $image = rss_get_image($value, $GLOBALS['channel']['title']);
                         if ($image[3] != P2_IMAGECACHE_OK) {
-                            if ($_conf['ktai']) {
+                            if ($_conf['iphone']) {
                                 // あぼーん画像 - 携帯
                                 switch ($image[3]) {
                                     case P2_IMAGECACHE_ABORN:return '[p2:あぼーん画像]';
@@ -385,7 +385,7 @@ function rss_desc_tag_cleaner($tag)
                                 // あぼーん画像 - PC
                                 return "<img src=\"{$image[0][0]}\" {$image[0][1]}>";
                             }
-                        } elseif ($_conf['ktai']) {
+                        } elseif ($_conf['iphone']) {
                             // インライン表示 - 携帯（PC用サムネイルサイズ）
                             return "<img src=\"{$image[1][0]}\" {$image[1][1]}>";
                         } else {

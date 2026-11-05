@@ -24,7 +24,7 @@ if(url_v=="" || url_v=="{$ini_url_text}"){
 }
 EOP;
 $onclick_ht = p2h($onclick_ht);
-$urlform_target_at = $_conf['ktai'] ? ' target="_self"' : ' target="read"';
+$urlform_target_at = $_conf['iphone'] ? ' target="_self"' : ' target="read"';
 $htm['urlform'] = <<<EOP
     <form id="urlform" method="GET" action="{$_conf['read_php']}"{$urlform_target_at}>
         ƒXƒŒURL‚ğ’¼Úw’è

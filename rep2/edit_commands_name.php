@@ -91,7 +91,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=edit_conf_user&amp;skin={$skin_en}">
@@ -100,13 +100,13 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onLoad="top.document.title=self.document.title;"';
+$body_at = ($_conf['iphone']) ? '' : ' onLoad="top.document.title=self.document.title;"';
 echo <<<EOP
 </head>
 <body{$body_at}>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu"><a href="editpref.php">設定管理</a> &gt; {$ptitle_top}</p>\n
 EOP;
@@ -124,7 +124,7 @@ $usage = <<<EOP
 <li>コマンド: （例：`!donguri`）</li>
 </ul>
 EOP;
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $usage = mb_convert_kana($usage, 'k');
 }
 echo <<<EOP
@@ -136,7 +136,7 @@ echo <<<EOP
 EOP;
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <table class="edit_conf_user" cellspacing="0">
         <tr>
@@ -189,30 +189,20 @@ if (!empty($formdata)) {
 echo $htm['form_submit'];
 
 // PCならtableを閉じる
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo '</table>'."\n";
 }
 
 echo '</form>'."\n";
 
-if ($_conf['ktai']) {
-    if ($_conf['iphone']) {
-        echo <<<EOP
+if ($_conf['iphone']) {
+    echo <<<EOP
 <hr>
 <div class="center">
 <a href="editpref.php" class="button">戻る</a>
 {$_conf['k_to_index_ht']}
 </div>
 EOP;
-    } else {
-        echo <<<EOP
-<hr>
-<div class="center">
-<a href="editpref.php{$_conf['k_at_q']}"{$_conf['k_accesskey_at']['up']}>{$_conf['k_accesskey_st']['up']}設定編集</a>
-{$_conf['k_to_index_ht']}
-</div>
-EOP;
-    }
 }
 
 echo '</body></html>';

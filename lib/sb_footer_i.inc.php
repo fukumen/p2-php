@@ -35,11 +35,11 @@ EOP;
 // ページタイトル部分HTML設定 ====================================
 if ($aThreadList->spmode == 'taborn') {
     $ptitle_ht = <<<EOP
-<a href="{$ptitle_url}"{$_conf['k_accesskey_at']['up']}">{$_conf['k_accesskey_st']['up']}<b>{$aThreadList->itaj}</b></a> (ｱﾎﾞﾝ中)
+<a href="{$ptitle_url}"><b>{$aThreadList->itaj}</b></a> (ｱﾎﾞﾝ中)
 EOP;
 } elseif ($aThreadList->spmode == 'soko') {
     $ptitle_ht = <<<EOP
-<a href="{$ptitle_url}"{$_conf['k_accesskey_at']['up']}">{$_conf['k_accesskey_st']['up']}<b>{$aThreadList->itaj}</b></a> (dat倉庫)
+<a href="{$ptitle_url}"><b>{$aThreadList->itaj}</b></a> (dat倉庫)
 EOP;
 } elseif (!empty($ptitle_url)) {
     $ptitle_ht = <<<EOP

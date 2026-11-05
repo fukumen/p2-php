@@ -125,7 +125,7 @@ function coloredIdStyle0($idstr, $id, $count)
     }
 
     // CSS‚ÅF‚ğ‚Â‚¯‚é
-    $uline=($_conf['ktai'] || $STYLE['a_underline_none']==1) ? '' : "text-decoration:underline;";
+    $uline=($_conf['iphone'] || $STYLE['a_underline_none']==1) ? '' : "text-decoration:underline;";
     $bcolor=array();
     $LCh=array();
     for ($i=0;$i<count($rgb);$i++) {
@@ -241,7 +241,7 @@ function coloredWatchoiStyle0($wid32, $count)
     }
 
     // CSS‚ÅF‚ğ‚Â‚¯‚é
-    $uline=($_conf['ktai'] || $STYLE['a_underline_none']==1) ? '' : "text-decoration:underline;";
+    $uline=($_conf['iphone'] || $STYLE['a_underline_none']==1) ? '' : "text-decoration:underline;";
     $bcolor=array();
     $LCh=array();
     for ($i=0;$i<count($rgb);$i++) {

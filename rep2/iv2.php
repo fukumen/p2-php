@@ -18,7 +18,7 @@ if (!$_conf['expack.ic2.enabled']) {
 
 $enable_zip = false;
 /*
-if (!$_conf['ktai'] && $_conf['expack.ic2.zip']) {
+if (!$_conf['iphone'] && $_conf['expack.ic2.zip']) {
     if (!extension_loaded('zip')) {
         p2die('zip 拡張モジュールがロードされていません。');
     }
@@ -162,7 +162,7 @@ $_thumbtype = array(
 );
 
 // 携帯用に変換（フォームをパケット節約の対象外とするため）
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     foreach ($_order as $_k => $_v) {
         $_order[$_k] = mb_convert_kana($_v, 'ask');
     }
@@ -301,19 +301,10 @@ $flexy->setData('p2vid', P2_VERSION_ID);
 $flexy->setData('_hint', $_conf['detect_hint']);
 if ($_conf['iphone']) {
     $flexy->setData('top_url', 'index.php');
-} elseif ($_conf['ktai']) {
-    $flexy->setData('k_color', array(
-        'c_bgcolor' => !empty($_conf['mobile.background_color']) ? $_conf['mobile.background_color'] : '#ffffff',
-        'c_text'    => !empty($_conf['mobile.text_color'])  ? $_conf['mobile.text_color']  : '#000000',
-        'c_link'    => !empty($_conf['mobile.link_color'])  ? $_conf['mobile.link_color']  : '#0000ff',
-        'c_vlink'   => !empty($_conf['mobile.vlink_color']) ? $_conf['mobile.vlink_color'] : '#9900ff',
-    ));
-    $flexy->setData('top_url', dirname($_SERVER['SCRIPT_NAME']) . '/index.php');
-    $flexy->setData('accesskey', $_conf['accesskey']);
 } else {
     $flexy->setData('skin', str_replace('&amp;', '&', $skin_en));
 }
-$flexy->setData('pc', !$_conf['ktai']);
+$flexy->setData('pc', !$_conf['iphone']);
 $flexy->setData('iphone', $_conf['iphone']);
 $flexy->setData('doctype', $_conf['doctype']);
 $flexy->setData('extra_headers',   $_conf['extra_headers_ht']);
@@ -354,7 +345,7 @@ if (!empty($_SESSION['device_pixel_ratio'])) {
 $thumb = new ImageCache2_Thumbnailer($thumbsize);
 
 // 携帯用に調整
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $lightbox = false;
     $mode = 1;
     $inum = (int) $ini['Viewer']['inum'];
@@ -364,8 +355,6 @@ if ($_conf['ktai']) {
     require_once P2_LIB_DIR . '/emoji.inc.php';
     $emj = p2_get_emoji();
     $flexy->setData('e', $emj);
-    $flexy->setData('ak', $_conf['k_accesskey_at']);
-    $flexy->setData('as', $_conf['k_accesskey_st']);
 
     // フィルタリング用フォームを表示
     if (!empty($_GET['show_iv2_kfilter'])) {
@@ -589,7 +578,7 @@ if ($all === 0) {
     $flexy->setData('to', 0);
     $flexy->setData('popup', false);
     $flexy->setData('reset', $_SERVER['SCRIPT_NAME']);
-    if ($_conf['ktai']) {
+    if ($_conf['iphone']) {
         $flexy->setData('kfilter', !empty($_SESSION['iv2i_filter']));
     }
     $qfe['start']->updateAttributes('disabled');
@@ -605,7 +594,7 @@ if ($all === 0) {
     $flexy->setData('nomatch', false);
 
     // 表示範囲を設定
-    $ipp = $_conf['ktai'] ? $inum : $cols * $rows; // images per page
+    $ipp = $_conf['iphone'] ? $inum : $cols * $rows; // images per page
     $last_page = ceil($all / $ipp);
 
     // ページ遷移用パラメータを準備
@@ -633,53 +622,6 @@ if ($all === 0) {
             $pager .= sprintf(' <a href="%s?page=%d">%s</a>', $pg_base, $last_page, $emj['rt2']);
         }
         $flexy->setData('pager', $pager);
-
-    // ページ遷移用リンク（携帯）を生成
-    } elseif ($_conf['ktai']) {
-        $pg_base = p2h($_SERVER['SCRIPT_NAME']);
-        $pg_pos = sprintf('%d/%d', $page, $last_page);
-        $pager1 = '';
-        $pager2 = '';
-        if ($page != 1) {
-            $pager1 .= sprintf('<a href="%s?page=%d"%s>%s%s</a> ',
-                               $pg_base,
-                               1,
-                               $_conf['k_accesskey_at'][1],
-                               $_conf['k_accesskey_st'][1],
-                               $emj['lt2']
-                               );
-            $pager1 .= sprintf('<a href="%s?page=%d"%s>%s%s</a> ',
-                               $pg_base,
-                               $prev_page,
-                               $_conf['k_accesskey_at'][4],
-                               $_conf['k_accesskey_st'][4],
-                               $emj['lt1']
-                               );
-            $pager2 .= sprintf('<a href="%s?page=%d">%s</a> ', $pg_base,          1, $emj['lt2']);
-            $pager2 .= sprintf('<a href="%s?page=%d">%s</a> ', $pg_base, $prev_page, $emj['lt1']);
-        }
-        $pager1 .= $pg_pos;
-        $pager2 .= $pg_pos;
-        if ($page != $last_page) {
-            $pager1 .= sprintf(' <a href="%s?page=%d">%s</a>', $pg_base, $next_page, $emj['rt1']);
-            $pager1 .= sprintf(' <a href="%s?page=%d">%s</a>', $pg_base, $last_page, $emj['rt2']);
-            $pager2 .= sprintf(' <a href="%s?page=%d"%s>%s%s</a>',
-                               $pg_base,
-                               $next_page,
-                               $_conf['k_accesskey_at'][6],
-                               $_conf['k_accesskey_st'][6],
-                               $emj['rt1']
-                               );
-            $pager2 .= sprintf(' <a href="%s?page=%d"%s>%s%s</a>',
-                               $pg_base,
-                               $last_page,
-                               $_conf['k_accesskey_at'][9],
-                               $_conf['k_accesskey_st'][9],
-                               $emj['rt2']
-                               );
-        }
-        $flexy->setData('pager1', $pager1);
-        $flexy->setData('pager2', $pager2);
 
     // ページ遷移用フォーム（PC）を生成
     } else {
@@ -795,7 +737,7 @@ if ($all === 0) {
     $flexy->setData('submit', array());
     $flexy->setData('reset', array());
 
-    if ($_conf['ktai']) {
+    if ($_conf['iphone']) {
         $show_exif = false;
         $popup = false;
         $r_type = ($ini['General']['redirect'] == 1) ? 1 : 2;
@@ -812,11 +754,6 @@ if ($all === 0) {
         $r_type = 1;
     }
     $items = array();
-    if (!empty($_SERVER['REQUEST_URI'])) {
-        $k_backto = '&from=' . rawurlencode($_SERVER['REQUEST_URI']);
-    } else {
-        $k_backto = '';
-    }
 
     while ($icdb->fetch()) {
         // 検索結果を配列にし、レンダリング用の要素を付加
@@ -861,7 +798,7 @@ if ($all === 0) {
         }
         // オリジナル画像が存在しないレコードを自動で削除
         if ($ini['Viewer']['delete_src_not_exists'] && !file_exists($add['src'])) {
-            $add['thumb_k'] = $add['thumb'] = 'img/ic_removed.png';
+            $add['thumb'] = 'img/ic_removed.png';
             $add['t_width'] = $add['t_height'] = 32;
             $to_blacklist = false;
             $removed_files = array_merge($removed_files,
@@ -880,18 +817,6 @@ if ($all === 0) {
                 }
                 if ($dpr === 1.5 || $dpr === 2.0) {
                     $add['thumb'] .= '&d=' . $dpr;
-                }
-            }
-            if ($_conf['ktai']) {
-                $add['thumb_k'] = 'ic2.php?r=0&t=2';
-                if (file_exists($add['src'])) {
-                    $add['thumb_k'] .= '&id=' . $img['id'];
-                } else {
-                    $add['thumb_k'] .= '&uri=' . rawurlencode($img['uri']);
-                }
-                $add['thumb_k'] .= $k_backto;
-                if ($dpr === 1.5 || $dpr === 2.0) {
-                    $add['thumb_k'] .= '&d=' . $dpr;
                 }
             }
         }
@@ -921,7 +846,7 @@ if ($all === 0) {
 
     $i = count($items); // == $found
     // テーブルの余白を埋めるためにnullを挿入
-    if (!$_conf['ktai'] && $i > $cols && ($j = $i % $cols) > 0) {
+    if (!$_conf['iphone'] && $i > $cols && ($j = $i % $cols) > 0) {
         for ($k = 0; $k < $cols - $j; $k++) {
             $items[] = null;
             $i++;
@@ -940,9 +865,9 @@ $flexy->setData('removedFiles', $removed_files);
 // {{{ output
 
 // モード別の最終処理
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $title = str_replace('ImageCache2', 'IC2', $ini['Viewer']['title']);
-    $list_template = ($_conf['iphone']) ? 'iv2ip.tpl.html' : 'iv2i.tpl.html';
+    $list_template = 'iv2ip.tpl.html';
 } else {
     switch ($mode) {
         case 2:
@@ -964,15 +889,6 @@ $r = new HTML_QuickForm_Renderer_ObjectFlexy($flexy);
 //$r->setLabelTemplate('_label.tpl.html');
 //$r->setHtmlTemplate('_html.tpl.html');
 $qf->updateAttributes(array('method' => 'get')); // リクエストをPOSTでも受け入れるため、ここで変更
-/*if ($_conf['input_type_search']) {
-    $input_type_search_attributes = array(
-        'type' => 'search',
-        'autosave' => 'rep2.expack.search.imgcache',
-        'results' => '10',
-        'placeholder' => '',
-    );
-    $qfe['keyword']->updateAttributes($input_type_search_attributes);
-}*/
 $qf->accept($r);
 $qfObj = $r->toObject();
 
@@ -1053,18 +969,6 @@ EOP;
     $flexy->setData('info_vertical', $thumb_width > 80);
     $flexy->setData('limelight_header', $limelight_header);
     $flexy->output();
-} elseif ($list_template == 'iv2i.tpl.html') {
-    $mobile = (new Net_UserAgent_Mobile)->singleton();
-    $elements = $flexy->getElements();
-    if ($mobile->isDoCoMo()) {
-        $elements['page']->setAttributes('istyle="4"');
-    } elseif ($mobile->isEZweb()) {
-        $elements['page']->setAttributes('format="*N"');
-    } elseif ($mobile->isSoftBank()) {
-        $elements['page']->setAttributes('mode="numeric"');
-    }
-    $view = null;
-    $flexy->outputObject($view, $elements);
 } else {
     $flexy->output();
 }

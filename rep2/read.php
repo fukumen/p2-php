@@ -17,10 +17,6 @@ if ($_conf['iphone']) {
     include P2_LIB_DIR . '/toolbar_i.inc.php';
     define('READ_HEADER_INC_PHP', P2_LIB_DIR . '/read_header_i.inc.php');
     define('READ_FOOTER_INC_PHP', P2_LIB_DIR . '/read_footer_i.inc.php');
-// 携帯
-} elseif ($_conf['ktai']) {
-    define('READ_HEADER_INC_PHP', P2_LIB_DIR . '/read_header_k.inc.php');
-    define('READ_FOOTER_INC_PHP', P2_LIB_DIR . '/read_footer_k.inc.php');
 // PC
 } else {
     define('READ_HEADER_INC_PHP', P2_LIB_DIR . '/read_header.inc.php');
@@ -47,7 +43,7 @@ if (array_key_exists('rf', $_REQUEST) && is_array($_REQUEST['rf'])) {
     $resFilter = ResFilter::configure($_REQUEST['rf']);
     if ($resFilter->hasWord()) {
         $do_filtering = true;
-        if ($_conf['ktai']) {
+        if ($_conf['iphone']) {
             $page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
             $resFilter->setRange($_conf['mobile.rnum_range'], $page);
         }
@@ -159,7 +155,7 @@ $aThread->setTitleFromLocal();
 //===========================================================
 // 表示レス番の範囲を設定
 //===========================================================
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $before_respointer = $_conf['mobile.before_respointer'];
 } else {
 	// +live レス表示数切替
@@ -191,7 +187,7 @@ if ($aThread->isKitoku()) {
         $aThread->ls = $from_num . '-';
     }
 
-    if ($_conf['ktai'] && strpos($aThread->ls, 'n') === false) {
+    if ($_conf['iphone'] && strpos($aThread->ls, 'n') === false) {
         $aThread->ls = $aThread->ls . 'n';
     }
 
@@ -219,7 +215,7 @@ $aThread->lsToPoint();
 //===============================================================
 $ptitle_ht = p2h($aThread->itaj) . ' / ' . $aThread->ttitle_hd;
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
 
     if ($resFilter && $resFilter->hasWord() && $aThread->rescount) {
         $GLOBALS['filter_hits'] = 0;
@@ -227,11 +223,7 @@ if ($_conf['ktai']) {
         $GLOBALS['filter_hits'] = null;
     }
 
-    if ($_conf['iphone']) {
-        $aShowThread = new ShowThreadI($aThread);
-    } else {
-        $aShowThread = new ShowThreadK($aThread);
-    }
+    $aShowThread = new ShowThreadI($aThread);
 
     if ($is_ajax) {
         $response = trim(mb_convert_encoding($aShowThread->getDatToHtml(true), 'UTF-8', 'CP932'));
@@ -272,11 +264,11 @@ if ($_conf['ktai']) {
 
         include READ_HEADER_INC_PHP;
 
-        if ($_conf['iphone'] && $_conf['expack.spm.enabled']) {
+        if ($_conf['expack.spm.enabled']) {
             echo $aShowThread->getSpmObjJs();
         }
 
-        if ($_conf['iphone'] && $_conf['coloredid.enable'] > 0 && $_conf['coloredid.click'] > 0) {
+        if ($_conf['coloredid.enable'] > 0 && $_conf['coloredid.click'] > 0) {
             echo $aShowThread->getIdColorJs();
         }
 

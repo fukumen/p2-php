@@ -8,10 +8,8 @@ require_once P2_LIB_DIR . '/read_jump_k.inc.php';
 // {{{ 総数
 
 if ($do_filtering) {
-    $last_resnum = $resFilter->last_hit_resnum;
     $rescount_st = "{$resFilter->hits}hit / {$aThread->rescount}レス";
 } else {
-    $last_resnum = $aThread->resrange['to'];
     $rescount_st = "{$aThread->rescount}レス";
 }
 
@@ -168,20 +166,6 @@ if ($_conf['expack.ic2.enabled']) {
 if ($_conf['expack.spm.enabled']) {
     echo ShowThreadI::getSpmElementHtml();
 }
-
-// 最終レス番号を更新
-echo <<<EOS
-<script type="text/javascript">
-//<![CDATA[
-(function(n){
-    var ktool_value = document.getElementById('ktool_value');
-    if (ktool_value) {
-        ktool_value.value = n;
-    }
-})({$last_resnum});
-//]]>
-</script>
-EOS;
 
 // フィルタヒット数を更新
 if ($do_filtering) {

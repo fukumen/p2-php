@@ -129,7 +129,7 @@ function p2_fontconfig_apply_custom()
         // アクティブモナー関係の値はユーザー設定の値を使用する
         $STYLE['fontfamily_aa'] = isset($_conf['expack.am.fontfamily']) ? p2_correct_css_fontfamily($_conf['expack.am.fontfamily']) : $STYLE['fontfamily'];
         $STYLE['aa_textar_webfont'] = (isset($_conf['expack.am.textar_webfont']) && $_conf['expack.am.textar_webfont'] == 1);
-        if (!$_conf['ktai']) {
+        if (!$_conf['iphone']) {
             $STYLE['aa_fontsize'] = $_conf['expack.am.fontsize'] ?? $STYLE['read_fontsize'];
         } else {
             $STYLE['aa_fontsize'] = $_conf['expack.am.fontsize_i'] ?? $STYLE['read_fontsize'];

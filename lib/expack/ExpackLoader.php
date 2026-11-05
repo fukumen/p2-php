@@ -76,7 +76,7 @@ class ExpackLoader
         $aShowThread->activeMona = ActiveMona::singleton();
         $aShowThread->am_enabled = true;
 
-        if (!$_conf['ktai']) {
+        if (!$_conf['iphone']) {
             if ($_conf['expack.am.autodetect']) {
                 $aShowThread->am_autodetect = true;
             }
@@ -88,7 +88,7 @@ class ExpackLoader
                 $aShowThread->am_side_of_id = true;
                 $aShowThread->am_on_spm = true;
             }
-        } elseif ($_conf['iphone'] && $_conf['expack.am.autodetect_i']) {
+        } elseif ($_conf['expack.am.autodetect_i']) {
             $aShowThread->am_autodetect = true;
             if ($_conf['expack.am.display'] == 0) {
                 $aShowThread->am_side_of_id = true;
@@ -117,8 +117,8 @@ class ExpackLoader
             return;
         }
 
-        if ((!$_conf['ktai'] && $_conf['expack.ic2.enabled'] % 2 == 1) ||
-            ($_conf['ktai'] && $_conf['expack.ic2.enabled'] >= 2))
+        if ((!$_conf['iphone'] && $_conf['expack.ic2.enabled'] % 2 == 1) ||
+            ($_conf['iphone'] && $_conf['expack.ic2.enabled'] >= 2))
         {
             self::loadFunction('ic2_loadconfig', 'ImageCache2/bootstrap.php');
             define('P2_IMAGECACHE_AVAILABLE', 2);
@@ -164,7 +164,7 @@ class ExpackLoader
 
         $dpr = 1.0;
 
-        if (!$_conf['ktai']) {
+        if (!$_conf['iphone']) {
             $aShowThread->thumb_id_suffix = '-' . strtr(microtime(), '. ', '--');
             $aShowThread->thumbnailer = new ImageCache2_Thumbnailer(ImageCache2_Thumbnailer::SIZE_PC);
         } else {
@@ -203,7 +203,7 @@ class ExpackLoader
         }
 
         self::loadClass('ImageCache2_Switch', 'ImageCache2/Switch.php');
-        if (!ImageCache2_Switch::get($_conf['ktai'])) {
+        if (!ImageCache2_Switch::get($_conf['iphone'])) {
             $GLOBALS['pre_thumb_limit'] = 0;
             $GLOBALS['pre_thumb_limit_k'] = 0;
             $GLOBALS['pre_thumb_unlimited'] = false;
@@ -213,38 +213,6 @@ class ExpackLoader
         }
     }
 
-    // }}}
-    // {{{ initAAS()
-
-    /**
-     * スレッド表示オブジェクトにAASで使う変数をアサインする
-     */
-    static public function initAAS($aShowThread)
-    {
-        global $_conf;
-
-        if ($_conf['iphone']) {
-            $aShowThread->aas_rotate = '&#x21BB;';
-        } elseif ($_conf['ktai']) {
-            $mobile = (new Net_UserAgent_Mobile)->singleton();
-            /**
-             * @link http://www.nttdocomo.co.jp/service/imode/make/content/pictograph/
-             * @link http://www.au.kddi.com/ezfactory/tec/spec/3.html
-             * @link http://mb.softbank.jp/mb/service/3G/mail/pictogram/
-             */
-            if ($mobile->isDoCoMo()) {
-                $aShowThread->aas_rotate = '&#xF9DA;';      // リサイクル, 拡42
-            } elseif ($mobile->isEZweb()) {
-                $aShowThread->aas_rotate = '&#xF47D;';      // 循環矢印, 807
-            } elseif ($mobile->isSoftBank()) {
-                $aShowThread->aas_rotate = "\x1b\$Pc\x0f";  // 渦巻, 414
-            }
-        } else {
-            //
-        }
-    }
-
-    // }}}
 }
 
 // }}}

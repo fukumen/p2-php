@@ -48,7 +48,7 @@ EOFORM;
 
 // RSS切替フォーム
 if ($_conf['expack.misc.multi_favs']) {
-    $switch_rss_form_ht = FavSetManager::makeFavSetSwitchForm('m_rss_set', 'RSS', null, null, !$_conf['ktai']);
+    $switch_rss_form_ht = FavSetManager::makeFavSetSwitchForm('m_rss_set', 'RSS', null, null, !$_conf['iphone']);
 } else {
     $switch_rss_form_ht = '';
 }
@@ -141,7 +141,7 @@ if ($lines = FileCtl::file_read_lines($_conf['expack.rss.setting_path'], FILE_IG
 }
 
 // PC用
-if (!$_conf['ktai'] and !empty($lines)) {
+if (!$_conf['iphone'] and !empty($lines)) {
 ?>
 <script type="text/javascript">
 //<![CDATA[
@@ -208,19 +208,14 @@ function submitApply()
 
 
 // iPhone用
-if ($_conf['iphone'] && file_exists('./iui/iui.js')) {
+if ($_conf['iphone']) {
     $onclick = '';
     $m_php = 'menu_i.php?nt=' . time();
 
 // PC用
-} elseif (!$_conf['ktai']) {
+} else {
     $onclick = " onclick=\"if (parent.menu) { parent.menu.location.href='{$_conf['menu_php']}?nr=1'; }\"";
     $m_php = $_SERVER['SCRIPT_NAME'];
-
-// 携帯用
-} else {
-    $onclick = '';
-    $m_php = 'menu_k.php?view=rss&amp;nr=1' . $_conf['k_at_a'] . '&amp;nt=' . time();
 }
 
 echo <<<EOP
@@ -230,8 +225,8 @@ EOP;
 echo $add_rss_form_ht;
 echo "<hr>\n";
 
-// PC（NetFrontを除外）
-if (!$_conf['ktai'] && $_conf['favita_order_dnd'] && !UA::isNetFront()) {
+// PC
+if (!$_conf['iphone'] && $_conf['favita_order_dnd']) {
 
     if ($lines) {
         $script_enable_html .= <<<EOP
@@ -286,8 +281,8 @@ EOP;
 // NOSCRIPT時のHTML表示
 //================================================================
 if ($lines) {
-    // PC（NetFrontを除外）
-    if ($_conf['ktai'] && $_conf['favita_order_dnd'] && !UA::isNetFront()) {
+    // PC
+    if (!$_conf['iphone'] && $_conf['favita_order_dnd']) {
         echo '<noscript>';
     }
     echo 'RSSの並び替え';
@@ -325,8 +320,8 @@ EOP;
         }
     }
     echo "</table>\n";
-    // PC（NetFrontを除外）
-    if (!$_conf['ktai'] && $_conf['favita_order_dnd'] && !UA::isNetFront()) {
+    // PC
+    if (!$_conf['iphone'] && $_conf['favita_order_dnd']) {
         echo '</noscript>';
     }
 }

@@ -439,7 +439,7 @@ function toolbar_i_action_thread_button($icon, $label, Thread $aThread)
         return toolbar_i_disabled_button($icon, $label);
     }
 
-    $url = $aThread->getMotoThread(true, '');
+    $url = $aThread->getMotoThread('');
     $uri = p2h(strtr($pattern, array(
         '$time' => time(),
         '$host' => rawurlencode($aThread->host),
@@ -498,9 +498,6 @@ function _toolbar_i_client_type()
     switch ($_conf['client_type']) {
         case 'i':
             $type = UA::isAndroid() ? 'android' : 'iphone';
-            break;
-        case 'i':
-            $type = 'mobile';
             break;
         case 'pc':
         default:

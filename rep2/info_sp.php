@@ -54,7 +54,7 @@ $ttitle_name = is_string($ttitle_en) ? UrlSafeBase64::decode($ttitle_en) : '';
 
 $thread_url = "{$_conf['read_php']}?host={$host}&amp;bbs={$bbs}&amp;key={$key}{$_conf['k_at_a']}";
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $target_edit_at = ' target="editfile"';
     $target_read_at = ' target="read"';
 } else {
@@ -142,7 +142,7 @@ if ($popup == 2) {
     }
 }
 
-$input_size_at = ($_conf['ktai']) ? '' : ' size="50"';
+$input_size_at = ($_conf['iphone']) ? '' : ' size="50"';
 if (strpos($mode, '_msg') !== false) {
     if (isset($_GET['selected_string'])) {
         $aborn_str = trim($_GET['selected_string']);
@@ -355,7 +355,7 @@ switch ($mode) {
 // HTMLプリント
 //=====================================================
 $body_onload = '';
-if ((!$_conf['ktai'] || $_conf['iphone']) && $popup == 2) {
+if ($popup == 2) {
     $body_onload = " onload=\"startTimer(document.getElementById('timerbutton'));\"";
 }
 
@@ -372,7 +372,7 @@ echo <<<EOHEADER
     <title>{$title_st}</title>\n
 EOHEADER;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOSTYLE
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=info&amp;skin={$skin_en}">
@@ -380,8 +380,7 @@ if (!$_conf['ktai']) {
 EOSTYLE;
 }
 
-if ((!$_conf['ktai'] || $_conf['iphone'])) {
-    echo <<<EOJS
+echo <<<EOJS
     <script type="text/javascript">
     (function() {
         var originalClose = window.close;
@@ -397,9 +396,9 @@ if ((!$_conf['ktai'] || $_conf['iphone'])) {
     </script>
 EOJS;
 
-    if ($popup == 2) {
-        $resnum_i = (int)$resnum;
-        echo <<<EOJS
+if ($popup == 2) {
+    $resnum_i = (int)$resnum;
+    echo <<<EOJS
     <script type="text/javascript" src="js/closetimer.js?{$_conf['p2_version_id']}"></script>
     <script type="text/javascript">
     (function() {
@@ -409,7 +408,6 @@ EOJS;
     })();
     </script>
 EOJS;
-    }
 }
 
 echo <<<EOP
@@ -442,10 +440,8 @@ if ($popup == 1) {
     echo "\t<p><label><input type=\"checkbox\" name=\"bbsonly\" value=\"1\"{$checked}>{$itaj}板のみ適用する</label></p>\n";
 
     echo "\t<input type=\"submit\" value=\"　Ｏ　Ｋ　\">\n";
-    if ((!$_conf['ktai'] || $_conf['iphone'])) {
-        echo "\t<input type=\"button\" value=\"キャンセル\" onclick=\"window.close();\">\n";
-    }
-} elseif ((!$_conf['ktai'] || $_conf['iphone']) && $popup == 2) {
+    echo "\t<input type=\"button\" value=\"キャンセル\" onclick=\"window.close();\">\n";
+} elseif ($popup == 2) {
     echo <<<EOB
     <input id="timerbutton" type="button" value="Close Timer" onclick="stopTimer(document.getElementById('timerbutton'))">\n
 EOB;
@@ -464,8 +460,8 @@ echo "</form></p>\n";
     echo "</form>\n";
 } else*/
 if (isset($edit_value) && $popup == 1) {
-    $rows = $_conf['ktai'] ? 5 : 36;
-    $cols = $_conf['ktai'] ? 0 : 128;
+    $rows = $_conf['iphone'] ? 5 : 36;
+    $cols = $_conf['iphone'] ? 0 : 128;
     $edit_php = ($mode == 'aborn_res') ? 'editfile.php' : 'edit_aborn_word.php';
     $filename = basename($path);
     $filename_ht = p2h($filename);
@@ -482,16 +478,6 @@ EOFORM;
 }
 
 echo "</div>\n";
-
-if ($_conf['ktai'] && !$_conf['iphone']) {
-    echo "<hr>\n";
-    echo '<p>';
-    if (!empty($_GET['from_read_new'])) {
-        echo "<a href=\"{$_conf['read_new_k_php']}?cview=1\">まとめ読みに戻る</a><br>";
-    }
-    echo "<a href=\"{$thread_url}\">ｽﾚに戻る</a>";
-    echo '</p>';
-}
 
 echo '</body></html>';
 

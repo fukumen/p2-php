@@ -129,7 +129,7 @@ if (!$spmode || $spmode == 'merge_favita') {
     $threads_num = 2000;
 }
 
-if ($p2_setting['viewnum'] == 'all' or $sb_view == 'shinchaku' or $sb_view == 'edit' or isset($_GET['word']) or $_conf['ktai']) {
+if ($p2_setting['viewnum'] == 'all' or $sb_view == 'shinchaku' or $sb_view == 'edit' or isset($_GET['word']) or $_conf['iphone']) {
     $threads_num = $threads_num_max;
 }
 
@@ -467,7 +467,7 @@ for ($x = 0; $x < $linesize; $x++) {
         // マッチした時
         } else {
             $GLOBALS['sb_mikke_num']++;
-            if ($_conf['ktai']) {
+            if ($_conf['iphone']) {
                 if (is_string($_conf['k_filter_marker'])) {
                     $aThread->ttitle_ht = StrCtl::filterMarking($GLOBALS['word_fm'], $aThread->ttitle_hd, $_conf['k_filter_marker']);
                 } else {
@@ -484,7 +484,7 @@ for ($x = 0; $x < $linesize; $x++) {
             //$GLOBALS['debug'] && $GLOBALS['profiler']->leaveSection('word_filter_for_sb');
             continue;
         }
-        if ($_conf['ktai']) {
+        if ($_conf['iphone']) {
             if (is_string($_conf['k_filter_marker'])) {
                 $aThread->ttitle_ht = StrCtl::filterMarking($GLOBALS['wakati_hl_regex'], $aThread->ttitle_ht, $_conf['k_filter_marker']);
             }
@@ -648,7 +648,7 @@ for ($x = 0; $x < $linesize; $x++) {
             // マッチした時
             } else {
                 $GLOBALS['sb_mikke_num']++;
-                if ($_conf['ktai']) {
+                if ($_conf['iphone']) {
                     $aThread->ttitle_ht = $aThread->ttitle_hd;
                 } else {
                     $aThread->ttitle_ht = StrCtl::filterMarking($GLOBALS['word_fm'], $aThread->ttitle_hd);
@@ -766,7 +766,7 @@ if ($spmode == 'merge_favita') {
 // プリント
 //===============================================================
 // 携帯
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
 
     // {{{ 倉庫にtorder付与
 
@@ -795,16 +795,10 @@ if ($_conf['ktai']) {
     // }}}
 
     include  P2_LIB_DIR . '/sb_print_k.inc.php';
-    if ($_conf['iphone']) {
-        include P2_LIB_DIR . '/toolbar_i.inc.php';
-        include P2_LIB_DIR . '/sb_header_i.inc.php';
-        sb_print_k($aThreadList);
-        include P2_LIB_DIR . '/sb_footer_i.inc.php';
-    } else {
-        include P2_LIB_DIR . '/sb_header_k.inc.php';
-        sb_print_k($aThreadList);
-        include P2_LIB_DIR . '/sb_footer_k.inc.php';
-    }
+    include P2_LIB_DIR . '/toolbar_i.inc.php';
+    include P2_LIB_DIR . '/sb_header_i.inc.php';
+    sb_print_k($aThreadList);
+    include P2_LIB_DIR . '/sb_footer_i.inc.php';
 
 // PC
 } else {

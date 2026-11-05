@@ -43,7 +43,7 @@ $css = <<< EOS
 	<link rel="stylesheet" type="text/css" media="screen" href="css.php?css=edit_conf_user&amp;skin={$skin_en}">
 EOS;
 $os_selector_html = '';
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $css = <<< EOS
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <link rel="stylesheet" type="text/css" media="screen" href="css.php?css=iphone&amp;skin={$skin_en}">

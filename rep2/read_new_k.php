@@ -11,9 +11,8 @@ $_login->authorize(); // ユーザ認証
 // +Wiki
 require_once P2_LIB_DIR . '/wiki/read.inc.php';
 
-if ($_conf['iphone']) {
-    include P2_LIB_DIR . '/toolbar_i.inc.php';
-}
+// iPhone用ツールバー
+include P2_LIB_DIR . '/toolbar_i.inc.php';
 
 //==================================================================
 // 変数
@@ -120,39 +119,30 @@ if ($aThreadList->spmode) {
 } else {
     $ita_url = "{$_conf['subject_php']}?host={$aThreadList->host}&amp;bbs={$aThreadList->bbs}{$_conf['k_at_a']}";
 }
-$sb_ht = <<<EOP
-<a href="{$ita_url}">{$ptitle_hd}</a>
-EOP;
-$_conf['k_accesskey_at']['up'] = $_conf['k_accesskey_at']['up'] ?? '';
-$_conf['k_accesskey_st']['up'] = $_conf['k_accesskey_st']['up'] ?? '';
-$sb_ht_btm = <<<EOP
-<a href="{$ita_url}"{$_conf['k_accesskey_at']['up']}>{$_conf['k_accesskey_st']['up']}{$ptitle_hd}</a>
-EOP;
 
-// iPhone
-if ($_conf['iphone']) {
-    $_conf['extra_headers_ht'] .= <<<EOS
+// iPhone用ヘッダ要素
+$_conf['extra_headers_ht'] .= <<<EOS
 <script type="text/javascript" src="js/jquery.skOuterClick.js"></script>
 <script type="text/javascript" src="js/respopup_iphone.js?{$_conf['p2_version_id']}"></script>
 EOS;
-    // ImageCache2
-    if ($_conf['expack.ic2.enabled']) {
-        $_conf['extra_headers_ht'] .= <<<EOS
+// ImageCache2
+if ($_conf['expack.ic2.enabled']) {
+    $_conf['extra_headers_ht'] .= <<<EOS
 <link rel="stylesheet" type="text/css" href="css/ic2_iphone.css?{$_conf['p2_version_id']}">
 <script type="text/javascript" src="js/json2.js?{$_conf['p2_version_id']}"></script>
 <script type="text/javascript" src="js/ic2_iphone.js?{$_conf['p2_version_id']}"></script>
 EOS;
-    }
-    // SPM
-    if ($_conf['expack.spm.enabled']) {
-        $_conf['extra_headers_ht'] .= <<<EOS
+}
+// SPM
+if ($_conf['expack.spm.enabled']) {
+    $_conf['extra_headers_ht'] .= <<<EOS
 <script type="text/javascript" src="js/spm_iphone.js?{$_conf['p2_version_id']}"></script>
 EOS;
-    }
-    // ActiveMona
-    if ($_conf['expack.am.enabled']) {
-        if ($STYLE['aa_textar_webfont']) {
-            $_conf['extra_headers_ht'] .= <<<EOS
+}
+// ActiveMona
+if ($_conf['expack.am.enabled']) {
+    if ($STYLE['aa_textar_webfont']) {
+        $_conf['extra_headers_ht'] .= <<<EOS
 <style type="text/css">
 @font-face {
 font-family: 'Textar';
@@ -161,9 +151,9 @@ src: url('https://yamacraft.github.io/textar-font/fonts/textar-min.woff') format
 }
 </style>
 EOS;
-        }
-        if ($_conf['expack.am.autodetect_i']) {
-            $_conf['extra_headers_ht'] .= <<<EOS
+    }
+    if ($_conf['expack.am.autodetect_i']) {
+        $_conf['extra_headers_ht'] .= <<<EOS
 <script type="text/javascript" src="js/asciiart.js?{$_conf['p2_version_id']}"></script>
 <style type="text/css">
 .aMonaSW { cursor: pointer; }
@@ -175,11 +165,11 @@ div.res > div.message.ActiveMona {
 }
 </style>
 EOS;
-        }
     }
-    // Limelight
-    if ($_conf['expack.aas.enabled'] || $_conf['expack.ic2.enabled']) {
-        $_conf['extra_headers_ht'] .= <<<EOS
+}
+// Limelight
+if ($_conf['expack.aas.enabled'] || $_conf['expack.ic2.enabled']) {
+    $_conf['extra_headers_ht'] .= <<<EOS
 <link rel="stylesheet" type="text/css" href="css/limelight.css?{$_conf['p2_version_id']}">
 <script type="text/javascript" src="js/limelight.js?{$_conf['p2_version_id']}"></script>
 <script type="text/javascript">
@@ -196,16 +186,16 @@ document.addEventListener('DOMContentLoaded', function(event) {
 // ]]>
 </script>
 EOS;
-    }
-    // coloredid
-    if ($_conf['coloredid.enable'] > 0) {
-        if ($_conf['coloredid.click'] > 0) {
-            $_conf['extra_headers_ht'] .= <<<EOS
+}
+// coloredid
+if ($_conf['coloredid.enable'] > 0) {
+    if ($_conf['coloredid.click'] > 0) {
+        $_conf['extra_headers_ht'] .= <<<EOS
 <script type="text/javascript" src="js/colorLib.js?{$_conf['p2_version_id']}"></script>
 <script type="text/javascript" src="js/coloredId.js?{$_conf['p2_version_id']}"></script>
 EOS;
-        }
-        $_conf['extra_headers_ht'] .= <<<EOS
+    }
+    $_conf['extra_headers_ht'] .= <<<EOS
 <style type="text/css">
 @keyframes p2-hissi-blink {
     75% { visibility: hidden; }
@@ -215,7 +205,6 @@ EOS;
 }
 </style>
 EOS;
-    }
 }
 
 // ========================================================
@@ -232,38 +221,27 @@ echo <<<EOHEADER
 </head>
 EOHEADER;
 
-if ($_conf['iphone']) {
-    echo <<<EOP
+echo <<<EOP
 <body class="nopad">
 <div class="ntoolbar" id="header">
 EOP;
 
-    // 板に戻る
-    echo toolbar_i_back_button( $ptitle_hd, $ita_url);
+// 板に戻る
+echo toolbar_i_back_button( $ptitle_hd, $ita_url);
 
-    echo '<div id="toolbar_header">';
-    echo <<<EOP
+echo '<div id="toolbar_header">';
+echo <<<EOP
 <h1 class="ptitle hoverable">新着まとめ読み</span></h1>
 </div>
 EOP;
 
 
-    $info_ht = P2Util::getInfoHtml();
-    if (strlen($info_ht)) {
-        echo "<div class=\"info\">{$info_ht}</div>";
-    }
-
-    echo '</div>';
-} else{
-	$_conf['k_accesskey_at']['bottom'] = $_conf['k_accesskey_at']['bottom'] ?? '';
-	$_conf['k_accesskey_st']['bottom'] = $_conf['k_accesskey_st']['bottom'] ?? '';
-    echo <<<EOP
-<body{$_conf['k_colors']}>
-<div id="read_new_header">{$sb_ht}の新まとめ
-<a class="button" id="above" name="above" href="#bottom"{$_conf['k_accesskey_at']['bottom']}>{$_conf['k_accesskey_st']['bottom']}▼</a></div>\n
-EOP;
-    P2Util::printInfoHtml();
+$info_ht = P2Util::getInfoHtml();
+if (strlen($info_ht)) {
+    echo "<div class=\"info\">{$info_ht}</div>";
 }
+
+echo '</div>';
 
 //==============================================================
 // それぞれの行解析
@@ -472,7 +450,7 @@ function readNew($aThread)
         }
 
         //if (!$aThread->ls) {
-            $aThread->ls = "{$from_num}-";
+        $aThread->ls = "{$from_num}-";
         //}
     }
 
@@ -497,30 +475,24 @@ function readNew($aThread)
         $read_header_itaj_ht = '';
     }
 
-    if ($_conf['iphone']) {
-        if ($read_header_itaj_ht !== '') {
-            $read_header_itaj_ht = "<span class=\"btitle\">{$read_header_itaj_ht}</span>";
-        }
+    // iPhone用ヘッダ
+    if ($read_header_itaj_ht !== '') {
+        $read_header_itaj_ht = "<span class=\"btitle\">{$read_header_itaj_ht}</span>";
+    }
 
-        $read_header_ht = <<<EOP
+    $read_header_ht = <<<EOP
 <div class="ntoolbar mtoolbar mtoolbar_top" id="ntt{$newthre_num}">
 <h2 class="ttitle">{$aThread->ttitle_hd} {$read_header_itaj_ht}</h2>
 EOP;
-        $read_header_ht .= '<div class="mover">';
-        $read_header_ht .= toolbar_i_standard_button('img/gp2-down.png', '', sprintf('#ntt%d', $newthre_num + 1));
-        $read_header_ht .= '</div>';
+    $read_header_ht .= '<div class="mover">';
+    $read_header_ht .= toolbar_i_standard_button('img/gp2-down.png', '', sprintf('#ntt%d', $newthre_num + 1));
+    $read_header_ht .= '</div>';
 
-        $info_ht = P2Util::getInfoHtml();
-        if (strlen($info_ht)) {
-            $read_header_ht .= "<div class=\"info\">{$info_ht}</div>";
-        }
-        $read_header_ht .= '</div>';
-    } else {
-        P2Util::printInfoHtml();
-        $read_header_ht = <<<EOP
-<hr><div id="ntt{$newthre_num}" name="ntt{$newthre_num}"><font color="{$STYLE['mobile_read_ttitle_color']}"><b>{$aThread->ttitle_hd}</b></font> {$read_header_itaj_ht} <a href="#ntt_bt{$newthre_num}">▼</a></div><hr>
-EOP;
+    $info_ht = P2Util::getInfoHtml();
+    if (strlen($info_ht)) {
+        $read_header_ht .= "<div class=\"info\">{$info_ht}</div>";
     }
+    $read_header_ht .= '</div>';
 
     //==================================================================
     // ローカルDatを読み込んでHTML表示
@@ -530,18 +502,13 @@ EOP;
     $read_cont_ht = '';
     if ($aThread->rescount) {
 
-        if ($_conf['iphone']) {
-            $aShowThread = new ShowThreadI($aThread);
-            if ($_conf['expack.spm.enabled']) {
-                $read_cont_ht .= $aShowThread->getSpmObjJs();
-            }
+        $aShowThread = new ShowThreadI($aThread);
+        if ($_conf['expack.spm.enabled']) {
+            $read_cont_ht .= $aShowThread->getSpmObjJs();
+        }
 
-            if ($_conf['coloredid.enable'] > 0 && $_conf['coloredid.click'] > 0) {
-                $read_cont_ht .= $aShowThread->getIdColorJs();
-            }
-
-        } else {
-            $aShowThread = new ShowThreadK($aThread);
+        if ($_conf['coloredid.enable'] > 0 && $_conf['coloredid.click'] > 0) {
+            $read_cont_ht .= $aShowThread->getIdColorJs();
         }
 
         $read_cont_ht .= $aShowThread->getDatToHtml();
@@ -568,47 +535,30 @@ EOP;
         $toolbar_itaj_ht = '';
     }
 
-    if ($_conf['iphone']) {
-        if ($toolbar_itaj_ht !== '') {
-            $toolbar_itaj_ht = "<span class=\"btitle\">{$toolbar_itaj_ht}</span>";
-        }
+    // iPhone用フッタ
+    if ($toolbar_itaj_ht !== '') {
+        $toolbar_itaj_ht = "<span class=\"btitle\">{$toolbar_itaj_ht}</span>";
+    }
 
-        $read_footer_ht = <<<EOP
+    $read_footer_ht = <<<EOP
 <div class="ntoolbar mtoolbar mtoolbar_bottom" id="ntt_btm{$newthre_num}">
 <table><tbody><tr>
 EOP;
-        // 情報
-        $read_footer_ht .= '<td>';
-        $escaped_url = "info.php?{$host_bbs_key_q}{$ttitle_en_q}{$_conf['k_at_a']}";
-        $read_footer_ht .= toolbar_i_opentab_button('img/gp5-info.png', '', $escaped_url);
-        $read_footer_ht .= '</td>';
-        // 表示範囲
-        $read_footer_ht .= "<td colspan=\"3\"><span class=\"large\">{$read_range_ht}</span></td>";
-        // ツール
-        $read_footer_ht .= '<td>';
-        $escaped_url = "spm_k.php?{$host_bbs_key_q}&amp;ls={$aThread->ls}&amp;spm_default={$aThread->resrange['to']}{$_conf['k_at_a']}";
-        $read_footer_ht .= toolbar_i_opentab_button('img/glyphish/icons2/20-gear2.png', '', $escaped_url);
-        $read_footer_ht .= '</td>';
-        // タイトル等
-        $read_footer_ht .= <<<EOP
+    // 情報
+    $read_footer_ht .= '<td>';
+    $escaped_url = "info.php?{$host_bbs_key_q}{$ttitle_en_q}{$_conf['k_at_a']}";
+    $read_footer_ht .= toolbar_i_opentab_button('img/gp5-info.png', '', $escaped_url);
+    $read_footer_ht .= '</td>';
+    // 表示範囲
+    $read_footer_ht .= "<td colspan=\"3\"><span class=\"large\">{$read_range_ht}</span></td>";
+    // タイトル等
+    $read_footer_ht .= <<<EOP
 </tr></tbody></table>
 <div class="ttitle"><a href="{$_conf['read_php']}?{$host_bbs_key_q}&amp;offline=1&amp;rescount={$aThread->rescount}{$_conf['k_at_a']}" target="_blank">{$aThread->ttitle_hd}</a> {$toolbar_itaj_ht}</div>
 <div class="mover">
 EOP;
-        $read_footer_ht .= toolbar_i_standard_button('img/gp1-up.png', '', "#ntt{$newthre_num}");
-        $read_footer_ht .= '</div></div>';
-    } else {
-        $read_footer_ht = <<<EOP
-<div id="ntt_bt{$newthre_num}" name="ntt_bt{$newthre_num}" class="read_new_toolbar">
-{$read_range_ht}
-<a href="info.php?{$host_bbs_key_q}{$ttitle_en_q}{$_conf['k_at_a']}">情</a>
-<a href="spm_k.php?{$host_bbs_key_q}&amp;ls={$aThread->ls}&amp;spm_default={$aThread->resrange['to']}&amp;from_read_new=1{$_conf['k_at_a']}">特</a>
-<br>
-<a href="{$_conf['read_php']}?{$host_bbs_key_q}&amp;offline=1&amp;rescount={$aThread->rescount}{$_conf['k_at_a']}#r{$aThread->rescount}">{$aThread->ttitle_hd}</a> {$toolbar_itaj_ht} <a href="#ntt{$newthre_num}">▲</a>
-</div>
-<hr>\n
-EOP;
-    }
+    $read_footer_ht .= toolbar_i_standard_button('img/gp1-up.png', '', "#ntt{$newthre_num}");
+    $read_footer_ht .= '</div></div>';
 
     // 透明あぼーんや表示数制限で新しいレス表示がない場合はスキップ
     if ($GLOBALS['newres_to_show_flag']) {
@@ -666,93 +616,66 @@ if (!isset($GLOBALS['rnum_all_range']) or $GLOBALS['rnum_all_range'] > 0 or !emp
 
 // {{{ ページフッタ・ツールバー
 
-if ($_conf['iphone']) {
-    if (!$aThreadList->num) {
-        echo '<p class="empty">新着レスはないぽ</p>';
-    }
-
-    echo "<div class=\"ntoolbar\" id=\"footer\"><table id=\"ntt{$newthre_num}\"><tbody><tr>";
-
-    // トップに戻る
-    echo '<td>';
-    echo toolbar_i_standard_button('img/glyphish/icons2/53-house.png', 'TOP', "index.php{$_conf['k_at_q']}");
-    echo '</td>';
-
-    // 板に戻る
-    echo '<td colspan="2">';
-    echo toolbar_i_standard_button('img/glyphish/icons2/104-index-cards.png', $ptitle_hd, $ita_url);
-    echo '</td>';
-
-    // 更新/続き
-    echo '<td>';
-    if ($has_next === 1) {
-        $icon = 'img/gp4-next.png';
-        $label = '続き';
-    } elseif ($has_next === 0) {
-        $icon = 'img/glyphish/icons2/01-refresh.png';
-        $label = '更新';
-    } else {
-        $icon = 'img/glyphish/icons2/01-refresh.png';
-        $label = '更新/続き';
-    }
-    echo toolbar_i_standard_button($icon, $label, $shinchaku_matome_url);
-    echo '</td>';
-
-    // 上へ
-    echo '<td>';
-    echo toolbar_i_standard_button('img/gp1-up.png', '上', '#header');
-    echo '</td>';
-
-    echo '</tr></tbody></table></div>';
-} else {
-    if (!$aThreadList->num) {
-        echo '新着ﾚｽはないぽ<hr>';
-    }
-
-    if ($has_next === 1) {
-        $str = '新着まとめの続き';
-    } elseif ($has_next === 0) {
-        $str = '新まとめを更新';
-    } else {
-        $str = '新まとめの更新/続き';
-    }
-   	$_conf['k_accesskey_at']['next'] = $_conf['k_accesskey_at']['next'] ?? '';
-   	$_conf['k_accesskey_st']['next'] = $_conf['k_accesskey_st']['next'] ?? '';
-   	$_conf['k_accesskey_at']['above'] = $_conf['k_accesskey_at']['above'] ?? '';
-   	$_conf['k_accesskey_st']['above'] = $_conf['k_accesskey_st']['above'] ?? '';
-   	$_conf['k_to_index_ht'] = $_conf['k_to_index_ht'] ?? '';
-    echo <<<EOP
-<div id="read_new_footer">{$sb_ht_btm}の<a href="{$shinchaku_matome_url}"{$_conf['k_accesskey_at']['next']}>{$_conf['k_accesskey_st']['next']}{$str}</a>
-<a class="button" id="bottom" name="bottom" href="#above"{$_conf['k_accesskey_at']['above']}>{$_conf['k_accesskey_st']['above']}▲</a></div>
-<hr>
-<div class="center">{$_conf['k_to_index_ht']}</div>
-EOP;
+if (!$aThreadList->num) {
+    echo '<p class="empty">新着レスはないぽ</p>';
 }
+
+echo "<div class=\"ntoolbar\" id=\"footer\"><table id=\"ntt{$newthre_num}\"><tbody><tr>";
+
+// トップに戻る
+echo '<td>';
+echo toolbar_i_standard_button('img/glyphish/icons2/53-house.png', 'TOP', "index.php{$_conf['k_at_q']}");
+echo '</td>';
+
+// 板に戻る
+echo '<td colspan="2">';
+echo toolbar_i_standard_button('img/glyphish/icons2/104-index-cards.png', $ptitle_hd, $ita_url);
+echo '</td>';
+
+// 更新/続き
+echo '<td>';
+if ($has_next === 1) {
+    $icon = 'img/gp4-next.png';
+    $label = '続き';
+} elseif ($has_next === 0) {
+    $icon = 'img/glyphish/icons2/01-refresh.png';
+    $label = '更新';
+} else {
+    $icon = 'img/glyphish/icons2/01-refresh.png';
+    $label = '更新/続き';
+}
+echo toolbar_i_standard_button($icon, $label, $shinchaku_matome_url);
+echo '</td>';
+
+// 上へ
+echo '<td>';
+echo toolbar_i_standard_button('img/gp1-up.png', '上', '#header');
+echo '</td>';
+
+echo '</tr></tbody></table></div>';
+
 
 // }}}
 
-// iPhone
-if ($_conf['iphone']) {
-    // ImageCache2
-    if ($_conf['expack.ic2.enabled']) {
-        if (!function_exists('ic2_loadconfig')) {
-            include P2EX_LIB_DIR . '/ImageCache2/bootstrap.php';
-        }
-        $ic2conf = ic2_loadconfig();
-        if ($ic2conf['Thumb1']['width'] > 80) {
-            include P2EX_LIB_DIR . '/ImageCache2/templates/info-v.tpl.html';
-        } else {
-            include P2EX_LIB_DIR . '/ImageCache2/templates/info-h.tpl.html';
-        }
+// ImageCache2
+if ($_conf['expack.ic2.enabled']) {
+    if (!function_exists('ic2_loadconfig')) {
+        include P2EX_LIB_DIR . '/ImageCache2/bootstrap.php';
     }
-    // SPM
-    if ($_conf['expack.spm.enabled']) {
-        echo ShowThreadI::getSpmElementHtml();
+    $ic2conf = ic2_loadconfig();
+    if ($ic2conf['Thumb1']['width'] > 80) {
+        include P2EX_LIB_DIR . '/ImageCache2/templates/info-v.tpl.html';
+    } else {
+        include P2EX_LIB_DIR . '/ImageCache2/templates/info-h.tpl.html';
     }
-    // ip2host
-    if ($_conf['ip2host.enabled']) {
-        include P2EX_LIB_DIR . '/ip2host.inc.php';
-    }
+}
+// SPM
+if ($_conf['expack.spm.enabled']) {
+    echo ShowThreadI::getSpmElementHtml();
+}
+// ip2host
+if ($_conf['ip2host.enabled']) {
+    include P2EX_LIB_DIR . '/ip2host.inc.php';
 }
 
 echo '</body></html>';

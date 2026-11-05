@@ -50,7 +50,7 @@ EOFORM;
 
 // お気に板切替フォーム
 if ($_conf['expack.misc.multi_favs']) {
-    $switch_favita_form_ht = FavSetManager::makeFavSetSwitchForm('m_favita_set', 'お気に板', null, null, !$_conf['ktai']);
+    $switch_favita_form_ht = FavSetManager::makeFavSetSwitchForm('m_favita_set', 'お気に板', null, null, !$_conf['iphone']);
 } else {
     $switch_favita_form_ht = '';
 }
@@ -73,7 +73,7 @@ echo <<<EOP
     <title>p2 - お気に板の並び替え</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=editfavita&amp;skin={$skin_en}">
@@ -92,7 +92,7 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="top.document.title=self.document.title;"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="top.document.title=self.document.title;"';
 echo "</head><body{$body_at}>\n";
 
 P2Util::printInfoHtml();
@@ -130,7 +130,7 @@ if (is_array($lines)) {
 }
 
 // PC用
-if (!$_conf['ktai'] and !empty($lines)) {
+if (!$_conf['iphone'] and !empty($lines)) {
 ?>
 <script type="text/javascript">
 //<![CDATA[
@@ -196,19 +196,14 @@ function submitApply()
 
 
 // iPhone用
-if ($_conf['iphone'] && file_exists('./iui/iui.js')) {
+if ($_conf['iphone']) {
     $onclick = '';
     $m_php = 'menu_i.php?nt=' . time();
 
 // PC用
-} elseif (!$_conf['ktai']) {
+} else {
     $onclick = " onclick=\"if (parent.menu) { parent.menu.location.href='{$_conf['menu_php']}?nr=1'; }\"";
     $m_php = $_SERVER['SCRIPT_NAME'];
-
-// 携帯用
-} else {
-    $onclick = '';
-    $m_php = 'menu_k.php?view=favita&amp;nr=1' . $_conf['k_at_a'] . '&amp;nt=' . time();
 }
 
 echo <<<EOP
@@ -218,8 +213,8 @@ EOP;
 echo $add_favita_form_ht;
 echo '<hr>';
 
-// PC（NetFrontを除外）
-if (!$_conf['ktai'] && $_conf['favita_order_dnd'] && !UA::isNetFront()) {
+// PC
+if (!$_conf['iphone'] && $_conf['favita_order_dnd']) {
 
     if ($lines) {
         $script_enable_html .= <<<EOP
@@ -273,8 +268,8 @@ EOP;
 // NOSCRIPT時のHTML表示
 //================================================================
 if ($lines) {
-    // PC（NetFrontを除外）
-    if (!$_conf['ktai'] && $_conf['favita_order_dnd'] && !UA::isNetFront()) {
+    // PC
+    if (!$_conf['iphone'] && $_conf['favita_order_dnd']) {
         echo '<noscript>';
     }
     echo 'お気に板の並び替え';
@@ -301,14 +296,14 @@ EOP;
     }
 
     echo "</table>";
-    // PC（NetFrontを除外）
-    if (!$_conf['ktai'] && $_conf['favita_order_dnd'] && !UA::isNetFront()) {
+    // PC
+    if (!$_conf['iphone'] && $_conf['favita_order_dnd']) {
         echo '</noscript>';
     }
 }
 
 // PC
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo '<hr>';
     echo $sync_favita_form_ht;
 }
@@ -316,7 +311,7 @@ if (!$_conf['ktai']) {
 //================================================================
 // フッタHTML表示
 //================================================================
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr><div class=\"center\">{$_conf['k_to_index_ht']}</div>";
 }
 

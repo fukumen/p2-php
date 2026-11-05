@@ -35,21 +35,7 @@ $htm['disable_js'] = <<<EOP
 //<![CDATA[
 // Thanks naoya <http://d.hatena.ne.jp/naoya/20050804/1123152230>
 
-function isNetFront() {
-  var ua = navigator.userAgent;
-  if (ua.indexOf("NetFront") != -1 || ua.indexOf("AVEFront/") != -1 || ua.indexOf("AVE-Front/") != -1) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 function disableSubmit(form) {
-
-  // 2006/02/15 NetFrontとは相性が悪く固まるらしいので抜ける
-  if (isNetFront()) {
-    return;
-  }
 
   var elements = form.elements;
   for (var i = 0; i < elements.length; i++) {
@@ -60,11 +46,6 @@ function disableSubmit(form) {
 }
 
 function setHiddenValue(button) {
-
-  // 2006/02/15 NetFrontとは相性が悪く固まるらしいので抜ける
-  if (isNetFront()) {
-    return;
-  }
 
   if (button.name) {
     var q = document.createElement('input');
@@ -136,19 +117,15 @@ if ($hd['mail'] === '') {
 // {{{ textareaの属性
 
 // 参考 クラシック COLS='60' ROWS='8'
-$mobile = (new Net_UserAgent_Mobile)->singleton();
 $wrap_at = ''; // wrap属性はW3C HTML 4.01仕様に存在しない
 $name_size_at = '';
 $mail_size_at = '';
 $msg_cols_at = '';
 
 // PC
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $name_size_at = ' size="19"';
     $mail_size_at = ' size="19"';
-    $msg_cols_at = ' cols="' . $STYLE['post_msg_cols'] . '"';
-// willcom
-} elseif($mobile->isAirHPhone()) {
     $msg_cols_at = ' cols="' . $STYLE['post_msg_cols'] . '"';
 // 携帯
 } else {
@@ -158,7 +135,7 @@ if (!$_conf['ktai']) {
 
 // {{{ PC用 sage チェックボックス
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $on_check_sage = ' onchange="checkSage();"';
     $htm['sage_cb'] = <<<EOP
 <input id="sage" type="checkbox" onclick="mailSage()"><label for="sage">sage</label>
@@ -203,7 +180,7 @@ if ($_conf['proxy_host']) {
 // }}}
 // {{{ 書き込みブロック用チェックボックス
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $htm['block_submit'] = <<<EOP
 <input type="checkbox" id="block_submit" onclick="switchBlockSubmit(this.checked)"><label for="block_submit">block</label>
 EOP;
@@ -212,7 +189,7 @@ EOP;
 // }}}
 // {{{ ソースコード補正用チェックボックス
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     if ($_conf['editor_srcfix'] == 1) {
         $htm['src_fix'] = <<<EOP
 <input type="checkbox" id="fix_source" name="fix_source" value="1"><label for="fix_source">src</label>
@@ -227,7 +204,7 @@ $htm['dpreview_onoff'] = '';
 $htm['dpreview_amona'] = '';
 $htm['dpreview']  = '';
 $htm['dpreview2'] = '';
-if (!$_conf['ktai'] && $_conf['expack.editor.dpreview']) {
+if (!$_conf['iphone'] && $_conf['expack.editor.dpreview']) {
     $_dpreview_noname = 'null';
     if (P2HostMgr::isHost2chs($host)) {
         $_dpreview_st = new SettingTxt($host, $bbs);
@@ -240,9 +217,6 @@ if (!$_conf['ktai'] && $_conf['expack.editor.dpreview']) {
     }
     $_dpreview_hide = 'false';
     if ($_conf['expack.editor.dpreview'] == 2) {
-        if (UA::isSafariGroup() && basename($_SERVER['SCRIPT_NAME']) != 'post_form.php') {
-            $_dpreview_hide = 'true';
-        }
         $_dpreview_pos = 'dpreview2';
     } else {
         $_dpreview_pos = 'dpreview';
@@ -301,8 +275,7 @@ if ((basename($_SERVER['SCRIPT_NAME']) == 'post_form.php' || !empty($_GET['inyou
             $hd['MESSAGE'] .= "\r\n";
         }
         if ($_GET['inyou'] == 2 || $_GET['inyou'] == 3) {
-            if (!$_conf['ktai'] || $_conf['iphone']) {
-                $htm['orig_msg'] = <<<EOM
+            $htm['orig_msg'] = <<<EOM
 <fieldset id="original_msg">
 <legend>Original Message:</legend>
     <div>
@@ -314,13 +287,6 @@ if ((basename($_SERVER['SCRIPT_NAME']) == 'post_form.php' || !empty($_GET['inyou
     <div id="orig_msg" class="prvw_msg">{$q_resar[3]}</div>
 </fieldset>
 EOM;
-            } else {
-                $htm['orig_msg'] = <<<EOM
-<div><i>Original Message:</i>
-[{$q_resnum}]: <b>{$q_resar[0]}</b>: {$q_resar[1]}: {$q_resar[2]}<br>
-{$q_resar[3]}</div>
-EOM;
-            }
         }
     }
 }
@@ -330,41 +296,28 @@ EOM;
 
 $onsubmit_at = '';
 
-if (!$_conf['ktai'] || $_conf['iphone']) {
-    if (!preg_match('{NetFront|AVE-?Front/}', $_SERVER['HTTP_USER_AGENT'])) {
+// 名無しで書くと節穴になる板をチェックして警告を出す。
+$_st = new SettingTxt($host, $bbs);
+$_st->setSettingArray();
 
-        // 名無しで書くと節穴になる板をチェックして警告を出す。
-        $_st = new SettingTxt($host, $bbs);
-        $_st->setSettingArray();
+// 名無しが節穴
+$confirmNanashi = array_key_exists("BBS_NONAME_NAME", $_st->setting_array) && str_contains($_st->setting_array['BBS_NONAME_NAME'], "fusianasan");
 
-        // 名無しが節穴
-        $confirmNanashi = array_key_exists("BBS_NONAME_NAME", $_st->setting_array) && str_contains($_st->setting_array['BBS_NONAME_NAME'], "fusianasan");
+// 名無しで書けない
+$blockNanashi = ((array_key_exists('BBS_NANASHI_CHECK', $_st->setting_array) && $_st->setting_array['BBS_NANASHI_CHECK'] == '1') || (array_key_exists('NANASHI_CHECK', $_st->setting_array) && $_st->setting_array['NANASHI_CHECK'] == '1'));
 
-        // 名無しで書けない
-        $blockNanashi = ((array_key_exists('BBS_NANASHI_CHECK', $_st->setting_array) && $_st->setting_array['BBS_NANASHI_CHECK'] == '1') || (array_key_exists('NANASHI_CHECK', $_st->setting_array) && $_st->setting_array['NANASHI_CHECK'] == '1'));
+unset($_st);
 
-        unset($_st);
-
-        $onsubmit_at = sprintf(' onsubmit="if (validateAll(%s,%s) && confirmNanashi(%s) && blockNanashi(%s)) { switchBlockSubmit(true); return true; } else { return false }"',
-            (($_conf['expack.editor.check_message']) ? 'true' : 'false'),
-            (($_conf['expack.editor.check_sage'])    ? 'true' : 'false'),
-            ($confirmNanashi ? 'true' : 'false'), ($blockNanashi ? 'true' : 'false'));
-    }
-}
+$onsubmit_at = sprintf(' onsubmit="if (validateAll(%s,%s) && confirmNanashi(%s) && blockNanashi(%s)) { switchBlockSubmit(true); return true; } else { return false }"',
+    (($_conf['expack.editor.check_message']) ? 'true' : 'false'),
+    (($_conf['expack.editor.check_sage'])    ? 'true' : 'false'),
+    ($confirmNanashi ? 'true' : 'false'), ($blockNanashi ? 'true' : 'false'));
 
 // }}}
 // {{{ 画像アップロード
 
 $upload_form = '';
 $upload_mode = null;
-
-/*
-if (!$_conf['ktai'] || $_conf['iphone']) {
-    if (file_exists($_conf['dropbox_auth_json'])) {
-        $upload_mode = 'dropbox';
-    }
-}
-*/
 
 if (isset($_conf['upload_method'])) {
     switch ($_conf['upload_method']) {
@@ -387,7 +340,7 @@ if (isset($_conf['upload_method'])) {
 }
 
 if ($upload_mode !== null) {
-    if ($_conf['ktai'] || $_conf['iphone']) {
+    if ($_conf['iphone']) {
         $upload_multiple = '';
         $upload_name = 'upload';
     } else {

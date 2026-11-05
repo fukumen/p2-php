@@ -51,7 +51,6 @@
     "pear/benchmark": "dev-master",
     "pear/cache_lite": "1.*",
     "pear/net_socket": "1.2.*",
-    "nanasess/net_useragent_mobile": "1.0.*",
     "pear/pager": "2.5.*",
     "pear/validate": "0.8.*",
     "pear/var_dump": "dev-trunk",

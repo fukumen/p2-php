@@ -82,7 +82,7 @@ if (isset($num)) {
 // HTMLプリント
 //============================================================
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     if (!$_conf['expack.rss.check_interval']) {
         // キャッシュさせない
         P2Util::header_nocache();
@@ -92,7 +92,7 @@ if ($_conf['ktai']) {
     }
 }
 echo $_conf['doctype'];
-include P2EX_LIB_DIR . '/rss/' . ($_conf['ktai'] ? 'read_k' : 'read') . '.inc.php';
+include P2EX_LIB_DIR . '/rss/' . ($_conf['iphone'] ? 'read_k' : 'read') . '.inc.php';
 
 /*
  * Local Variables:

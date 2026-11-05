@@ -8,8 +8,6 @@ require_once __DIR__ . '/../init.php';
 
 $_login->authorize(); //ユーザ認証
 
-$_conf['ktai'] = false;
-
 $menu_php_self = '';
 
 // {{{ HTTPヘッダとXML宣言
@@ -49,9 +47,6 @@ if (isset($_GET['m_favita_set'])) {
 // }}}
 // {{{ 本体出力
 
-if (UA::isSafariGroup()) {
-    $menuItem = P2Util::encodeResponseTextForSafari($menuItem);
-}
 echo $menuItem;
 exit;
 

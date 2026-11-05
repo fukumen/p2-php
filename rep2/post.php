@@ -293,7 +293,7 @@ if ($p2cookies) {
     if ($_conf['donguri_use']) {
         require_once P2_LIB_DIR . '/donguri.inc.php';
         Donguri::check_base();
-        if (!$_conf['iphone'] && !$_conf['ktai']) {
+        if (!$_conf['iphone']) {
         echo <<<EOJS
 <script type="text/javascript">
 //<![CDATA[
@@ -754,7 +754,7 @@ function showPostMsg($isDone, $result_msg, $reload)
     global $STYLE, $skin_en;
 
     // プリント用変数 ===============
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         $class_ttitle = ' class="thre_title"';
     } else {
         $class_ttitle = '';
@@ -813,7 +813,7 @@ EOHEADER;
         echo "    <title>{$ptitle}</title>";
     }
 
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=post&amp;skin={$skin_en}">
@@ -832,18 +832,12 @@ EOSCRIPT;
         echo $popup_ht;
         $kakunin_ht = '';
     } else {
-    	if($_conf['iphone']) {
-            echo $popup_ht;
-            $kakunin_ht = '';
-        } else {
-        	$kakunin_ht = <<<EOP
-<p><a href="{$location_ht}">確認</a></p>
-EOP;
-        }
+        echo $popup_ht;
+        $kakunin_ht = '';
     }
 
     echo "</head>\n";
-    echo "<body{$_conf['k_colors']}>\n";
+    echo "<body>\n";
 
     P2Util::printInfoHtml();
 
@@ -1016,7 +1010,7 @@ function showCookieConfirmation($host, $response)
     $form->insertBefore($hidden, $form->firstChild);
 
     // ヘッダに要素を追加
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         $skin_q = str_replace('&amp;', '&', $skin_en);
         $link = $doc->createElement('link');
         $link->setAttribute('rel', 'stylesheet');
@@ -1153,7 +1147,7 @@ function showTalkConfirmation($host, $body, $post, $header, $extendToken)
     <title>{$ptitle}</title>
 EOHEADER;
 
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         $skin_q = str_replace('&amp;', '&', $skin_en);
         echo "    <link rel=\"stylesheet\" type=\"text/css\" href=\"css.php?css=style&amp;skin={$skin_en}\">\n";
         echo "    <link rel=\"stylesheet\" type=\"text/css\" href=\"css.php?css=post&amp;skin={$skin_en}\">\n";
@@ -1172,7 +1166,7 @@ EOSCRIPT;
     }
 
     echo "</head>\n";
-    echo "<body{$_conf['k_colors']}>\n";
+    echo "<body>\n";
 
     P2Util::printInfoHtml();
 

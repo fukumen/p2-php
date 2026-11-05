@@ -106,7 +106,7 @@ if ($array && file_exists($_conf['siduplift_file'])) {
 //================================================================
 // ヘッダ
 //================================================================
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $login_st = "ﾛｸﾞｲﾝ";
     $logout_st = "ﾛｸﾞｱｳﾄ";
     $password_st = "ﾊﾟｽﾜｰﾄﾞ";
@@ -132,7 +132,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=login2ch&amp;skin={$skin_en}">
@@ -141,7 +141,7 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="setWinTitle();"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="setWinTitle();"';
 
 echo <<<EOP
     <script type="text/javascript">
@@ -160,7 +160,7 @@ echo <<<EOP
 <body{$body_at}>
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu"><a href="setting.php">ログイン管理</a> &gt; {$ptitle}</p>
 EOP;
@@ -221,7 +221,7 @@ $tora3_url_r = P2Util::throughIme($tora3_url);
 $tool_url = "https://maraga.jp/1.1/RoninTool.php";
 $tool_url_r = P2Util::throughIme($tool_url);
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $id_input_size_at = " size=\"30\"";
     $pass_input_size_at = " size=\"24\"";
 }
@@ -231,7 +231,7 @@ echo "<div id=\"login_status\">";
 echo $form_now_log;
 echo "</div>";
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr>";
 }
 
@@ -247,7 +247,7 @@ echo <<<EOFORM
 </form>\n
 EOFORM;
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr>";
 }
 
@@ -262,7 +262,7 @@ echo <<<EOP
 </p>
 EOP;
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr><div class=\"center\">{$_conf['k_to_index_ht']}</div>";
 }
 

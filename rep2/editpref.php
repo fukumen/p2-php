@@ -95,7 +95,7 @@ if (isset($_POST['sync'])) {
         }
     }
 
-    if (!$_conf['iphone'] && !$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
     }
 
@@ -111,7 +111,7 @@ if (isset($_POST['sync'])) {
             if ($_conf['donguri_use']) {
                 require_once P2_LIB_DIR . '/donguri.inc.php';
                 Donguri::check_base();
-                if (!$_conf['iphone'] && !$_conf['ktai']) {
+                if (!$_conf['iphone']) {
                     P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>');
                 }
             }
@@ -156,7 +156,7 @@ if (isset($_POST['sync'])) {
             break;
     }
     if ($delflag) {
-        if (!$_conf['iphone'] && !$_conf['ktai']) {
+        if (!$_conf['iphone']) {
             P2Util::pushInfoHtml('<script type="text/javascript">if (window.top && window.top.menu) window.top.menu.location.reload();</script>' );
         }
         P2Util::pushInfoHtml("<p>p2 info: {$deltitles[$_POST['delete']]}を削除しました。");
@@ -170,7 +170,7 @@ if (isset($_POST['sync'])) {
 
 $ptitle = '設定管理';
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $status_st      = 'ｽﾃｰﾀｽ';
     $autho_user_st  = '認証ﾕｰｻﾞ';
     $client_host_st = '端末ﾎｽﾄ';
@@ -206,7 +206,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=editpref&amp;skin={$skin_en}">
@@ -218,8 +218,6 @@ if (!$_conf['ktai']) {
     <script type="text/javascript" src="js/editpref.js?{$_conf['p2_version_id']}"></script>\n
 EOP;
     $body_at = ' onload="window.top.document.title=window.self.document.title;"';
-} elseif (!$_conf['iphone']) {
-    $body_at = $_conf['k_colors'];
 } else {
     $body_at = '';
 }
@@ -229,7 +227,7 @@ echo <<<EOP
 <body{$body_at}>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
 //<p id="pan_menu"><a href="setting.php">設定</a> &gt; {$ptitle}</p>
     echo "<p id=\"pan_menu\">{$ptitle}</p>\n";
 }
@@ -264,7 +262,7 @@ echo <<<EOP
 <a href="edit_conf_user.php{$_conf['k_at_q']}" class="button">ユーザ設定編集</a>
 <a href="edit_user_font.php{$_conf['k_at_q']}" class="button">フォント設定編集</a>
 EOP;
-if (!$_conf['ktai'] && $_conf['expack.skin.enabled']) {
+if (!$_conf['iphone'] && $_conf['expack.skin.enabled']) {
     $skin_options = array('conf_user_style' => '標準');
     foreach (array('./skin', './user_skin') as $skin_dir) {
         if (is_dir($skin_dir)) {
@@ -297,7 +295,7 @@ EOP;
 echo '</div>';
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
 
     echo "<table id=\"editpref\">\n";
 
@@ -482,7 +480,7 @@ EOP;
 }
 
 // 携帯用表示
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo <<<EOP
 <hr>
 <p>アボン/NGワード編集</p>
@@ -540,8 +538,7 @@ EOP;
 EOP;
     }
 
-    if ($_conf['iphone']) {
-        echo <<<EOP
+    echo <<<EOP
 <hr>
 <p>コマンド編集</p>
 <a href="edit_commands_name.php{$_conf['k_at_q']}" class="button">名前</a><br>
@@ -549,7 +546,6 @@ EOP;
 <p>デバッグツール</p>
 <a href="show_log.php{$_conf['k_at_q']}" class="button">デバッグログ表示</a><br>
 EOP;
-    }
 
     // }}}
 
@@ -562,7 +558,7 @@ if ($matome_cache_list) {
     $ckeyprefixlen = strlen(MatomeCacheList::getKeyPrefix());
     $i = 0;
 
-    if ($_conf['ktai']) {
+    if ($_conf['iphone']) {
         echo "<hr>\n<p>新着まとめ読みキャッシュ</p>\n";
     } else {
         echo "<tr><td colspan=\"2\">\n";
@@ -582,15 +578,10 @@ if ($matome_cache_list) {
         }
         $cnumthreads = count($cache_info['threads']);
 
-        if ($_conf['ktai']) {
+        if ($_conf['iphone']) {
             // キャッシュへのリンク、携帯用
-            if ($_conf['iphone']) {
-                $cdate = date('y/m/d H:i', $cache_info['time']);
-                echo "<p>{$cdate} [<a href=\"{$clink}\">{$ctitle}</a>]</p>";
-            } else {
-                $cdate = date('y/m/d G:i', $cache_info['time']);
-                echo "<p>{$cdate}<br>[<a href=\"{$clink}\">{$ctitle}</a>]</p>";
-            }
+            $cdate = date('y/m/d H:i', $cache_info['time']);
+            echo "<p>{$cdate} [<a href=\"{$clink}\">{$ctitle}</a>]</p>";
         } else {
             // キャッシュへのリンク、PC用
             $cid = 'matome_cache_meta' . $i;
@@ -609,7 +600,7 @@ if ($matome_cache_list) {
         }
 
         // まとめ読みに含まれる各スレッドへのリンク
-        if ($cnumthreads && (!$_conf['ktai'] || $_conf['iphone'])) {
+        if ($cnumthreads) {
             if ($_conf['iphone']) {
                 $ctarget_at = '';
             } else {
@@ -630,7 +621,7 @@ if ($matome_cache_list) {
         }
 
         // 閉じタグ、PC用
-        if (!$_conf['ktai']) {
+        if (!$_conf['iphone']) {
             if ($cnumthreads) {
                 echo '</div>';
             }
@@ -639,7 +630,7 @@ if ($matome_cache_list) {
     }
 
     // 閉じタグ、PC用
-    if (!$_conf['ktai']) {
+    if (!$_conf['iphone']) {
         echo "</ul>\n";
         echo "</fieldset>\n";
         echo "</td></tr>\n";
@@ -648,7 +639,7 @@ if ($matome_cache_list) {
 
 // }}}
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr><div class=\"center\">{$_conf['k_to_index_ht']}</div>";
 } else {
     echo "</table>\n";

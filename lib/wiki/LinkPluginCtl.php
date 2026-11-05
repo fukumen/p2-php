@@ -99,7 +99,7 @@ class LinkPluginCtl extends WikiPluginCtlBase
                         $link_url = $url;
                     }
                     // HTMLポップアップ(PCの時だけ)
-                    if ($_conf['iframe_popup'] && !$_conf['ktai']) {
+                    if ($_conf['iframe_popup'] && !$_conf['iphone']) {
                         // *pm 指定の場合のみ、特別に手動転送指定を追加する
                         if (substr($_conf['through_ime'], -2) == 'pm') {
                             $pop_url = P2Util::throughIme($url, -1);

@@ -5,8 +5,6 @@
 
 if ($_conf['iphone']) {
     tgrep_print_quick_list_i();
-} elseif ($_conf['ktai']) {
-    tgrep_print_quick_list_k();
 } else {
     tgrep_print_quick_list();
 }
@@ -62,41 +60,7 @@ function tgrep_print_quick_list()
 }
 
 // }}}
-// {{{ tgrep_print_quick_list_k()
 
-/**
- * 携帯用表示
- */
-function tgrep_print_quick_list_k()
-{
-    global $_conf;
-
-    $tgrep_quick_list = tgrep_read_quick_list();
-
-    echo '<h4>一発検索</h4>' . "\n";
-    if ($tgrep_quick_list) {
-        echo '<ul>' . "\n";
-        foreach ($tgrep_quick_list as $tgrep_quick_query) {
-            $tgrep_quick_query_en = rawurlencode($tgrep_quick_query);
-            $tgrep_quick_query_ht = p2h($tgrep_quick_query);
-            echo '<li><a href="tgrepc.php?Q=' . $tgrep_quick_query_en . '">' . $tgrep_quick_query_ht . '</a>' . "\n";
-            echo '<small>[<a href="tgrepctl.php?file=quick&amp;query=' . $tgrep_quick_query_en . '&amp;purge=true">削</a>]</small></li>' . "\n";
-        }
-        echo '</ul>' . "\n";
-    } else {
-        echo '<p>（なし）</p>' . "\n";
-    }
-    echo '<form method="get" action="tgrepctl.php">';
-    echo '<input type="hidden" name="file" value="quick">';
-    echo '<input type="text" name="query" value="">';
-    echo '<input type="submit" value="追加">';
-    echo '</form>' . "\n";
-    if ($tgrep_quick_list) {
-        echo '<p><a href="tgrepctl.php?file=quick&amp;clear=all">一発検索をｸﾘｱ</a></p>' . "\n";
-    }
-}
-
-// }}}
 // {{{ tgrep_print_quick_list_i()
 
 /**

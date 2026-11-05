@@ -5,7 +5,7 @@
 
 require_once P2EX_LIB_DIR . '/rss/common.inc.php';
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     print_rss_list_k();
 } else {
     print_rss_list();
@@ -97,23 +97,17 @@ function print_rss_list_k()
                     $atom = 0;
                     $atom_q = '';
                 }
-                if ($i <= 9) {
-                    $accesskey_at = $_conf['k_accesskey_at'][$i];
-                    $accesskey_st = "{$i} ";
-                } else {
-                    $accesskey_at = '';
-                    $accesskey_st = '';
-                }
+                $num_prefix = ($i <= 9) ? "{$i} " : '';
                 $localpath = rss_get_save_path($xml);
                 if (PEAR::isError($localpath)) {
-                    echo $accesskey_st . $site . ' ' . $localpath->getMessage() . "<br>\n";
+                    echo $num_prefix . $site . ' ' . $localpath->getMessage() . "<br>\n";
                 } else {
                     $mtime = file_exists($localpath) ? filemtime($localpath) : 0;
                     $site_en = UrlSafeBase64::encode($site);
                     $xml_en = rawurlencode($xml);
                     $rss_q = sprintf('?xml=%s&site_en=%s%s&mt=%d', $xml_en, $site_en, $atom_q, $mtime);
                     $rss_q_ht = p2h($rss_q);
-                    echo "{$accesskey_st}<a href=\"subject_rss.php{$rss_q_ht}\"{$accesskey_at}>{$site}</a><br>\n";
+                    echo "{$num_prefix}<a href=\"subject_rss.php{$rss_q_ht}\">{$site}</a><br>\n";
                 }
                 $i++;
             }

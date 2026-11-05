@@ -78,7 +78,7 @@ $reloaded_time = date('m/d G:i:s');
 // HTMLプリント
 //============================================================
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     if (!$_conf['expack.rss.check_interval']) {
         // キャッシュさせない
         P2Util::header_nocache();
@@ -88,7 +88,7 @@ if ($_conf['ktai']) {
     }
 }
 echo $_conf['doctype'];
-include P2EX_LIB_DIR . '/rss/' . ($_conf['ktai'] ? 'subject_k' : 'subject') . '.inc.php';
+include P2EX_LIB_DIR . '/rss/' . ($_conf['iphone'] ? 'subject_k' : 'subject') . '.inc.php';
 
 // {{{ rss_link2ch_callback()
 

@@ -140,21 +140,13 @@ $bookmarklet = preg_replace('/\\b(var|return|typeof) +/', '$1{%space%}', $bookma
 $bookmarklet = preg_replace('/\\s+/', '', $bookmarklet);
 $bookmarklet = str_replace('{%space%}', ' ', $bookmarklet);
 
-$bookmarklet_k = $bookmarklet . "('{$url_b}k',240,320,20,-100)";
 $bookmarklet_i = $bookmarklet . "('{$url_b}i',320,480,20,-100)";
-$bookmarklet_k_ht = p2h($bookmarklet_k);
 $bookmarklet_i_ht = p2h($bookmarklet_i);
-$bookmarklet_k_en = rawurlencode($bookmarklet_k);
 $bookmarklet_i_en = rawurlencode($bookmarklet_i);
 
 $htm['ktai_url'] = <<<EOT
 <table border="0" cellspacing="0" cellpadding="1">
     <tbody>
-        <tr>
-            <th>Œg‘Ñ—pURL:</th>
-            <td><a href="{$url_b_ht}k" target="_blank" onclick="return {$bookmarklet_k_ht};">{$url_b_ht}k</a></td>
-            <td>[<a href="javascript:{$bookmarklet_k_en};">bookmarklet</a>]</td>
-        </tr>
         <tr>
             <th>iPhone—pURL:</th>
             <td><a href="{$url_b_ht}i" target="_blank" onclick="return {$bookmarklet_i_ht};">{$url_b_ht}i</a></td>

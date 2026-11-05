@@ -183,7 +183,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=edit_conf_user&amp;skin={$skin_en}">
@@ -192,14 +192,14 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="top.document.title=self.document.title;"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="top.document.title=self.document.title;"';
 echo <<<EOP
 </head>
 <body{$body_at}>\n
 EOP;
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu"><a href="editpref.php">設定管理</a> &gt; {$ptitle_top}</p>\n
 EOP;
@@ -208,7 +208,7 @@ EOP;
 }
 
 // PC用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $htm['form_submit'] = <<<EOP
         <tr class="group">
             <td colspan="7" align="center">
@@ -243,7 +243,7 @@ $usage = <<<EOP
 {$usage_ttitle}
 </ul>
 EOP;
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $usage = mb_convert_kana($usage, 'k');
 }
 echo <<<EOP
@@ -254,7 +254,7 @@ echo <<<EOP
 EOP;
 
 // PC用表示（table）
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <table class="edit_conf_user" cellspacing="0">
         <tr>
@@ -287,7 +287,6 @@ EOP;
 // 携帯用表示
 } else {
     echo "新規登録<br>\n";
-    if ($_conf['iphone']) {
         $row_format = <<<EOP
 <fieldset>
 <input type="text" name="nga[%1\$d][word]" value="%2\$s"><br>
@@ -299,18 +298,6 @@ EOP;
 <input type="hidden" name="nga[%1\$d][hn]" value="%6\$d">(%6\$d)
 </fieldset>\n
 EOP;
-    } else {
-        $row_format = <<<EOP
-<input type="text" name="nga[%1\$d][word]" value="%2\$s"><br>
-板:<input type="text" size="5" name="nga[%1\$d][bbs]" value="%7\$s">
-ｽﾚﾀｲ:<input type="text" size="5" name="nga[%1\$d][tt]" value="%8\$s"><br>
-<input type="checkbox" name="nga[%1\$d][ic]" value="1"%3\$s>i
-<input type="checkbox" name="nga[%1\$d][re]" value="1"%4\$s>re
-<input type="checkbox" name="nga[%1\$d][del]" value="1">×<br>
-<input type="hidden" name="nga[%1\$d][ht]" value="%5\$s">
-<input type="hidden" name="nga[%1\$d][hn]" value="%6\$d">(%6\$d)<hr>\n
-EOP;
-    }
 }
 
 printf($row_format, -1, '', '', '', '--', 0, '', '');
@@ -318,9 +305,6 @@ printf($row_format, -1, '', '', '', '--', 0, '', '');
 echo $htm['form_submit'];
 
 if (!empty($formdata)) {
-    if ($_conf['ktai'] && !$_conf['iphone']) {
-        echo "<hr>\n";
-    }
     foreach ($formdata as $k => $v) {
         printf($row_format,
                $k,
@@ -336,7 +320,7 @@ if (!empty($formdata)) {
 }
 
 // PCなら
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo '</table>'."\n";
 }
 
@@ -347,24 +331,14 @@ EOP;
 
 
 // 携帯なら
-if ($_conf['ktai']) {
-    if ($_conf['iphone']) {
-        echo <<<EOP
+if ($_conf['iphone']) {
+    echo <<<EOP
 <hr>
 <div class="center">
 <a href="javascript:history.back();" class="button">戻る</a>
 {$_conf['k_to_index_ht']}
 </div>
 EOP;
-    } else {
-        echo <<<EOP
-<hr>
-<div class="center">
-<a href="editpref.php{$_conf['k_at_q']}"{$_conf['k_accesskey_at']['up']}>{$_conf['k_accesskey_st']['up']}設定編集</a>
-{$_conf['k_to_index_ht']}
-</div>
-EOP;
-    }
 }
 
 echo '</body></html>';

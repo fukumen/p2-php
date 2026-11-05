@@ -87,7 +87,7 @@ function coloredIdStyle($idstr, $id, $count=0)
             }
 
             // CSSで色をつける
-            $uline=($_conf['ktai'] || $STYLE['a_underline_none']==1) ? '' : "text-decoration:underline;";
+            $uline=($_conf['iphone'] || $STYLE['a_underline_none']==1) ? '' : "text-decoration:underline;";
             if ($count>=25 ) {     // 必死チェッカー発動
                 $uline.="animation: p2-hissi-blink 1s step-end infinite; -webkit-animation: p2-hissi-blink 1s step-end infinite;";
             }
@@ -173,7 +173,7 @@ function coloredWatchoiStyle($wid32, $count)
     $y_val = ($rgb['R'] * 299 + $rgb['G'] * 587 + $rgb['B'] * 114) / 1000;
 
     // CSSで色をつける
-    $uline = ($_conf['ktai'] || $STYLE['a_underline_none'] == 1) ? '' : "text-decoration:underline;";
+    $uline = ($_conf['iphone'] || $STYLE['a_underline_none'] == 1) ? '' : "text-decoration:underline;";
     if ($count >= 25) {     // 必死チェッカー発動
         $uline .= "animation: p2-hissi-blink 1s step-end infinite; -webkit-animation: p2-hissi-blink 1s step-end infinite;";
     }

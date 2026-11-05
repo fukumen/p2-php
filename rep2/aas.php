@@ -300,7 +300,7 @@ foreach ($lines as $line) {
 // ‰æ‘œƒTƒCƒY“™‚ğŒˆ’è
 if ($inline) {
     $mode = 'inline';
-} elseif ($_conf['ktai']) {
+} elseif ($_conf['iphone']) {
     $mode = 'mobile';
 } else {
     $mode = 'default';

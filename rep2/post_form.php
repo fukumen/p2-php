@@ -40,7 +40,7 @@ $key_idx = P2Util::idxDirOfHostBbs($host, $bbs) . $key . '.idx';
 include P2_LIB_DIR . '/post_form_options.inc.php';
 
 // 表示指定
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     $class_ttitle = ' class="thre_title"';
     $target_read = ' target="read"';
     $sub_size_at = ' size="40"';
@@ -65,7 +65,7 @@ if (!empty($_GET['newthread'])) {
     $htm['subject'] = <<<EOP
 <b><span{$class_ttitle}>タイトル</span></b>：<input type="text" name="subject"{$sub_size_at} value="{$hd['subject']}"><br>
 EOP;
-    if ($_conf['ktai']) {
+    if ($_conf['iphone']) {
         $htm['subject'] = "<a href=\"{$_conf['subject_php']}?host={$host}&amp;bbs={$bbs}{$_conf['k_at_a']}\">{$itaj_hd}</a><br>".$htm['subject'];
     }
     $newthread_hidden_ht = '<input type="hidden" name="newthread" value="1">';
@@ -102,7 +102,7 @@ echo <<<EOHEADER
     <title>{$ptitle}</title>\n
 EOHEADER;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <script type="text/javascript" src="js/jquery-{$_conf['jquery_version']}.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
@@ -112,22 +112,20 @@ EOP;
         echo "<link rel=\"stylesheet\" href=\"css.php?css=prvw&amp;skin={$skin_en}\" type=\"text/css\">\n";
     }
 }
-if (!$_conf['ktai'] || $_conf['iphone']) {
-    echo <<<EOP
+echo <<<EOP
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <script type="text/javascript" src="js/basic.js?{$_conf['p2_version_id']}"></script>
     <script type="text/javascript" src="js/post_form.js?{$_conf['p2_version_id']}"></script>\n
 EOP;
-}
 // 下書き保存JS
-if ((!$_conf['ktai'] && $_conf['expack.editor.savedraft']) ||
+if ((!$_conf['iphone'] && $_conf['expack.editor.savedraft']) ||
     ($_conf['iphone'] && $_conf['expack.editor.mobile.savedraft'])) {
     echo <<<EOP
     <script type="text/javascript" src="js/post_draft.js?{$_conf['p2_version_id']}"></script>
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="setFocus(\'MESSAGE\'); checkSage();"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="setFocus(\'MESSAGE\'); checkSage();"';
 echo <<<EOP
 </head>
 <body{$body_at}>\n

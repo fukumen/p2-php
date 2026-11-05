@@ -92,7 +92,7 @@ if ($_conf['expack.tgrep.recent_num'] > 0) {
 
 <?php if ($threads) { ?>
 <!-- ThreadList and Pager -->
-<div><a href="#bottom" align="right" title="‰º‚Ö"<?php echo $_conf['k_accesskey_at']['bottom']; ?>><?php echo $_conf['k_accesskey_st']['bottom']; ?>¥</a></div>
+<div><a href="#bottom" align="right" title="‰º‚Ö">¥</a></div>
 <?php
 foreach ($threads as $o => $t) {
     $new = '';
@@ -118,7 +118,7 @@ foreach ($threads as $o => $t) {
 <p><?php echo $o+1; ?>.<a href=\"<?php echo $turl; ?>\"><?php echo $ttitle; ?></a><br>
 <small><?php echo date('y/m/d ', $t->tkey); ?><a href="<?php echo $burl; ?>"><?php echo $itaj; ?>(<?php echo $profile['boards'][$t->bid]->hits; ?>)</a></small></p>
 <?php } ?>
-<div><a href="#top" align="right" title="ã‚Ö"<?php echo $_conf['k_accesskey_at']['above']; ?>><?php echo $_conf['k_accesskey_st']['above']; ?>£</a></div>
+<div><a href="#top" align="right" title="ã‚Ö">£</a></div>
 <?php if ($htm['pager']) { ?>
 <hr>
 <div><?php echo $htm['pager']; ?></div>
@@ -128,9 +128,9 @@ foreach ($threads as $o => $t) {
 <p id="bottom" name="bottom">
 <?php echo $_conf['k_to_index_ht'], ' '; ?>
 <?php if ($query) { ?>
-<a href="tgrepc.php"<?php echo $_conf['k_accesskey_at'][5]; ?>><?php echo $_conf['k_accesskey_st'][5]; ?>tGrep</a>
+<a href="tgrepc.php">tGrep</a>
 <?php if ($_conf['expack.tgrep.quicksearch']) { ?>
-<a href="tgrepctl.php?file=quick&amp;query=<?php echo $htm['query_en']; ?>"<?php echo $_conf['k_accesskey_at'][9]; ?>><?php echo $_conf['k_accesskey_st'][9], $htm['query']; ?>‚ðˆê”­ŒŸõ‚É’Ç‰Á</a>
+<a href="tgrepctl.php?file=quick&amp;query=<?php echo $htm['query_en']; ?>"><?php echo $htm['query']; ?>‚ðˆê”­ŒŸõ‚É’Ç‰Á</a>
 <?php } ?>
 <?php } ?>
 </p>

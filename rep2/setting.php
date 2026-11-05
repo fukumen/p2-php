@@ -10,7 +10,7 @@ $_login->authorize(); // ユーザ認証
 // 書き出し用変数 ========================================
 $ptitle = 'ログイン管理';
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     $status_st = "ｽﾃｰﾀｽ";
     $autho_user_st = "認証ﾕｰｻﾞ";
     $client_host_st = "端末ﾎｽﾄ";
@@ -61,7 +61,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=setting&amp;skin={$skin_en}">
@@ -70,14 +70,14 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="setWinTitle();"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="setWinTitle();"';
 echo <<<EOP
 </head>
 <body{$body_at}>
 EOP;
 
 // 携帯用表示
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu">ログイン管理</p>
 EOP;
@@ -92,7 +92,7 @@ echo <<<EOP
     <li><a href="login2ch.php{$_conf['k_at_q']}">2chログイン管理</a></li>
 EOP;
 
-if ($_conf['passkey_auth_mode'] != 0 && !($_conf['ktai'] && !$_conf['iphone'])) {
+if ($_conf['passkey_auth_mode'] != 0) {
 echo <<<EOP
     <li><a href="passkey.php{$_conf['k_at_q']}">パスキー管理</a></li>
 EOP;
@@ -112,7 +112,7 @@ EOP;
 echo '</ul>';
 
 
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo '<hr>';
 }
 
@@ -127,7 +127,7 @@ EOP;
 
 
 // フッタプリント===================
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr><div class=\"center\">{$_conf['k_to_index_ht']}</div>";
 }
 

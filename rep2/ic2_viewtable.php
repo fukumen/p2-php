@@ -78,7 +78,7 @@ $flexy->setData('title', $title);
 $flexy->setData('mode', $mode);
 $flexy->setData('reload_js', $_SERVER['SCRIPT_NAME'] . '?nt=' . time() . '&table=' . $mode);
 $flexy->setData('info_msg', P2Util::getInfoHtml());
-$flexy->setData('pc', !$_conf['ktai']);
+$flexy->setData('pc', !$_conf['iphone']);
 $flexy->setData('iphone', $_conf['iphone']);
 $flexy->setData('doctype', $_conf['doctype']);
 $flexy->setData('extra_headers',   $_conf['extra_headers_ht']);

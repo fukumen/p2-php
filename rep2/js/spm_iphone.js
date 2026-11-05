@@ -239,18 +239,8 @@ SPM.open = (function(action)
 {
 	var uri;
 	switch (action) {
-		case 'goto':
-			var to = parseInt(SPM.activeNumber) + parseInt(SPM.activeThread.rnum_range);
-			uri = 'read.php?ls=' + SPM.activeNumber + '-' + (isNaN(to) ? '' : to);
-			break;
 		case 'rref':
 			uri = 'read.php?' + SPM.activeThread.rref_params + '&rf[word]=' + SPM.activeNumber;
-			break;
-		case 'copy':
-			uri = 'read_copy_k.php?copy=' + SPM.activeNumber;
-			break;
-		case 'copy_quote':
-			uri = 'read_copy_k.php?copy=' + SPM.activeNumber + '&inyou=1';
 			break;
 		case 'am':
 			activeMona(SPM.activeId);

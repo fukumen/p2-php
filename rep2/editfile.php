@@ -12,8 +12,8 @@ $filename   = isset($_REQUEST['file'])       ? $_REQUEST['file']       : null;
 $modori_url = isset($_REQUEST['modori_url']) ? $_REQUEST['modori_url'] : null;
 $encode     = isset($_REQUEST['encode'])     ? $_REQUEST['encode']     : null;
 
-$rows = isset($_REQUEST['rows']) ? intval($_REQUEST['rows']) : ($_conf['ktai'] ? 5 : 36);
-$cols = isset($_REQUEST['cols']) ? intval($_REQUEST['cols']) : ($_conf['ktai'] ? 0 : 128);
+$rows = isset($_REQUEST['rows']) ? intval($_REQUEST['rows']) : ($_conf['iphone'] ? 5 : 36);
+$cols = isset($_REQUEST['cols']) ? intval($_REQUEST['cols']) : ($_conf['iphone'] ? 0 : 128);
 
 $csrfid = P2Util::getCsrfId(__FILE__ . $filename);
 

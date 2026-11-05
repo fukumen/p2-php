@@ -9,9 +9,6 @@ require_once __DIR__ . '/../init.php';
 
 $_login->authorize(); // ユーザ認証
 
-if ($_conf['ktai'] && !$_conf['iphone']) {
-    p2die('パスキーは利用できません。');
-}
 if ($_conf['passkey_auth_mode'] != 1 && $_conf['passkey_auth_mode'] != 2) {
     p2die('パスキーは無効です。');
 }
@@ -152,7 +149,7 @@ echo <<<EOP
     <title>{$ptitle}</title>\n
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
     <link rel="stylesheet" type="text/css" href="css.php?css=style&amp;skin={$skin_en}">
     <link rel="stylesheet" type="text/css" href="css.php?css=setting&amp;skin={$skin_en}">
@@ -161,13 +158,13 @@ if (!$_conf['ktai']) {
 EOP;
 }
 
-$body_at = ($_conf['ktai']) ? $_conf['k_colors'] : ' onload="setWinTitle();"';
+$body_at = ($_conf['iphone']) ? '' : ' onload="setWinTitle();"';
 echo <<<EOP
 </head>
 <body{$body_at}>
 EOP;
 
-if (!$_conf['ktai']) {
+if (!$_conf['iphone']) {
     echo <<<EOP
 <p id="pan_menu"><a href="setting.php">ログイン管理</a> &gt; {$ptitle}</p>
 EOP;
@@ -202,7 +199,7 @@ echo $list_ht;
 echo '</table>';
 
 // フッタプリント===================
-if ($_conf['ktai']) {
+if ($_conf['iphone']) {
     echo "<hr><div class=\"center\">{$_conf['k_to_index_ht']}</div>";
 }
 

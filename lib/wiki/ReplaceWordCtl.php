@@ -54,7 +54,7 @@ class ReplaceWordCtl
         $path = $_conf['pref_dir'].'/'.$this->filename($cont);
         $this->data_nocache[$cont] = false;
         if ($lines = @file($path)) {
-            $check_mode = $_conf['ktai'] ? 1 : 2;
+            $check_mode = $_conf['iphone'] ? 1 : 2;
             foreach ($lines as $l) {
                 if (substr($l, 0, 1) === ';' || substr($l, 0, 1) === "'" ||
                     substr($l, 0, 1) === '#' || substr($l, 0, 2) === '//') {

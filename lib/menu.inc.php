@@ -159,20 +159,19 @@ EOP;
 <div id="c_search">\n
 EOP;
 
-if ($_conf['input_type_search']) {
 // {{{ <input type="search">を使う
 
     // 板検索
     echo <<<EOP
     <form method="GET" action="{$_SERVER['SCRIPT_NAME']}" accept-charset="{$_conf['accept_charset']}" target="_self" class="inline-form">
-        <input type="search" name="word" value="{$hd['word']}" size="16" autosave="rep2.expack.search.menu" results="10" placeholder="板検索">
+        <input type="search" name="word" value="{$hd['word']}" size="16" placeholder="板検索">
         {$_conf['detect_hint_input_ht']}{$_conf['k_input_ht']}
     </form><br />\n
 EOP;
     // スレタイ検索
     echo <<<EOP
     <form method="GET" action="tgrepc.php" accept-charset="{$_conf['accept_charset']}" target="subject" class="inline-form">
-        <input type="search" name="Q" value="" size="16" autosave="rep2.expack.search.thread" results="{$_conf['expack.tgrep.recent2_num']}" placeholder="スレタイ検索"><br>
+        <input type="search" name="Q" value="" size="16" placeholder="スレタイ検索"><br>
         <select name="AndOr">
         <option value="0" selected>AND検索</option>
         <option value="1" >OR検索</option>
@@ -200,47 +199,6 @@ EOP;
 EOP;
 
 // }}}
-} else {
-// {{{ 通常の検索フォーム
-
-    // 板検索
-    echo <<<EOP
-    <form method="GET" action="{$_SERVER['SCRIPT_NAME']}" accept-charset="{$_conf['accept_charset']}" target="_self" class="inline-form" style="white-space:nowrap">
-        <input type="text" name="word" value="{$hd['word']}" size="12"><input type="submit" name="submit" value="板">
-        {$_conf['detect_hint_input_ht']}{$_conf['k_input_ht']}
-    </form><br>\n
-EOP;
-    // スレタイ検索
-    echo <<<EOP
-    <form method="GET" action="tgrepc.php" accept-charset="{$_conf['accept_charset']}" target="subject" class="inline-form" style="white-space:nowrap">
-        <input type="text" name="Q" value="" size="12"><input type="submit" value="ｽﾚ"><br>
-        <select name="AndOr">
-        <option value="0" selected>AND検索</option>
-        <option value="1" >OR検索</option>
-        </select><br>
-        最大<select name="maxResult">
-        <option value="50" selected>50</option>
-        <option value="100" >100</option>
-        <option value="200" >200</option>
-        </select>件表示<br>
-        <select name="Sort">
-        <option value="0" >人気板順</option>
-        <option value="1" >勢い順</option>
-        <option value="2" >レス数順</option>
-        <option value="4" >最新スレ順</option>
-        <option value="3" >最古スレ順</option>
-        <option value="5" selected>最新投稿順</option>
-        </select><br>
-         924を<select name="924">
-         <option value="1" selected>出す</option>
-         <option value="0" >消す</option>
-         </select>
-        {$_conf['detect_hint_input_ht']}{$_conf['k_input_ht']}
-    </form><br>\n
-EOP;
-
-// }}}
-}
 
 echo <<<EOP
 </div>\n

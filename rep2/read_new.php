@@ -550,7 +550,7 @@ function readNew($aThread)
     //==================================================================
     // ƒwƒbƒ_ •\Ž¦
     //==================================================================
-    $motothre_url = $aThread->getMotoThread(false, '');
+    $motothre_url = $aThread->getMotoThread('');
 
     $ttitle_en = UrlSafeBase64::encode($aThread->ttitle);
     $ttitle_en_q = '&amp;ttitle_en=' . $ttitle_en;

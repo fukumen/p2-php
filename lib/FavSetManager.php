@@ -149,8 +149,6 @@ class FavSetManager
             'm_rss_set' => array('expack.rss.setting_path', 'p2_rss%d.txt'),
         );
 
-        $ar = array();
-
         foreach ($sets as $key => $value) {
             if (isset($_REQUEST[$key]) && 0 <= $_REQUEST[$key] && $_REQUEST[$key] <= $_conf['expack.misc.favset_num']) {
                 $_SESSION[$key] = (int)$_REQUEST[$key];
@@ -160,21 +158,10 @@ class FavSetManager
             $_conf["{$key}_at_a"] = "&amp;{$key}={$id}";
             $_conf["{$key}_input_ht"] = "<input type=\"hidden\" name=\"{$_conf[$key]}\" value=\"{$id}\">";
 
-            $ar[] = $key . '=' . $id;
-
             if (!empty($_SESSION[$key])) {
                 list($cnf, $fmt) = $value;
                 $_conf[$cnf] = $_conf['pref_dir'] . DIRECTORY_SEPARATOR . sprintf($fmt, $_SESSION[$key]);
             }
-        }
-
-        if ($_conf['ktai'] && !$_conf['iphone']) {
-            $k_to_index_q = implode('&', $ar);
-            if ($_conf['view_forced_by_query']) {
-                $k_to_index_q .= '&b=k';
-            }
-            $k_to_index_q = p2h($k_to_index_q);
-            $_conf['k_to_index_ht'] = "<a href=\"index.php?{$k_to_index_q}\"{$_conf['k_accesskey_at'][0]}>{$_conf['k_accesskey_st'][0]}TOP</a>";
         }
 
         $done = true;
@@ -238,7 +225,7 @@ class FavSetManager
             $title = $favlist_titles[$i];
         }
         // 全角英数スペースカナを半角に
-        if ($_conf['ktai'] && $_conf['mobile.save_packet']) {
+        if ($_conf['iphone'] && $_conf['mobile.save_packet']) {
             $title = mb_convert_kana($title, 'rnsk');
         }
         return $title;
@@ -286,7 +273,7 @@ class FavSetManager
             }
         }
         $form_ht .= FavSetManager::makeFavSetSwitchElem($set_name, $set_title, true);
-        $submit_value = ($_conf['ktai']) ? 'ｾｯﾄ切替' : 'セット切替';
+        $submit_value = ($_conf['iphone']) ? 'ｾｯﾄ切替' : 'セット切替';
         $form_ht .= "<input type=\"submit\" value=\"{$submit_value}\"></form>\n";
 
         return $form_ht;
@@ -335,7 +322,7 @@ class FavSetManager
                 $titles[$j] = ($j == 0) ? $set_title : $set_title . $j;
             }
             // 全角英数スペースカナを半角に
-            if ($_conf['ktai'] && $_conf['mobile.save_packet']) {
+            if ($_conf['iphone'] && $_conf['mobile.save_packet']) {
                 $titles[$j] = mb_convert_kana($titles[$j], 'rnsk');
             }
             $selected = ($set_selected && $i == $j) ? ' selected' : '';

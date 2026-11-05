@@ -13,40 +13,30 @@ if (!isset($readnew_hidden_ht)) {
     $readnew_hidden_ht = '';
 }
 
-if ($_conf['ktai']) {
-    $htm['k_br'] = '<br>';
+if ($_conf['iphone']) {
     $htm['kaiko_on_js'] = '';
     $htm['kaiko_set_hidden_js'] = '';
     $htm['table_begin'] = '';
     $htm['table_break1'] = '';
     $htm['table_break2'] = '';
     $htm['table_end'] = '<br>';
-    if ($_conf['iphone']) {
-    	$htm['k_br'] = '';
-        $htm['name_label'] = '';
-        $htm['mail_label'] = '';
-        $htm['name_extra_at'] = ' class="form-control form-group" placeholder="名前(省略可)" autocorrect="off" autocapitalize="off" style="display:inline-block;width:auto;"';
-        $htm['mail_extra_at'] = ' class="form-control form-group" placeholder="メール(省略可)" autocorrect="off" autocapitalize="off"';
-        $htm['msg_extra_at'] = ' class="form-control form-group" placeholder="本文" autocorrect="off" autocapitalize="off"';
+    $htm['k_br'] = '';
+    $htm['name_label'] = '';
+    $htm['mail_label'] = '';
+    $htm['name_extra_at'] = ' class="form-control form-group" placeholder="名前(省略可)" autocorrect="off" autocapitalize="off" style="display:inline-block;width:auto;"';
+    $htm['mail_extra_at'] = ' class="form-control form-group" placeholder="メール(省略可)" autocorrect="off" autocapitalize="off"';
+    $htm['msg_extra_at'] = ' class="form-control form-group" placeholder="本文" autocorrect="off" autocapitalize="off"';
 
-        $htm['kaiko_on_js_fmt'] = ' onfocus="%1$s" onkeyup="if(%2$s){%1$s}"';
-        $htm['kaiko_on_js_func'] = sprintf("adjustTextareaRows(this,%d,2); ", $STYLE['post_msg_rows']);
+    $htm['kaiko_on_js_fmt'] = ' onfocus="%1$s" onkeyup="if(%2$s){%1$s}"';
+    $htm['kaiko_on_js_func'] = sprintf("adjustTextareaRows(this,%d,2); ", $STYLE['post_msg_rows']);
 
-        $htm['submit_extra_at'] = 'class="btn form-group"';
-        if ($_conf['expack.editor.mobile.savedraft'] != '0' && $_conf['expack.editor.mobile.savedraft.interval'] > 0) {
-            $htm['kaiko_on_js_func'] = 'DraftKakiko.startAutoSave(this.form, ' . ($_conf['expack.editor.mobile.savedraft.interval'] * 1000) . '); '.$htm['kaiko_on_js_func'];
-        }
-
-        $htm['kaiko_on_js_cond'] = '!event||((event.keyCode&&(event.keyCode==8||event.keyCode==13))||event.ctrlKey||event.metaKey||event.altKey)';
-        $htm['kaiko_on_js'] = sprintf($htm['kaiko_on_js_fmt'], $htm['kaiko_on_js_func'], p2h($htm['kaiko_on_js_cond']));
-    } else {
-        $htm['name_label'] = '名前：';
-        $htm['mail_label'] = 'E-mail：';
-        $htm['name_extra_at'] = '';
-        $htm['mail_extra_at'] = '';
-        $htm['msg_extra_at'] = '';
-        $htm['submit_extra_at'] = '';
+    $htm['submit_extra_at'] = 'class="btn form-group"';
+    if ($_conf['expack.editor.mobile.savedraft'] != '0' && $_conf['expack.editor.mobile.savedraft.interval'] > 0) {
+        $htm['kaiko_on_js_func'] = 'DraftKakiko.startAutoSave(this.form, ' . ($_conf['expack.editor.mobile.savedraft.interval'] * 1000) . '); '.$htm['kaiko_on_js_func'];
     }
+
+    $htm['kaiko_on_js_cond'] = '!event||((event.keyCode&&(event.keyCode==8||event.keyCode==13))||event.ctrlKey||event.metaKey||event.altKey)';
+    $htm['kaiko_on_js'] = sprintf($htm['kaiko_on_js_fmt'], $htm['kaiko_on_js_func'], p2h($htm['kaiko_on_js_cond']));
 } else {
     $htm['k_br'] = '';
     if ($_conf['expack.editor.dpreview']) {
@@ -85,15 +75,11 @@ if ($_conf['wiki.samba_timer']) {
 
 // 下書き保存
 $savedraft = '';
-if ((!$_conf['ktai'] && $_conf['expack.editor.savedraft'] != 0) ||
-    ($_conf['iphone'] && $_conf['expack.editor.mobile.savedraft'] != 0)) {
+if (($_conf['iphone'] && $_conf['expack.editor.mobile.savedraft'] != 0) ||
+    (!$_conf['iphone'] && $_conf['expack.editor.savedraft'] != 0)) {
     $savedraft = <<<EOP
 <input id="post_draft_button" type="button" value="下書き保存" class="btn" onclick="DraftKakiko.saveDraftForm(this.form)">
 <span id="post_draft_msg" class="autosave-info"></span>
-EOP;
-} elseif ($_conf['ktai'] && $_conf['expack.editor.mobile.savedraft']) {
-    $savedraft = <<<EOP
-<input type="submit" name="savedraft" value="下書保存">
 EOP;
 }
 
@@ -113,13 +99,9 @@ $html_cmd_options = '';
 foreach ($commands_name as $cmd) {
     $html_cmd_options .= '<option value="' . p2h($cmd) . '">' . p2h($cmd) . "</option>\n";
 }
-if (!$_conf['ktai'] || $_conf['iphone']) {
-    $htm['name_select_html'] = '<select id="name_cmd_select" style="display:inline-block;width:auto;" onchange="document.getElementById(\'FROM\').value=this.value;">' . "\n" .
-        '<option value="">コマンド</option>' . "\n" .
-        $html_cmd_options . '</select>' . "\n";
-} else {
-    $htm['name_select_html'] = '';
-}
+$htm['name_select_html'] = '<select id="name_cmd_select" style="display:inline-block;width:auto;" onchange="document.getElementById(\'FROM\').value=this.value;">' . "\n" .
+    '<option value="">コマンド</option>' . "\n" .
+    $html_cmd_options . '</select>' . "\n";
 
 // 文字コード判定用文字列を先頭に仕込むことでmb_convert_variables()の自動判定を助ける
 $htm['post_form'] = <<<EOP

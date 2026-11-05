@@ -71,10 +71,6 @@ class P2Ime
         // ゲートウェイタイプ
         if ($type === null) {
             $type = $_conf['through_ime'];
-            // Cookieが無効 (URIにセッションIDを含む) のときは強制
-            if ((!$type || $type === 'noreferrer') && !$_conf['use_cookies']) {
-                $type = 'ex';
-            }
         }
 
         // pのみ手動転送
@@ -105,7 +101,7 @@ class P2Ime
             // $_conf['through_ime_http_only'] が 1 で、
             // セキュアな接続で、Cookieが有効 (URIにセッションIDを含まない) のとき、
             // httpプロトコルのリンクはゲートを通さない。
-            if ($_conf['through_ime_http_only'] && P2_HTTPS_CONNECTION && $_conf['use_cookies']) {
+            if ($_conf['through_ime_http_only'] && P2_HTTPS_CONNECTION) {
                 $this->_ignoreHttp = true;
             } else {
                 $this->_ignoreHttp = false;
@@ -151,11 +147,7 @@ class P2Ime
         // {{{ Google
         case 'google':
             $this->_method = '_throughGoogleGateway';
-            if ($_conf['ktai'] && !$_conf['iphone']) {
-                $this->_gateUrl = '//www.google.co.jp/gwt/x?u=';
-            } else {
-                $this->_gateUrl = '//www.google.co.jp/url?q=';
-            }
+            $this->_gateUrl = '//www.google.co.jp/url?q=';
             break;
         // }}}
         // {{{ Hawker!(jump.x0.to)
