@@ -122,7 +122,9 @@ if (isset($_POST['sync'])) {
             break;
         case 'matome':
             // êVíÖÇ‹Ç∆Çﬂì«Ç›
-            $delflag = MatomeCacheList::trim(0) === false ? false : true;
+            $dataDelflag = MatomeCacheDataStore::clear() === false ? false : true;
+            $metaDelflag = MatomeCacheMetaDataStore::clear() === false ? false : true;
+            $delflag = $dataDelflag && $metaDelflag;
             break;
         case 'recent':
             // ç≈ãﬂì«ÇÒÇæÉXÉå
