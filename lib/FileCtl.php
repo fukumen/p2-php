@@ -138,41 +138,6 @@ class FileCtl
     }
 
     // }}}
-    // {{{ mkdir_r()
-
-    /**
-     * mkdirRecursive() のエイリアス
-     *
-     * @param string $apath
-     * @param int $perm
-     * @return bool
-     */
-    static public function mkdir_r($apath, $perm = null)
-    {
-        return self::mkdirRecursive($apath, $perm);
-    }
-
-    // }}}
-    // {{{ get_gzfile_contents()
-
-    /**
-     * gzファイルの中身を取得する
-     */
-    static public function get_gzfile_contents($filepath)
-    {
-        if (is_readable($filepath)) {
-            if (FILECTL_HAVE_COMPRESS_ZLIB_WRAPPER) {
-                return file_get_contents('compress.zlib://' . realpath($filepath));
-            }
-            ob_start();
-            readgzfile($filepath);
-            return ob_get_clean();
-        } else {
-            return false;
-        }
-    }
-
-    // }}}
     // {{{ file_write_contents()
 
     /**

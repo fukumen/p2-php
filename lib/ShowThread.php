@@ -1325,20 +1325,6 @@ abstract class ShowThread
     abstract public function watchoiFilter($watchoi_str, $watchoi_id, $watchoi_id4);
 
     // }}}
-    // {{{ _idFilterCallback()
-
-    /**
-     * IDフィルタリング変換
-     *
-     * @param   array   $s  正規表現にマッチした要素の配列
-     * @return  string
-     */
-    protected function _idFilterCallback(array $s)
-    {
-        return $this->idFilter($s[0], $s[1]);
-    }
-
-    // }}}
     // {{{ _quoteNameCallback()
 
     /**
@@ -1392,20 +1378,6 @@ abstract class ShowThread
      * @return  string
      */
     abstract public function quoteResRange($full, $qsign, $appointed_num);
-
-    // }}}
-    // {{{ _quoteResRangeCallback()
-
-    /**
-     * 引用変換（範囲）
-     *
-     * @param   array   $s  正規表現にマッチした要素の配列
-     * @return  string
-     */
-    protected function _quoteResRangeCallback(array $s)
-    {
-        return $this->quoteResRange($s[0], $s[1], $s[2]);
-    }
 
     // }}}
     // {{{ checkQuoteResNums()

@@ -109,11 +109,6 @@ var cssClassFromNum = function(n1, n2) {
         + ('000000' + n2.toString(16)).slice(-6);
 };
 
-var cssClassFromId = function(id) {
-    var colors = colorFromId(id, 0);
-    return cssClassFromNum(colors.nums[0], colors.nums[1]);
-};
-
 var toggle = function(idstr, cnt, colorStyle, hissi) {
     var styles = styleFromId(idstr, cnt, hissi);
     var d0 = delrule(styles.klass + '-l');

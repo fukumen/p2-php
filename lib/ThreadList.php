@@ -439,7 +439,6 @@ class ThreadList
      *
      * @param bool $dir_sep
      * @return string
-     * @see P2Util::datDirOfHost(), Thread::getDatDir()
      */
     public function getDatDir($dir_sep = true)
     {
@@ -454,7 +453,6 @@ class ThreadList
      *
      * @param bool $dir_sep
      * @return string
-     * @see P2Util::idxDirOfHost(), Thread::getIdxDir()
      */
     public function getIdxDir($dir_sep = true)
     {

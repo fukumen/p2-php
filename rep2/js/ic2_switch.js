@@ -58,20 +58,6 @@ function ic2_menu_switch(onoff)
 }
 
 // }}}
-// {{{ ic2_iphone_switch()
-
-/**
- * ImageCache2‚Ì—LŒø/–³Œø‚ğØ‚è‘Ö‚¦‚é (iPhone—p)
- *
- * @param Boolean onoff
- * @return void
- */
-function ic2_mobile_switch(onoff)
-{
-	ic2_switch(onoff, 1);
-}
-
-// }}}
 
 /*
  * Local Variables:

@@ -36,53 +36,6 @@ class StrSjis
     */
 
     // }}}
-    // {{{ fixSjis()
-
-    /**
-     * SJIS文字列の末尾が、第一バイトであれば、タグが壊れる要因となるのでカットする。
-     *
-     * @access  public
-     * @return  string
-     */
-    static public function fixSjis($str)
-    {
-        if (strlen($str) == 0) {
-            return;
-        }
-
-        $un = unpack('C*', $str);
-
-        $on_sjisfirst = false;
-        $on_crasher = false;
-        foreach ($un as $v) {
-            if ($on_sjisfirst) {
-                $on_sjisfirst = false;
-                $on_crasher = false;
-            } else {
-                if (self::isSjis1stByte($v)) {
-                    $on_sjisfirst = true;
-                    $on_crasher = true;
-                } elseif (self::isSjisCrasherCode($v)) {
-                    $on_crasher = true;
-                }
-            }
-        }
-
-        if ($on_crasher) {
-            $str = substr($str, 0, -1);
-        }
-        return $str;
-
-        /*
-        // 末尾のみをチェックするためのコード。これでは不足。
-        if (self::isSjisCrasherCode($un[$count]) && !self::isSjis1stByte($un[$count-1])) {
-            $str = substr($str, 0, -1);
-            return $str;
-        }
-        */
-    }
-
-    // }}}
     // {{{ isSjisCrasherCode()
 
     /**

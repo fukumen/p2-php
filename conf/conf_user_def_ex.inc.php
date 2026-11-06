@@ -179,10 +179,6 @@ $conf_user_def['expack.rss.desc_target_frame'] = "read"; // ("read")
 $conf_user_def['expack.ic2.viewer_default_mode'] = 0; // (0)
 $conf_user_sel['expack.ic2.viewer_default_mode'] = array('3' => 'サムネイルだけ', '0' => '一覧', '1' => '一括変更', '2' => '個別管理');
 
-// キャッシュに失敗したときの確認用にime経由でソースへのリンクを作成
-$conf_user_def['expack.ic2.through_ime'] = 0; // (0)
-$conf_user_rad['expack.ic2.through_ime'] = array('1' => 'する', '0' => 'しない');
-
 // ポップアップ画像の大きさをウインドウの大きさに合わせる
 $conf_user_def['expack.ic2.fitimage'] = 0; // (0)
 $conf_user_sel['expack.ic2.fitimage'] = array('1' => 'する', '0' => 'しない', '2' => '幅が大きいときだけする', '3' => '高さが大きいときだけする', '4' => '手動でする');

@@ -3,37 +3,6 @@
 
 /* p2 - メニューを操作するためのJavaScript */
 
-/**
- * お気に板にする
- */
-function setFavIta(php, itaj, host, bbs, itaj_en, noconfirm)
-{
-	if (noconfirm || window.confirm('"' + itaj + '" をお気に板に登録しますか？')) {
-		var setURL = php + '?host=' + host + '&bbs=' +bbs + '&itaj_en=' + itaj_en+ '&setfavita=1';
-		this.window.location.href = setURL;
-	}
-	return false;
-}
-
-/**
- * お気に板から外す
- */
-function unSetFavIta(php, itaj, host, bbs, noconfirm)
-{
-	if (noconfirm || window.confirm('"' + itaj + '" をお気に板から外しますか？')) {
-		// プルダウンメニューでセットを切り替えたときの特別な処理
-		if (php.indexOf('menu_async.php') != -1) {
-			if (this.window.location.href.indexOf('menu_side.php') != -1) {
-				php = php.replace(/menu_async\.php/, 'menu_side.php');
-			} else {
-				php = php.replace(/menu_async\.php/, 'menu.php');
-			}
-		}
-		var unsetURL = php + '?host=' + host + '&bbs=' +bbs + '&setfavita=0';
-		this.window.location.href = unsetURL;
-	}
-	return false;
-}
 
 /**
  * お気に板・RSSを切り替える

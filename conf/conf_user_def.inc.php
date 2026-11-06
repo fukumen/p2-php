@@ -248,10 +248,6 @@ $conf_user_rules['mobile.res_size'] = array('emptyToDef', 'notIntExceptMinusToDe
 $conf_user_def['mobile.ryaku_size'] = 120; // (120)
 $conf_user_rules['mobile.ryaku_size'] = array('notIntExceptMinusToDef');
 
-// 携帯閲覧時、AAらしきレスを省略するサイズ（0なら無効）
-$conf_user_def['mobile.aa_ryaku_size'] = 30; // (30)
-$conf_user_rules['mobile.aa_ryaku_size'] = array('notIntExceptMinusToDef');
-
 // 携帯閲覧時、ポインタの何コ前のレスから表示するか
 $conf_user_def['mobile.before_respointer'] = 0; // (0)
 $conf_user_rules['mobile.before_respointer'] = array('notIntExceptMinusToDef');

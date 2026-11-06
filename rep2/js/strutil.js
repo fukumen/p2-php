@@ -288,16 +288,3 @@ String.prototype.decodeEntity = function()
 {
 	return StrUtil.decodeEntity(this);
 }
-
-// Textarea オブジェクトのプロトタイプを拡張 - IE ではこの方法は使えない
-/*
-document.createElement('textarea').constructor.prototype.toHTML = function()
-{
-	return this.value.decodeEntity().htmlspecialchars().nl2br();
-}
-
-document.createElement('textarea').constructor.prototype.toHTML2 = function()
-{
-	return this.value.htmlspecialchars2().nl2br2();
-}
-*/

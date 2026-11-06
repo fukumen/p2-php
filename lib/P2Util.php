@@ -431,40 +431,6 @@ class P2Util
     }
 
     // }}}
-    // {{{ datDirOfHost()
-
-    /**
-     * hostからdatの保存ディレクトリを返す
-     * 古いコードとの互換のため、デフォルトではディレクトリ区切り文字を追加しない
-     *
-     * @param string $host
-     * @param bool $dir_sep
-     * @return string
-     * @see P2Util::_p2DirOfHost()
-     */
-    static public function datDirOfHost($host, $dir_sep = false)
-    {
-        return self::_p2DirOfHost($GLOBALS['_conf']['dat_dir'], $host, $dir_sep);
-    }
-
-    // }}}
-    // {{{ idxDirOfHost()
-
-    /**
-     * hostからidxの保存ディレクトリを返す
-     * 古いコードとの互換のため、デフォルトではディレクトリ区切り文字を追加しない
-     *
-     * @param string $host
-     * @param bool $dir_sep
-     * @return string
-     * @see P2Util::_p2DirOfHost()
-     */
-    static public function idxDirOfHost($host, $dir_sep = false)
-    {
-        return self::_p2DirOfHost($GLOBALS['_conf']['idx_dir'], $host, $dir_sep);
-    }
-
-    // }}}
     // {{{ datDirOfHostBbs()
 
     /**
@@ -534,63 +500,6 @@ class P2Util
         }
 
         return $old_path;
-    }
-
-    // }}}
-    // {{{ getDatPath()
-
-    /**
-     * host,bbs,keyからdatの保存パスを返す
-     *
-     * @param string $host
-     * @param string $bbs
-     * @param string $key
-     * @return string
-     * @see P2Util::datDirOfHostBbs(), P2Utill::getKeyPath()
-     */
-    static public function getDatPath($host, $bbs, $key)
-    {
-        return self::getKeyPath(self::datDirOfHostBbs($host, $bbs), $key, '.dat');
-    }
-
-    // }}}
-    // {{{ getIdxPath()
-
-    /**
-     * host,bbs,keyからidxの保存パスを返す
-     *
-     * @param string $host
-     * @param string $bbs
-     * @param string $key
-     * @return string
-     * @see P2Util::idxDirOfHostBbs(), P2Utill::getKeyPath()
-     */
-    static public function getIdxPath($host, $bbs, $key)
-    {
-        return self::getKeyPath(self::idxDirOfHostBbs($host, $bbs), $key, '.idx');
-    }
-
-    // }}}
-    // {{{ pathForHost()
-
-    /**
-     * hostに対応する汎用のパスを返す
-     *
-     * @param string $host
-     * @param bool $with_slashes
-     * @return string
-     * @see P2Util::_p2DirOfHost()
-     */
-    static public function pathForHost($host, $with_slashes = true)
-    {
-        $path = self::_p2DirOfHost('', $host, $with_slashes);
-        if (DIRECTORY_SEPARATOR != '/') {
-            $path = str_replace(DIRECTORY_SEPARATOR, '/', $path);
-        }
-        if (!$with_slashes) {
-            $path = trim($path, '/');
-        }
-        return $path;
     }
 
     // }}}
@@ -1087,37 +996,6 @@ class P2Util
         }
 
         return UrlSafeBase64::encode(P2Hash::hash($key, true));
-    }
-
-    // }}}
-    // {{{ print403()
-
-    /**
-     * 403 Fobbidenを出力する
-     */
-    static public function print403($msg = '')
-    {
-        header('HTTP/1.0 403 Forbidden');
-        echo <<<ERR
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
-    <meta name="ROBOTS" content="NOINDEX, NOFOLLOW">
-    <title>403 Forbidden</title>
-</head>
-<body>
-    <h1>403 Forbidden</h1>
-    <p>{$msg}</p>
-</body>
-</html>
-ERR;
-        // IEデフォルトのメッセージを表示させないようにスペースを出力
-        if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
-            for ($i = 0; $i < 512; $i++) {
-                echo ' ';
-            }
-        }
-        exit;
     }
 
     // }}}

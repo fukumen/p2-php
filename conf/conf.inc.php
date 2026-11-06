@@ -7,7 +7,7 @@
 // バージョン情報
 $_conf = array(
     'p2name'    => 'rep2-expack_allinone',   // rep2の名前
-    'p2version' => '260101.0038',   // rep2のバージョン
+    'p2version' => '260101.0039',   // rep2のバージョン
 );
 
 $_conf['p2ua'] = "{$_conf['p2name']}/" . substr($_conf['p2version'], 0, 2);
@@ -53,7 +53,6 @@ $conf_user_sel   = array();
 p2_init();
 
 // E_NOTICE および暗黙の配列初期化除け
-$_conf['filtering'] = false;
 $hd = array('word' => null);
 $htm = array();
 $word = null;
@@ -206,16 +205,9 @@ function p2_init()
     $_conf['pref_dir'] = p2_realpath($_conf['pref_dir']);
     $_conf['db_dir']   = p2_realpath($_conf['db_dir']);
 
-    // 管理用保存ディレクトリ
-    $_conf['admin_dir'] = $_conf['data_dir'] . '/admin';
-
     // cache 保存ディレクトリ
     // 2005/06/29 $_conf['pref_dir'] . '/p2_cache' より変更
     $_conf['cache_dir'] = $_conf['data_dir'] . '/cache';
-
-    // Cookie 保存ディレクトリ
-    // 2008/09/09 $_conf['pref_dir'] . '/p2_cookie' より変更
-    $_conf['cookie_dir'] = $_conf['data_dir'] . '/cookie';
 
     // コンパイルされたテンプレートの保存ディレクトリ
     $_conf['compile_dir'] = $_conf['data_dir'] . '/compile';
@@ -269,15 +261,12 @@ function p2_init()
 
     $_conf['cookie_db_path']            = $_conf['db_dir'] . '/p2_cookies.sqlite3';
     $_conf['post_db_path']              = $_conf['db_dir'] . '/p2_post_data.sqlite3';
-    $_conf['hostcheck_db_path']         = $_conf['db_dir'] . '/p2_hostcheck_cache.sqlite3';
     $_conf['matome_db_path']            = $_conf['db_dir'] . '/p2_matome_cache.sqlite3';
     $_conf['key_db_path']               = $_conf['db_dir'] . '/p2_keys.sqlite3';
     $_conf['iv2_cache_db_path']         = $_conf['db_dir'] . '/iv2_cache.sqlite3';
     $_conf['passkey_challenge_db_path'] = $_conf['db_dir'] . '/p2_passkey_challenge.sqlite3';
 
     // }}}
-
-    $_conf['dropbox_auth_json'] = P2_CONFIG_DIR . '/dropbox.json';
 
     include P2_CONFIG_DIR . '/empty_style.php';
     include P2_LIB_DIR . '/bootstrap.php';

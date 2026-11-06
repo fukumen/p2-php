@@ -120,24 +120,6 @@ function checkSage(){
 	}
 }
 
-/*
-// 自動で読み込むことにしたので、使わない
-
-// 前回の書き込み内容を復帰する
-function loadLastPosted(from, mail, message){
-	if (fromran = document.getElementById('FROM')) {
-		fromran.value = from;
-	}
-	if (mailran = document.getElementById('mail')) {
-		mailran.value = mail;
-	}
-	if (messageran = document.getElementById('MESSAGE')) {
-		messageran.value = message;
-	}
-	checkSage();
-}
-*/
-
 // 書き込みボタンの有効・無効を切り替える
 function switchBlockSubmit(onoff) {
 	var kakiko_submit = document.getElementById('kakiko_submit');
@@ -148,14 +130,6 @@ function switchBlockSubmit(onoff) {
 	if (submit_beres) {
 		submit_beres.disabled = onoff;
 	}
-}
-
-// 定型文を挿入する
-function inputConstant(obj) {
-	var msg = document.getElementById('MESSAGE');
-	msg.value = msg.value + obj.options[obj.selectedIndex].value;
-	msg.focus();
-	obj.options[0].selected = true;
 }
 
 // 書き込み内容を検証する

@@ -6,50 +6,6 @@
 // {{{ rep2 1.8.x lib/global.funcs.php より
 
 /**
- * htmlspecialchars() の別名みたいなもの
- *
- * @param   string  $alt  値が空のときの代替文字列
- * @return  string|null
- */
-function hs($str, $alt = '', $quoteStyle = ENT_QUOTES, $charset = 'Shift_JIS')
-{
-    return (isset($str) && strlen($str) > 0) ? htmlspecialchars($str, $quoteStyle, $charset) : $alt;
-}
-
-/**
- * notice の抑制もしてくれる hs()
- * 参照で値を受け取るのはイマイチだが、そうしなければnoticeの抑制ができない
- *
- * @param   &string  $str  文字列変数の参照
- * @return  string|null
- */
-function hsi(&$str, $alt = '', $quoteStyle = ENT_QUOTES, $charset = 'Shift_JIS')
-{
-    return (isset($str) && strlen($str) > 0) ? htmlspecialchars($str, $quoteStyle, $charset) : $alt;
-}
-
-/**
- * echo hs()
- *
- * @return  void
- */
-function eh($str, $alt = '', $quoteStyle = ENT_QUOTES)
-{
-    echo hs($str, $alt, $quoteStyle);
-}
-
-/**
- * echo hs() （noticeを抑制する）
- *
- * @param   &string  $str  文字列変数の参照
- * @return  void
- */
-function ehi(&$str, $alt = '', $quoteStyle = ENT_QUOTES, $charset = 'Shift_JIS')
-{
-    echo hs($str, $alt, $quoteStyle, $charset);
-}
-
-/**
  * 存在しない変数の notice を出すことなく、変数の値を取得する
  *
  * この関数で配列の中身を取得しようとすると、配列そのものを作成してしまうことがあるのに注意。
@@ -60,25 +16,6 @@ function ehi(&$str, $alt = '', $quoteStyle = ENT_QUOTES, $charset = 'Shift_JIS')
 function geti(&$var, $alt = null)
 {
     return isset($var) ? $var : $alt;
-}
-
-/**
- * 改行を付けて文字列を出力する。cli(\n)とweb(<br>)で出力が変化する。
- * 引数の文字列は複数取ることが可能。引数がなければ改行だけを出力する。
- *
- * @return  void
- */
-function echoln()
-{
-    $n = (php_sapi_name() == 'cli') ? "\n" : '<br>';
-    
-    if ($args = func_get_args()) {
-        foreach ($args as $v) {
-            echo $v . $n;
-        }
-    } else {
-        echo $n;
-    }
 }
 
 // }}}
@@ -163,9 +100,6 @@ function p2h($string, $double_encode = true)
 /**
  * メッセージを表示して終了
  * ヘッダが出力されている場合、<body>までは出力済と見なす
- *
- * 終了ステータスコード2はP2CommandRunnerにエラーメッセージが
- * HTMLであることを通知するため
  *
  * @param   string $err エラー概要
  * @param   string $msg 詳細な説明
@@ -276,11 +210,7 @@ if (!function_exists('http_date')) {
  */
 if (!extension_loaded('ctype')) {
     function ctype_alnum($str) { return (bool)preg_match('/^[0-9A-Za-z]+$/', $str); }
-    function ctype_alpha($str) { return (bool)preg_match('/^[A-Za-z]+$/', $str); }
     function ctype_digit($str) { return (bool)preg_match('/^[0-9]+$/', $str); }
-    function ctype_lower($str) { return (bool)preg_match('/^[a-z]+$/', $str); }
-    function ctype_upper($str) { return (bool)preg_match('/^[A-Z]+$/', $str); }
-    function ctype_xdigit($str) { return (bool)preg_match('/^[0-9A-Fa-f]+$/', $str); }
 }
 
 // }}}
@@ -431,38 +361,6 @@ function p2_mb_basename($path, $encoding = 'CP932')
     $len = mb_strlen($path, $encoding);
     $pos = mb_strrpos($path, '/', 0, $encoding);
     return mb_substr($path, $pos + 1, $len - $pos, $encoding);
-}
-
-// }}}
-// {{{ p2_mb_ereg_count()
-
-/**
- * マルチバイト正規表現にマッチした回数を返す
- *
- * @param   string $pattern
- * @param   string $string
- * @param   string $option
- * @return  int
- */
-function p2_mb_ereg_count($pattern, $string, $option = null)
-{
-    if ($option === null) {
-        if (!mb_ereg_search_init($string, $pattern)) {
-            return false;
-        }
-    } else {
-        if (!mb_ereg_search_init($string, $pattern, $option)) {
-            return false;
-        }
-    }
-
-    $i = 0;
-
-    while (mb_ereg_search()) {
-        $i++;
-    }
-
-    return $i;
 }
 
 // }}}
@@ -683,27 +581,6 @@ function p2_escape_css_url($url)
     return str_replace(array( "\t",  "\n",  "\r",   ' ',   '"',   "'",   '(',   ')',  '\\'),
                        array('%09', '%0A', '%0D', '%20', '%22', '%27', '%28', '%29', '%5C'),
                        $url);
-}
-
-// }}}
-// {{{ p2_stream_eof()
-
-/**
- * タイムアウトチェックつきfeof()
- *
- * @param   stream  $fp
- * @param   boolean &$timed_out
- * @return  boolean
- */
-function p2_stream_eof($fp, &$timed_out = false)
-{
-    $info = stream_get_meta_data($fp);
-    $timed_out = $info['timed_out'];
-    if (feof($fp) || $timed_out) {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 // }}}

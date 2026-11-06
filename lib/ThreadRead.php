@@ -1004,38 +1004,6 @@ class ThreadRead extends Thread {
         return $read_response_html;
     }
     // }}}
-    // {{{ previewOneNotFound()
-
-    /**
-     * >>1をプレビューでスレッドデータが見つからなかったときに呼び出される
-     */
-    public function previewOneNotFound($code = null) {
-        global $_conf;
-
-        $this->diedat = true;
-        // 2ch, bbspink, vip2ch ならread.cgiで確認
-        if (P2HostMgr::isHost2chs ($this->host) || P2HostMgr::isHostVip2ch ($this->host)) {
-            $this->getdat_error_msg_ht = $this->get2chDatError ($code);
-            if (count ($this->datochi_residuums)) {
-                if ($_conf['iphone']) {
-                    $aShowThread = new ShowThreadI ($this);
-                    $aShowThread->am_autong = false;
-                } else {
-                    $aShowThread = new ShowThreadPc ($this);
-                }
-                $this->onthefly = true;
-                $body = "<div><span class=\"onthefly\">on the fly</span></div>\n";
-                $body .= "<div class=\"thread\">\n";
-                $res = $aShowThread->transRes ($this->datochi_residuums[1], 1);
-                $body .= is_array ($res) ? $res['body'] . $res['q'] : $res;
-                $body .= "</div>\n";
-                return $body;
-            }
-        }
-        return false;
-    }
-
-    // }}}
     // {{{ lsToPoint()
 
     /**
@@ -1373,74 +1341,10 @@ class ThreadRead extends Thread {
     }
 
     // }}}
-    // {{{ _pushInfoMessage()
-
-    /**
-     * 情報メッセージをプッシュする
-     *
-     * @param string $summary
-     * @param string $description
-     * @return void
-     */
-    static protected function _pushInfoMessage($summary, $description) {
-        $message = '<p class="info-msg">' . $summary . '<br>rep2 info: ' . $description . '</p>';
-        P2Util::pushInfoHtml ($message);
-    }
-
-    // }}}
-    // {{{ _pushInfoConnectFailed()
-
-    /**
-     * 接続に失敗した旨のメッセージをプッシュする
-     *
-     * @param string $url
-     * @param int $errno
-     * @param string $errstr
-     * @return void
-     */
-    static protected function _pushInfoConnectFailed($url, $errno, $errstr) {
-        $summary = sprintf ('HTTP接続エラー (%d) %s', $errno, $errstr);
-        $description = self::_urlToAnchor ($url) . ' に接続できませんでした。';
-        self::_pushInfoMessage ($summary, $description);
-    }
-
-    // }}}
-    // {{{ _pushInfoReadTimedOut()
-
-    /**
-     * 読み込みがタイムアウトした旨のメッセージをプッシュする
-     *
-     * @param string $url
-     * @return void
-     */
-    static protected function _pushInfoReadTimedOut($url) {
-        $summary = 'HTTP接続タイムアウト';
-        $description = self::_urlToAnchor ($url) . ' を読み込み完了できませんでした。';
-        self::_pushInfoMessage ($summary, $description);
-    }
-
-    // }}}
-    // {{{ _pushInfoHttpError()
-
-    /**
-     * HTTPエラーのメッセージをプッシュする
-     *
-     * @param string $url
-     * @param int $errno
-     * @param string $errstr
-     * @return void
-     */
-    static protected function _pushInfoHttpError($url, $errno, $errstr) {
-        $summary = sprintf ('HTTP %d %s', $errno, $errstr);
-        $description = self::_urlToAnchor ($url) . ' を読み込めませんでした。';
-        self::_pushInfoMessage ($summary, $description);
-    }
-
-    // }}}
     // {{{ _urlToAnchor()
 
     /**
-     * _pushInfo系メソッド用にURLをアンカーに変換する
+     * URLをアンカーに変換する
      *
      * @param string $url
      * @return string

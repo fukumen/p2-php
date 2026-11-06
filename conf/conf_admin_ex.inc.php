@@ -14,9 +14,6 @@ $_conf['expack.user_agent'] = ""; // ("")
 // コマンドライン版PHPのパス。できるだけ絶対パスで指定すること
 $_conf['expack.php_cli_path'] = "php"; // ("php")
 
-// Zend Framework (Zend Gdataでも可) のlibraryディレクトリへのパス
-$_conf['expack.zf_path'] = ""; // ("")
-
 // curl による並列ダウンロードを有効にする
 // (off:0, on:1)
 $_conf['expack.use_curl_multi'] = 1; // (1)
@@ -56,15 +53,6 @@ $_conf['expack.spm.enabled'] = 1; // (1)
 
 // AA 補正（off:0, on:1）
 $_conf['expack.am.enabled'] = 0; // (0)
-
-// }}}
-// {{{ 入力支援
-
-// ActiveMona による AA プレビュー（off:0, on:1）
-$_conf['expack.editor.with_activemona'] = 0; // (0)
-
-// AAS による AA プレビュー（off:0, on:1）
-$_conf['expack.editor.with_aas'] = 0; // (0)
 
 // }}}
 // {{{ RSSリーダ
@@ -115,14 +103,6 @@ $_conf['expack.aas.unknown_char'] = "?"; // ("?")
 // "CP51932" では configure のオプションに --enable-gd-native-ttf が指定されていないと文字化けする
 // このとき Unicode 対応フォントを使っているなら "UTF-8" にすると正しく表示できる
 $_conf['expack.aas.output_charset'] = "CP51932"; // ("CP51932")
-
-// }}}
-// {{{ Dropbox
-
-// アップロード先パス接頭辞
-// 必ず "/" で始まること。また、最後の "/" 以降に文字があれば、
-// それはアップロードされたファイル名の接頭辞になる。
-$_conf['expack.dropbox.upload_prefix'] = "/uploads/"; // ("/uploads/")
 
 // }}}
 // {{{ その他

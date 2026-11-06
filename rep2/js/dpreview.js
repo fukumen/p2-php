@@ -42,9 +42,6 @@ function DPInit()
 		if (document.getElementById('fix_source')) {
 			f_src = document.getElementById('fix_source');
 		}
-		f_msg.toHTML = function() {
-			return this.value.decodeEntity().htmlspecialchars().nl2br();
-		}
 		f_msg.toHTML2 = function() {
 			return this.value.htmlspecialchars2().nl2br2();
 		}
@@ -231,25 +228,6 @@ function DPSetTrip(tk)
 	objHTTP.open('GET', uri, true);
 	objHTTP.send(null);
 }
-
-
-// XMLHttpRequestを用いてトリップを取得する
-function DPGetTrip(tk)
-{
-	var objHTTP = new XMLHttpRequest();
-	if (!objHTTP) {
-		return '◆XMLHTTP Disabled.';
-	}
-	var uri = 'tripper.php?tk=' + encodeURIComponent(tk);
-	objHTTP.open('GET', uri, false);
-	objHTTP.send(null);
-	if ((objHTTP.status != 200 || objHTTP.readyState != 4) && !objHTTP.responseText) {
-		return '◆XMLHTTP Failed.';
-	}
-	return '◆' + objHTTP.responseText;
-}
-
-
 // 本文のスタイルを切り替える
 function DPChangeStyle()
 {

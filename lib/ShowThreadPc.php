@@ -23,7 +23,6 @@ class ShowThreadPc extends ShowThread
     public $am_side_of_id = false; // AAスイッチをIDの横に表示する
     public $am_on_spm = false; // AAスイッチをSPMに表示する
 
-    public $asyncObjName;  // 非同期読み込み用JavaScriptオブジェクト名
     public $spmObjName; // スマートポップアップメニュー用JavaScriptオブジェクト名
 
     // }}}
@@ -89,13 +88,11 @@ class ShowThreadPc extends ShowThread
             ExpackLoader::initImageCache($this);
         }
 
-        // 非同期レスポップアップ・SPM初期化
+        // SPM初期化
         $js_id = sprintf('%u', crc32($this->thread->keydat));
         if ($this->_matome) {
-            $this->asyncObjName = "t{$this->_matome}asp{$js_id}";
             $this->spmObjName = "t{$this->_matome}spm{$js_id}";
         } else {
-            $this->asyncObjName = "asp{$js_id}";
             $this->spmObjName = "spm{$js_id}";
         }
 
@@ -1053,48 +1050,6 @@ EOP;
 
         $pops = ($_conf['iframe_popup'] == 1) ? $img_tag . $link_str : array($link_str, $img_tag);
         return self::iframePopup(array($img_url, $popup_url), $pops, $_conf['ext_win_target_at'], null, true, $extra);
-    }
-
-    // }}}
-    // {{{ respopToAsync()
-
-    /**
-     * レスポップアップを非同期モードに加工する
-     */
-    public function respopToAsync($str)
-    {
-        $respop_regex = '/(onmouseover)=\"(showResPopUp\(\'(q(\d+)of\d+)\',event\).*?)\"/';
-        $respop_replace = '$1="loadResPopUp(' . $this->asyncObjName . ', $4);$2"';
-        return preg_replace($respop_regex, $respop_replace, $str);
-    }
-
-    // }}}
-    // {{{ getASyncObjJs()
-
-    /**
-     * 非同期読み込みで利用するJavaScriptオブジェクトを生成する
-     */
-    public function getASyncObjJs()
-    {
-        global $_conf;
-        static $done = array();
-
-        if (isset($done[$this->asyncObjName])) {
-            return;
-        }
-        $done[$this->asyncObjName] = true;
-
-        $code = <<<EOJS
-<script type="text/javascript">
-//<![CDATA[
-var {$this->asyncObjName} = {
-    host:"{$this->thread->host}", bbs:"{$this->thread->bbs}", key:"{$this->thread->key}",
-    readPhp:"{$_conf['read_php']}", readTarget:"{$_conf['bbs_win_target']}"
-};
-//]]>
-</script>\n
-EOJS;
-        return $code;
     }
 
     // }}}

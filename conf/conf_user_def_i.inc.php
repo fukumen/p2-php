@@ -29,18 +29,6 @@ $conf_user_def['expack.tba.android.thread_uri'] = ""; // ("")
 // Android用スレッド内容ツールバーアクションのタイトル
 $conf_user_def['expack.tba.android.thread_title'] = ""; // ("")
 
-// 携帯用スレッド一覧ツールバーアクションのURI
-$conf_user_def['expack.tba.mobile.board_uri'] = ""; // ("")
-
-// 携帯用スレッド一覧ツールバーアクションのタイトル
-$conf_user_def['expack.tba.mobile.board_title'] = ""; // ("")
-
-// 携帯用スレッド内容ツールバーアクションのURI
-$conf_user_def['expack.tba.mobile.thread_uri'] = ""; // ("")
-
-// 携帯用スレッド内容ツールバーアクションのタイトル
-$conf_user_def['expack.tba.mobile.thread_title'] = ""; // ("")
-
 // PC用スレッド一覧ツールバーアクションのURI
 $conf_user_def['expack.tba.other.board_uri'] = ""; // ("")
 

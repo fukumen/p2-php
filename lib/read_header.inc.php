@@ -252,11 +252,6 @@ if ($_conf['expack.am.enabled']) {
     <script type="text/javascript" src="js/asciiart.js?{$_conf['p2_version_id']}"></script>\n
 EOP;
 }
-/*if ($_conf['expack.misc.async_respop']) {
-    echo <<<EOP
-    <script type="text/javascript" src="js/async.js?{$_conf['p2_version_id']}"></script>\n
-EOP;
-}*/
 if ($_conf['expack.spm.enabled']) {
     $info_popup_width = 0;
     $info_popup_height = 0;

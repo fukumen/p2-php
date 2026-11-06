@@ -646,7 +646,6 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
         array('mobile.rnum_range', '一度に表示するレスの数'),
         array('mobile.res_size', '一つのレスの最大表示サイズ'),
         array('mobile.ryaku_size', 'レスを省略したときの表示サイズ'),
-        array('mobile.aa_ryaku_size', 'AAらしきレスを省略するサイズ (0なら無効)'),
         array('mobile.before_respointer', 'ポインタの何コ前のレスから表示するか'),
         array('mobile.use_picto', '画像リンクにpic.to(ﾋﾟ)を利用'),
 
@@ -820,7 +819,6 @@ if ($flags & P2_EDIT_CONF_USER_SKIPPED) {
 } else {
     $conflist = array(
         array('expack.ic2.viewer_default_mode', '画像キャッシュ一覧のデフォルト表示モード'),
-        array('expack.ic2.through_ime', 'キャッシュに失敗したときの確認用にime経由でソースへのリンクを作成'),
         array('expack.ic2.fitimage', 'ポップアップ画像の大きさをウインドウの大きさに合わせる'),
         array('expack.ic2.pre_thumb_limit_k', '携帯でインライン・サムネイルが有効のときの表示する制限数 (0で無制限)'),
         array('expack.ic2.newres_ignore_limit', '新着レスの画像は pre_thumb_limit を無視して全て表示'),
@@ -941,10 +939,6 @@ EOS;
         array('expack.tba.android.board_title', 'Android/スレ一覧/タイトル'),
         array('expack.tba.android.thread_uri', 'Android/スレ内容/URI', P2_EDIT_CONF_USER_LONGTEXT),
         array('expack.tba.android.thread_title', 'Android/スレ内容/タイトル'),
-        array('expack.tba.mobile.board_uri', '携帯/スレ一覧/URI', P2_EDIT_CONF_USER_LONGTEXT),
-        array('expack.tba.mobile.board_title', '携帯/スレ一覧/タイトル'),
-        array('expack.tba.mobile.thread_uri', '携帯/スレ内容/URI', P2_EDIT_CONF_USER_LONGTEXT),
-        array('expack.tba.mobile.thread_title', '携帯/スレ内容/タイトル'),
         array('expack.tba.other.board_uri', 'PC/スレ一覧/URI', P2_EDIT_CONF_USER_LONGTEXT),
         array('expack.tba.other.board_title', 'PC/スレ一覧/タイトル'),
         array('expack.tba.other.thread_uri', 'PC/スレ内容/URI', P2_EDIT_CONF_USER_LONGTEXT),
