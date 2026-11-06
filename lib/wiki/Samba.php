@@ -97,7 +97,7 @@ class Samba
         }
         $this->data[$bbs]['write'] = time();
         // ÅIŽæ“¾‚©‚çsamba_cacheŽžŠÔŒo‰ß‚µ‚½ê‡
-        if ((time() - $this->data[$bbs]['get']) > $_conf['samba_cache'] * 3600) {
+        if ((time() - $this->data[$bbs]['get']) > $_conf['wiki.samba_cache'] * 3600) {
             $this->getSambaTime($host, $bbs);
         }
     }
