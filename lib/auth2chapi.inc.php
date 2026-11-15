@@ -17,7 +17,7 @@
 
         $url= http_build_url(array(
             "scheme" => $_conf['2chapi_ssl.auth']?"https":"http",
-            "host" => "api.5ch.net",
+            "host" => "api." . $_conf['2ch_domain'],
             "path" => "v1/auth/"));
 
         $CT = time();

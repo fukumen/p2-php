@@ -150,7 +150,7 @@ class ThreadRead extends Thread {
 
         $url= http_build_url(array(
             "scheme" => $_conf['2chapi_ssl.read']?"https":"http",
-            "host" => "api.5ch.net",
+            "host" => "api." . $_conf['2ch_domain'],
             "path" => "v1/".$serverName[0] . '/' . $this->bbs . '/' . $this->key));
 
         $message = '/v1/' . $serverName[0] . '/' . $this->bbs . '/' . $this->key . $SID2ch . $AppKey;
@@ -543,13 +543,13 @@ class ThreadRead extends Thread {
                 $this->modified = null;
                 return $this->_downloadDat2ch (0); // あぼーん検出。全部取り直し。
             } elseif ($code == '404' && P2HostMgr::isHost2chs($this->host) && ! P2HostMgr::isHostBbsPink($this->host)) {
-                if ($this->host == 'kako.' . $_conf['2ch_domain']) {
+                if (strpos($this->host, 'kako.') === 0) {
                     return $this->_downloadDat5chKako ();
                 } else {
                     $uri = P2Util::selectScheme($this->host)."://{$this->host}/{$this->bbs}/oyster/".substr($this->key, 0, 4)."/{$this->key}";
                     return $this->_downloadDat2chKako ($uri, ".dat");
                 }
-            } elseif ($code == '301' && ($location = $response->getHeader('Location')) && (strpos($location, 'kako.' . $_conf['2ch_domain']) !== false)) {
+            } elseif ($code == '301' && ($location = $response->getHeader('Location')) && (strpos($location, '://kako.') !== false) && ! P2HostMgr::isHostBbsPink($this->host)) {
                 return $this->_downloadDat5chKako ();
             } elseif ($code == '522') {
                 $serverName = $response->getHeader('Server');
@@ -642,57 +642,6 @@ class ThreadRead extends Thread {
     }
 
     // }}}
-    // {{{ _downloadDat5chKako()
-
-    /**
-     * 5chの過去ログ倉庫からhtmlを取得しdatに変換する
-     */
-    protected function _downloadDat5chKako() {
-        global $_conf;
-
-        $this->host = 'kako.' . $_conf['2ch_domain'];
-        $url = P2Util::selectScheme($this->host)."://{$this->host}/test/read.cgi/{$this->bbs}/{$this->key}/";
-
-        try {
-            $req = P2Commun::createHTTPRequest ($url, P2CurlRequest::METHOD_GET, $_SERVER['HTTP_USER_AGENT']);
-            // ヘッダ
-            // $req->setHeader ('User-Agent', P2Commun::getP2UA(false,P2HostMgr::isHost2chs($this->host))); // ここは、"Monazilla/" をつけるとNG
-            // read.cgiにrep2のUAでアクセスすると弾かれるサイトがあるので対処
-
-            // Requestの送信
-            $response = P2Commun::getHTTPResponse($req);
-
-            $code = $response->getStatus ();
-
-            if ($code == '200' || $code == '206') { // Partial Content
-                $body = $response->getBody ();
-
-                $this->modified = $response->getHeader ('Last-Modified');
-
-                include P2_LIB_DIR . '/html2dat_kako5ch.inc.php';
-                if (($this->onbytes = html2dat_kako5ch($body, $this->keydat)) == 0) {
-                    p2die ('cannot write file. _downloadDat5chKako()');
-                }
-                
-
-                // 過去ログ扱いフラグを立てる (idxline[12]に保存される)
-                $this->datochiok = true;
-
-                return true;
-            } elseif ($code == '304') {
-                return '304 Not Modified';
-            } else {
-                return $this->_downloadDat2chNotFound ($code);
-            }
-        } catch (Exception $e) {
-            $this->getdat_error_msg_ht .= "<p>サーバ接続エラー: " . $e->getMessage ();
-            $this->getdat_error_msg_ht .= "<br>rep2 error: 板サーバへの接続に失敗しました。</p>";
-            $this->diedat = true;
-            return false;
-        }
-    }
-
-    // }}}
     // {{{ _downloadDat2chKakoNotFound()
 
     /**
@@ -711,6 +660,127 @@ class ThreadRead extends Thread {
         }
         $this->getdat_error_msg_ht = "<p>rep2 info: 2ちゃんねる過去ログ倉庫からのスレッド取り込みに失敗しました。</p>";
         $this->getdat_error_msg_ht .= $kakolog_ht;
+        $this->diedat = true;
+        return false;
+    }
+
+    // }}}
+    // {{{ _downloadDat5chKako()
+
+    /**
+     * 2ch APIのv1/kakoから過去ログdatをダウンロードする
+     */
+    protected function _downloadDat5chKako() {
+        global $_conf;
+
+        $url = http_build_url(array(
+            "scheme" => P2Util::selectScheme('api.' . $_conf['2ch_domain']),
+            "host" => "api." . $_conf['2ch_domain'],
+            "path" => "v1/kako/" . $this->bbs . '/' . $this->key));
+
+        try {
+            $req = P2Commun::createHTTPRequest ($url, P2CurlRequest::METHOD_POST);
+
+            // 2ch APIのv1/kakoはContent-Encoding: gzipを付けて非圧縮の本文を返すため、圧縮を要求しない
+            $req->setHeader ('Accept-Encoding', 'identity');
+
+            // ヘッダ
+            if ($this->modified) {
+                $req->setHeader ('If-Modified-Since', $this->modified);
+            }
+
+            // POSTする内容
+            // APIはappkeyとhoboの桁数のみを検証するため、値は固定のダミー文字列でよい
+            $req->addPostParameter (array (
+                    'appkey' => '012345678901234567890123456789',
+                    'hobo' => '0123456789012345678901234567890123456789012345678901234567890123'
+            ));
+
+            // Requestの送信
+            $response = P2Commun::getHTTPResponse($req);
+
+            // Thread-Status: 0 (dat取得不可) or 1 (現行スレ) or 2 (dat落ち) or 3 (過去ログ) or
+            //                8 (dat取得不可／Ronin無しでdat落ち/過去ログを取ろうとしたとき)
+            $apiThreadStatus = $response->getHeader('Thread-Status');
+
+            $code = $response->getStatus ();
+
+            // 過去ログは更新されないので 304 は過去ログのdatがローカルにあり最新であることを示す
+            if ($code == '304') {
+                $this->host = 'kako.' . $_conf['2ch_domain'];
+                $this->datochiok = true;
+                return '304 Not Modified';
+            }
+
+            // dat取得不可だった場合
+            if (empty($apiThreadStatus) || $apiThreadStatus == '8') {
+                return $this->_downloadDat5chKakoNotFound ($code, $apiThreadStatus);
+            }
+
+            if ($code == '200') {
+                $body = $response->getBody ();
+
+                $this->onbytes = intval ($response->getHeader ('Content-Length'));
+                if (!$this->onbytes) {
+                    // APIのレスポンスヘッダーにContent-Lengthが付かない事があるのでbodyのサイズで代用
+                    $this->onbytes = strlen ($body);
+                }
+
+                $this->modified = $response->getHeader ('Last-Modified');
+
+                // DAT データが空の場合
+                if (!$this->onbytes) {
+                    return $this->_downloadDat5chKakoNotFound ('200で空', $apiThreadStatus);
+                }
+
+                // 行毎に分割
+                $lines = explode("\n", $body ,3);
+
+                // 1行目を切り出す
+                $firstmsg = $lines[0];
+
+                // ngで始まってたらapiのエラーの可能性
+                if (preg_match ("/^ng \((.*)\)$/", $firstmsg) || mb_strpos ($firstmsg, "404 Not Found") === 0) {
+                    return $this->_downloadDat5chKakoNotFound ('200でNG', $apiThreadStatus);
+                }
+                unset ($firstmsg);
+                unset ($lines);
+
+                if (FileCtl::file_write_contents ($this->keydat, $body, 0) === false) {
+                    p2die ('cannot write file. _downloadDat5chKako()');
+                }
+
+                // 過去ログ倉庫のhostにセットする
+                $this->host = 'kako.' . $_conf['2ch_domain'];
+
+                if ($apiThreadStatus == '3') {
+                    // 過去ログ扱いフラグを立てる (idxline[12]に保存される)
+                    $this->datochiok = true;
+                }
+
+                return true;
+            } else {
+                return $this->_downloadDat5chKakoNotFound ($code, $apiThreadStatus);
+            }
+        } catch (Exception $e) {
+            $this->getdat_error_msg_ht .= "<p>サーバ接続エラー: " . $e->getMessage ();
+            $this->getdat_error_msg_ht .= "<br>rep2 error: 板サーバへの接続に失敗しました。</p>";
+            $this->diedat = true;
+            return false;
+        }
+    }
+
+    // }}}
+    // {{{ _downloadDat5chKakoNotFound()
+
+    /**
+     * 過去ログを取得できなかったときに呼び出される
+     */
+    protected function _downloadDat5chKakoNotFound($code, $apiThreadStatus) {
+        global $_conf;
+
+        $status = $apiThreadStatus ?? 'null';
+        $this->getdat_error_msg_ht = "<p>rep2 info: 2ちゃんねる過去ログ倉庫からのスレッド取り込みに失敗しました。(Code:{$code} / Thread-Status:{$status})</p>";
         $this->diedat = true;
         return false;
     }
