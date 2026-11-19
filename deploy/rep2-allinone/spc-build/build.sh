@@ -254,7 +254,7 @@ run_build_in_container() {
   #   source list を直接書く（add-apt-repository は launchpadlib が launchpad.net から
   #   メタデータを取得する関係でネットワーク切断時に IncompleteRead で落ちることがある）
   docker run --rm -t -v "$SPC_REPO:/spc" -v "$WORK_DIR:/work" -w /spc \
-    -e DEBIAN_FRONTEND=noninteractive "$DOCKER_IMAGE" bash -exc '
+    -e DEBIAN_FRONTEND=noninteractive -e GITHUB_TOKEN "$DOCKER_IMAGE" bash -exc '
       apt-get update -qq
       apt-get install -y -qq curl git unzip ca-certificates gnupg software-properties-common composer >/dev/null
       # ppa:ondrej/php を鍵直取得で追加（add-apt-repository を経由しない）
