@@ -21,7 +21,7 @@ OS ?= $(HOST_OS_DETECTED)
 
 PHP_VERSION = 8.5.13
 CADDY_VERSION = 2.11.9
-COMPOSER_VERSION = 2.11.2
+COMPOSER_VERSION = 2.11.3
 
 PHP_URL_WINDOWS = https://windows.php.net/downloads/releases/archives
 PHP_URL_COMMON = https://dl.static-php.dev/v3/php-bin/common
